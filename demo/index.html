@@ -1135,7 +1135,7 @@
 
   .meal-plan-grid {
     display: grid;
-    grid-template-columns: 130px repeat(7, 1fr);
+    grid-template-columns: 90px repeat(4, 1fr);
     gap: 10px;
   }
 
@@ -1207,7 +1207,7 @@
   }
 
   @media (max-width: 720px) {
-    .meal-plan-grid { grid-template-columns: 84px repeat(7, minmax(84px, 1fr)); gap: 6px; overflow-x: auto; }
+    .meal-plan-grid { grid-template-columns: 64px repeat(4, minmax(84px, 1fr)); gap: 6px; overflow-x: auto; }
     .meal-grid-corner, .meal-grid-header { font-size: 11px; padding: 10px 6px; }
     .meal-grid-row-label { font-size: 12.5px; padding: 10px 8px; min-height: 48px; }
     .meal-grid-cell { padding: 10px 10px; min-height: 48px; }
@@ -2282,8 +2282,8 @@ document.getElementById('homework-completed-list').addEventListener('click', (e)
 
 const MEAL_PLAN_KEY = 'lifehub:meal-plan';
 
-const MEAL_PLAN_DAYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-const MEAL_PLAN_DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const MEAL_PLAN_DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+const MEAL_PLAN_DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const MEAL_PLAN_MEALS = ['breakfast', 'snack', 'lunch', 'dinner'];
 const MEAL_PLAN_MEAL_LABELS = ['🍳 Breakfast', '🍎 Snack', '🥗 Lunch', '🍽️ Dinner'];
 const MEAL_UNITS = ['g', 'kg', 'ml', 'l', 'tsp', 'tbsp', 'cup', 'oz', 'lb', 'pcs'];
@@ -2333,13 +2333,13 @@ function renderMealPlanGrid() {
   if (!container) return;
 
   let html = `<div class="meal-grid-corner"></div>`;
-  MEAL_PLAN_DAY_LABELS.forEach(label => {
+  MEAL_PLAN_MEAL_LABELS.forEach(label => {
     html += `<div class="meal-grid-header">${label}</div>`;
   });
 
-  MEAL_PLAN_MEALS.forEach((mealKey, i) => {
-    html += `<div class="meal-grid-row-label">${MEAL_PLAN_MEAL_LABELS[i]}</div>`;
-    MEAL_PLAN_DAYS.forEach(day => {
+  MEAL_PLAN_DAYS.forEach((day, i) => {
+    html += `<div class="meal-grid-row-label">${MEAL_PLAN_DAY_LABELS[i]}</div>`;
+    MEAL_PLAN_MEALS.forEach(mealKey => {
       const cell = mealPlan[day][mealKey];
       const dishHtml = cell.dish
         ? `<div class="meal-cell-dish">${escapeHtml(cell.dish)}</div>`
@@ -2358,7 +2358,10 @@ function renderHomeMealPlanPreview() {
   const homePreview = document.getElementById('home-mealplan-preview');
   if (!homePreview) return;
 
-  const todayDayKey = MEAL_PLAN_DAYS[new Date().getDay()];
+  // MEAL_PLAN_DAYS now starts on Monday, but Date#getDay() still
+  // returns 0 for Sunday — shift it so Sunday(0) lands on index 6
+  // and Monday(1) lands on index 0, matching the reordered array.
+  const todayDayKey = MEAL_PLAN_DAYS[(new Date().getDay() + 6) % 7];
   const todayMeals = mealPlan[todayDayKey] || {};
   const plannedToday = MEAL_PLAN_MEALS
     .map((mealKey, i) => todayMeals[mealKey] && todayMeals[mealKey].dish ? `${MEAL_PLAN_MEAL_LABELS[i]}: ${todayMeals[mealKey].dish}` : null)
