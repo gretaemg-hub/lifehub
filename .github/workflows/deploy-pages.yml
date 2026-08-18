@@ -19,10 +19,31 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      # The friends-demo (demo/index.html) is plain static HTML — no
+      # build needed, it goes straight into the site root below.
+
+      # The real, Supabase-backed React app builds into a /app subpath
+      # alongside the demo (see vite.config.js's base: '/lifehub/app/').
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install
+      - run: npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+
+      # Assemble both into one site: demo at the root, real app at /app.
+      - run: |
+          mkdir -p site
+          cp demo/index.html site/index.html
+          cp -r dist site/app
+
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: demo
+          path: site
 
   deploy:
     needs: build
