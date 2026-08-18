@@ -1,0 +1,4947 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>LifeHub</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --bg: #EEF1E7;
+    --surface: #FFFFFF;
+    --surface-alt: #F7F5EE;
+    --ink: #26312B;
+    --ink-soft: #5B6960;
+    --pine: #3E6259;
+    --pine-dark: #2A453D;
+    --mustard: #D9A441;
+    --dusty-blue: #4C7A94;
+    --plum: #8C4A63;
+    --holiday-grey: #ABB3A5;
+    --line: #DDE3D6;
+    --shadow: 0 2px 8px rgba(38, 49, 43, 0.08);
+    --shadow-lift: 0 6px 20px rgba(38, 49, 43, 0.12);
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 16px;
+    --space-4: 24px;
+    --space-5: 32px;
+    --space-6: 48px;
+    --radius: 12px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+
+  h1, h2, h3 {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  button {
+    font-family: inherit;
+    cursor: pointer;
+    border: none;
+    background: none;
+  }
+
+  input[type="text"] {
+    font-family: inherit;
+    font-size: 15px;
+  }
+
+  #app {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    min-height: 100vh;
+  }
+
+  .topbar {
+    background: var(--pine);
+    color: white;
+    padding: var(--space-3) var(--space-4);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+
+  .topbar h1 {
+    color: white;
+    font-size: 22px;
+    letter-spacing: 0.3px;
+  }
+
+  .topbar .tagline {
+    font-size: 13px;
+    color: rgba(255,255,255,0.75);
+    font-family: 'Inter', sans-serif;
+    margin-top: 2px;
+  }
+
+  .family-strip {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .family-strip-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.7);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    white-space: nowrap;
+  }
+
+  .family-avatars {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .family-avatar-chip {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    width: 48px;
+  }
+
+  .family-avatar-circle {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: white;
+  }
+
+  .family-avatar-chip.is-you .family-avatar-circle {
+    box-shadow: 0 0 0 2px white;
+  }
+
+  .family-avatar-name {
+    font-size: 10.5px;
+    color: rgba(255,255,255,0.85);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 48px;
+  }
+
+  .family-avatar-chip.is-you .family-avatar-name {
+    color: white;
+    font-weight: 700;
+  }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 210px 1fr;
+  }
+
+  @media (max-width: 720px) {
+    .layout { grid-template-columns: 1fr; }
+    .sidebar {
+      flex-direction: row;
+      overflow-x: auto;
+      border-right: none;
+      border-bottom: 1px solid var(--line);
+    }
+  }
+
+  .sidebar {
+    background: var(--surface);
+    border-right: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
+    padding: var(--space-3) var(--space-2);
+    gap: var(--space-1);
+  }
+
+  .nav-btn {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 14.5px;
+    font-weight: 500;
+    color: var(--ink-soft);
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  .nav-btn:hover { background: var(--surface-alt); color: var(--ink); }
+
+  .nav-btn.active {
+    background: var(--pine);
+    color: white;
+  }
+
+  .nav-btn .icon { font-size: 17px; }
+
+  .nav-btn.disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+  .nav-btn.disabled:hover { background: none; color: var(--ink-soft); }
+
+  .nav-group { display: flex; flex-direction: column; }
+
+  .nav-btn-row {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+  }
+
+  .nav-chevron-btn {
+    width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    background: var(--surface-alt);
+    color: var(--pine);
+    flex-shrink: 0;
+  }
+  .nav-chevron-btn:hover { background: var(--line); }
+
+  .chevron {
+    display: inline-block;
+    transition: transform 0.15s ease;
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1;
+  }
+  .nav-group.open .chevron { transform: rotate(180deg); }
+
+  .nav-subitems {
+    max-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: max-height 0.2s ease;
+  }
+  .nav-group.open .nav-subitems { max-height: 160px; }
+
+  .nav-btn.sub {
+    padding-left: 30px;
+    font-size: 14px;
+  }
+
+  .nav-section-label {
+    font-size: 10.5px;
+    font-weight: 700;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    padding: 14px 14px 4px;
+  }
+
+  #upcoming-events-list, #birthdays-list {
+    list-style: none;
+    background: var(--surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
+  #birthdays-list li {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: 12px var(--space-3);
+    border-bottom: 1px solid var(--line);
+    cursor: pointer;
+  }
+  #birthdays-list li:last-child { border-bottom: none; }
+  #birthdays-list li:hover { background: var(--surface-alt); }
+
+  .subtab-row {
+    display: flex;
+    gap: 6px;
+    margin-bottom: var(--space-4);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .subtab-btn {
+    padding: 8px 4px 12px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink-soft);
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+  }
+  .subtab-btn:hover { color: var(--ink); }
+  .subtab-btn.active { color: var(--pine); border-bottom-color: var(--pine); }
+
+  .subtab-panel { display: none; }
+  .subtab-panel.active { display: block; }
+
+  .whoami-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    background: var(--surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 12px var(--space-3);
+    margin-bottom: var(--space-4);
+    flex-wrap: wrap;
+  }
+
+  .whoami-label {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--ink-soft);
+  }
+
+  .whoami-row select,
+  .whoami-row input[type="text"] {
+    padding: 7px 10px;
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    font-family: inherit;
+    font-size: 13.5px;
+    color: var(--ink);
+    background: var(--surface);
+  }
+  .whoami-row input[type="text"] { max-width: 160px; }
+
+  .wishlist-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: var(--space-3);
+    margin-bottom: var(--space-3);
+  }
+
+  .wishlist-card-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: var(--space-2);
+    font-family: 'Fraunces', serif;
+    font-size: 16px;
+  }
+
+  .wishlist-you-badge {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--pine);
+    background: var(--surface-alt);
+    padding: 2px 8px;
+    border-radius: 999px;
+  }
+
+  .wishlist-items { list-style: none; }
+
+  .wishlist-items li {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: 9px 2px;
+    border-bottom: 1px solid var(--line);
+    font-size: 14px;
+  }
+  .wishlist-items li:last-child { border-bottom: none; }
+
+  .wishlist-item-text { flex: 1; }
+
+  .reserve-btn {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 5px 12px;
+    border-radius: 999px;
+    background: var(--pine);
+    color: white;
+    white-space: nowrap;
+  }
+  .reserve-btn:hover { background: var(--pine-dark); }
+
+  .reserve-btn.reserved-by-you {
+    background: var(--surface-alt);
+    color: var(--pine);
+  }
+
+  .reserve-label-taken {
+    font-size: 12px;
+    color: var(--ink-soft);
+    font-style: italic;
+    white-space: nowrap;
+  }
+
+  .wishlist-add-row {
+    display: flex;
+    gap: var(--space-2);
+    margin-top: var(--space-2);
+  }
+  .wishlist-add-row input {
+    flex: 1;
+    padding: 8px 10px;
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    font-family: inherit;
+    font-size: 13.5px;
+  }
+
+  main {
+    padding: var(--space-4);
+  }
+
+  .view { display: none; }
+  .view.active { display: block; }
+
+  .view-header {
+    margin-bottom: var(--space-4);
+  }
+
+  .view-header h2 {
+    font-size: 26px;
+  }
+
+  .view-header p {
+    color: var(--ink-soft);
+    font-size: 14px;
+    margin-top: 4px;
+  }
+
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: var(--space-4);
+    margin-bottom: var(--space-5);
+  }
+
+  .home-section-heading {
+    font-size: 15px;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: var(--space-3);
+    margin-top: 4px;
+  }
+
+  .card {
+    position: relative;
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: var(--space-3);
+    box-shadow: var(--shadow);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .card:nth-child(odd) { transform: rotate(-0.6deg); }
+  .card:nth-child(even) { transform: rotate(0.5deg); }
+
+  .card.clickable { cursor: pointer; }
+  .card.clickable:hover {
+    transform: rotate(0deg) translateY(-2px);
+    box-shadow: var(--shadow-lift);
+  }
+
+  .card::before {
+    content: "";
+    position: absolute;
+    top: -8px;
+    left: 24px;
+    width: 44px;
+    height: 16px;
+    background: var(--tape-color, var(--mustard));
+    opacity: 0.85;
+    transform: rotate(-3deg);
+    border-radius: 2px;
+  }
+
+  .card h3 {
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin-bottom: var(--space-2);
+  }
+
+  .card .card-body {
+    font-size: 13.5px;
+    color: var(--ink-soft);
+  }
+
+  .card.placeholder .card-body {
+    font-style: italic;
+    opacity: 0.7;
+  }
+
+  .add-row {
+    display: flex;
+    gap: var(--space-2);
+    margin-bottom: var(--space-4);
+    flex-wrap: wrap;
+  }
+
+  .add-row input[type="text"] {
+    flex: 1;
+    min-width: 200px;
+    padding: 10px 14px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--surface);
+  }
+
+  .add-row input[type="text"]:focus {
+    outline: 2px solid var(--pine);
+    outline-offset: 1px;
+  }
+
+  .checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13.5px;
+    color: var(--ink-soft);
+  }
+
+  .btn-primary {
+    background: var(--pine);
+    color: white;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+  }
+  .btn-primary:hover { background: var(--pine-dark); }
+
+  .btn-ghost {
+    color: var(--ink-soft);
+    font-size: 13px;
+    padding: 6px 10px;
+    border-radius: 6px;
+  }
+  .btn-ghost:hover { background: var(--surface-alt); color: var(--ink); }
+
+  #shopping-list {
+    list-style: none;
+    background: var(--surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
+  #shopping-list li {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: 12px var(--space-3);
+    border-bottom: 1px solid var(--line);
+  }
+  #shopping-list li:last-child { border-bottom: none; }
+
+  #shopping-list input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--pine);
+    flex-shrink: 0;
+  }
+
+  #shopping-list .item-text {
+    flex: 1;
+    font-size: 15px;
+  }
+
+  #shopping-list li.checked .item-text {
+    text-decoration: line-through;
+    color: var(--ink-soft);
+  }
+
+  #homework-active-list, #homework-completed-list {
+    list-style: none;
+    background: var(--surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
+  #homework-active-list li, #homework-completed-list li {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: 12px var(--space-3);
+    border-bottom: 1px solid var(--line);
+  }
+  #homework-active-list li:last-child, #homework-completed-list li:last-child { border-bottom: none; }
+
+  #homework-active-list input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--pine);
+    flex-shrink: 0;
+  }
+
+  .homework-item-main { flex: 1; min-width: 0; }
+  .homework-subject { font-size: 14.5px; font-weight: 600; }
+  .homework-description { font-size: 12.5px; color: var(--ink-soft); margin-top: 1px; }
+
+  .homework-due-badge {
+    font-size: 11.5px;
+    font-weight: 700;
+    padding: 3px 9px;
+    border-radius: 999px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .homework-due-badge.normal { background: var(--surface-alt); color: var(--ink-soft); }
+  .homework-due-badge.due-soon { background: rgba(217, 164, 65, 0.18); color: #A87B1F; }
+  .homework-due-badge.overdue { background: rgba(192, 57, 43, 0.12); color: #C0392B; }
+
+  .homework-completed-subject {
+    font-size: 14.5px;
+    text-decoration: line-through;
+    color: var(--ink-soft);
+  }
+
+  #fitness-log-list {
+    list-style: none;
+    background: var(--surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
+  #fitness-log-list li {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: 12px var(--space-3);
+    border-bottom: 1px solid var(--line);
+  }
+  #fitness-log-list li:last-child { border-bottom: none; }
+
+  .week-slider-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 4px;
+  }
+  .week-slider-row .btn-ghost {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--surface-alt);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    font-size: 16px;
+  }
+  .week-slider-row .btn-ghost:disabled { opacity: 0.35; cursor: default; }
+  .week-slider-row .btn-ghost:disabled:hover { background: var(--surface-alt); }
+
+  #week-slider {
+    flex: 1;
+    accent-color: var(--pine);
+    cursor: pointer;
+  }
+
+  .week-slider-label {
+    text-align: center;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--ink-soft);
+    margin-bottom: var(--space-3);
+  }
+
+  .annual-chart-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: var(--space-4);
+  }
+  .annual-chart-card h3 {
+    font-family: 'Fraunces', serif;
+    font-size: 16px;
+    margin-bottom: var(--space-3);
+  }
+  #annual-chart-svg {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  .fitness-summary {
+    display: flex;
+    gap: var(--space-4);
+    background: var(--surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: var(--space-3) var(--space-4);
+    margin-bottom: var(--space-4);
+  }
+
+  .fitness-stat { display: flex; flex-direction: column; gap: 2px; }
+  .fitness-stat .stat-value { font-family: 'Fraunces', serif; font-size: 24px; color: var(--pine); }
+  .fitness-stat .stat-label { font-size: 11.5px; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.4px; }
+
+  .log-entry-main { flex: 1; }
+  .log-entry-main .log-entry-title { font-size: 14.5px; }
+  .log-entry-main .log-entry-meta { font-size: 12px; color: var(--ink-soft); }
+
+  .workout-duration-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 12px var(--space-3);
+    margin-bottom: var(--space-4);
+  }
+  .workout-duration-row label { font-size: 13.5px; font-weight: 600; color: var(--ink-soft); }
+  .workout-duration-row input[type="number"] {
+    width: 90px;
+    padding: 8px 10px;
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    font-family: inherit;
+    font-size: 14px;
+  }
+
+  .workout-plan-block {
+    background: var(--surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: var(--space-3);
+    margin-bottom: var(--space-3);
+  }
+  .workout-plan-block h4 {
+    font-family: 'Fraunces', serif;
+    font-size: 15px;
+    margin-bottom: var(--space-2);
+  }
+
+  .exercise-list { list-style: none; margin-bottom: var(--space-2); }
+  .exercise-list li {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: 8px 2px;
+    border-bottom: 1px solid var(--line);
+    font-size: 14px;
+  }
+  .exercise-list li:last-child { border-bottom: none; }
+  .exercise-list .exercise-name { flex: 1; }
+  .exercise-list .exercise-meta {
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    white-space: nowrap;
+  }
+
+  .exercise-add-row {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .exercise-add-row input[type="text"] {
+    flex: 1;
+    min-width: 120px;
+    padding: 8px 10px;
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    font-family: inherit;
+    font-size: 13.5px;
+  }
+  .exercise-add-row input[type="number"] {
+    width: 64px;
+    padding: 8px 8px;
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    font-family: inherit;
+    font-size: 13.5px;
+  }
+
+  .notes-page-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: var(--space-3);
+  }
+
+  .note-page-card {
+    position: relative;
+    background: var(--surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: var(--space-3);
+    cursor: pointer;
+    min-height: 120px;
+    display: flex;
+    flex-direction: column;
+  }
+  .note-page-card:hover { box-shadow: var(--shadow-lift); }
+
+  .note-page-card .note-page-title {
+    font-family: 'Fraunces', serif;
+    font-size: 16px;
+    margin-bottom: 6px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .note-page-card .note-page-snippet {
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    flex: 1;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .note-page-card .note-page-date {
+    font-size: 10.5px;
+    color: var(--ink-soft);
+    margin-top: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+
+  .note-editor-topbar {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: var(--space-3);
+  }
+
+  .note-mode-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+    margin-bottom: var(--space-3);
+  }
+
+  .note-mode-toggle {
+    display: flex;
+    background: var(--surface-alt);
+    border-radius: 999px;
+    padding: 3px;
+    gap: 2px;
+  }
+
+  .note-mode-btn {
+    padding: 7px 16px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink-soft);
+  }
+  .note-mode-btn.active { background: var(--pine); color: white; }
+  .note-mode-btn:hover:not(.active) { color: var(--ink); }
+
+  .note-format-toolbar { display: flex; gap: 6px; flex-wrap: wrap; }
+
+  .format-pill-btn {
+    padding: 7px 14px;
+    border-radius: 999px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--ink-soft);
+    background: var(--surface-alt);
+  }
+  .format-pill-btn.active { background: var(--mustard); color: white; }
+  .format-pill-btn:hover:not(.active) { background: var(--line); }
+
+  .format-pill-btn[data-format="heading"] {
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: 15px;
+  }
+  .format-pill-btn[data-format="subheading"] {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 13px;
+  }
+  .format-pill-btn[data-format="body"] {
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    font-size: 12.5px;
+  }
+
+  .pen-color-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .pen-color-label { font-size: 12.5px; font-weight: 600; color: var(--ink-soft); }
+  .pen-color-swatches { display: flex; gap: 6px; }
+
+  .note-page-surface {
+    position: relative;
+    background: #FFFFFF;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: var(--space-4);
+    min-height: 500px;
+  }
+
+  .note-title-input {
+    width: 100%;
+    border: none;
+    background: transparent;
+    padding: 4px 2px;
+    margin-bottom: var(--space-3);
+  }
+  .note-title-input:focus { outline: none; }
+
+  #note-title-input.block-type-heading {
+    font-family: 'Fraunces', serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+
+  .note-block { padding: 3px 0; }
+
+  .block-text {
+    min-height: 24px;
+    outline: none;
+    line-height: 1.45;
+  }
+  .block-text:empty::before {
+    content: attr(data-placeholder);
+    color: var(--ink-soft);
+    opacity: 0.5;
+  }
+  .block-type-heading { font-family: 'Fraunces', serif; font-size: 22px; font-weight: 700; color: var(--ink); }
+  .block-type-subheading { font-family: 'Fraunces', serif; font-size: 17px; font-weight: 600; color: var(--pine-dark); }
+  .block-type-body { font-size: 15px; font-weight: 400; color: var(--ink); }
+
+  .note-canvas-overlay {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    touch-action: none;
+  }
+  .note-canvas-overlay.tool-type { pointer-events: none; }
+  .note-canvas-overlay.tool-pen { pointer-events: auto; cursor: crosshair; }
+  .note-canvas-overlay.tool-eraser { pointer-events: auto; cursor: cell; }
+
+  .undo-redo-row { display: flex; gap: 4px; }
+  .undo-redo-row .btn-ghost:disabled { opacity: 0.35; cursor: default; }
+  .undo-redo-row .btn-ghost:disabled:hover { background: none; }
+
+  .eraser-mode-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .repeat-badge {
+    font-size: 11px;
+    background: var(--surface-alt);
+    color: var(--dusty-blue);
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .delete-btn {
+    color: var(--ink-soft);
+    font-size: 18px;
+    padding: 4px 8px;
+    border-radius: 6px;
+  }
+  .delete-btn:hover { background: #f4e4e4; color: #a33; }
+
+  .empty-state {
+    padding: var(--space-5);
+    text-align: center;
+    color: var(--ink-soft);
+    font-size: 14px;
+  }
+
+  .list-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: var(--space-3);
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+
+  .calendar-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-3);
+  }
+
+  .calendar-toolbar h3 {
+    font-family: 'Fraunces', serif;
+    font-size: 19px;
+    min-width: 180px;
+    text-align: center;
+  }
+
+  .month-nav-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    background: var(--surface);
+    box-shadow: var(--shadow);
+    font-size: 16px;
+    color: var(--pine);
+  }
+  .month-nav-btn:hover { background: var(--surface-alt); }
+
+  .weekday-row {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    margin-bottom: 6px;
+  }
+
+  .weekday-row span {
+    text-align: center;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .calendar-weeks {
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--surface);
+    box-shadow: var(--shadow);
+  }
+
+  .calendar-week {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    border-bottom: 1px solid var(--line);
+  }
+  .calendar-week:last-child { border-bottom: none; }
+
+  .day-cell {
+    min-height: 112px;
+    padding: 6px 5px 4px;
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+    border-right: 1px solid var(--line);
+    background: var(--surface);
+  }
+  .day-cell:nth-child(7) { border-right: none; }
+  .day-cell:hover { background: var(--surface-alt); }
+
+  .day-cell.other-month { background: var(--surface-alt); }
+  .day-cell.other-month .day-number { opacity: 0.4; }
+
+  .day-cell .day-number {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--ink-soft);
+  }
+
+  .day-cell.today { box-shadow: inset 0 0 0 2px var(--pine); }
+  .day-cell.today .day-number { color: var(--pine); font-weight: 700; }
+
+  .day-cell .overflow-label {
+    font-size: 10px;
+    color: var(--ink-soft);
+    margin-top: 2px;
+  }
+
+  .day-cell .holiday-label {
+    margin-top: auto;
+    font-size: 9.5px;
+    color: var(--holiday-grey);
+    font-style: italic;
+    line-height: 1.25;
+    pointer-events: none;
+  }
+
+  .week-events-layer {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  .event-bar {
+    position: absolute;
+    height: 16px;
+    font-size: 10.5px;
+    font-weight: 500;
+    color: white;
+    padding: 1px 6px;
+    box-sizing: border-box;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    cursor: pointer;
+    pointer-events: auto;
+  }
+
+  .event-bar-personal-overlay {
+    opacity: 0.8;
+    cursor: default;
+    background-image: repeating-linear-gradient(
+      135deg,
+      rgba(255,255,255,0.25) 0px,
+      rgba(255,255,255,0.25) 3px,
+      transparent 3px,
+      transparent 7px
+    );
+  }
+
+  .personal-overlay-badge {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--ink-soft);
+    background: var(--surface-alt);
+    padding: 2px 7px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+
+  @media (max-width: 720px) {
+    .day-cell { min-height: 90px; font-size: 12px; padding: 4px 3px 3px; }
+    .weekday-row span { font-size: 9.5px; }
+    .event-bar { font-size: 9px; height: 14px; }
+    .day-cell .holiday-label { font-size: 8px; }
+  }
+
+  .meal-plan-grid {
+    display: grid;
+    grid-template-columns: 130px repeat(7, 1fr);
+    gap: 10px;
+  }
+
+  .meal-grid-corner, .meal-grid-header {
+    background: var(--surface-alt);
+    border-radius: 10px;
+    padding: 16px 10px;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .meal-grid-row-label {
+    background: var(--surface-alt);
+    border-radius: 10px;
+    padding: 16px 14px;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+    min-height: 64px;
+  }
+
+  .meal-grid-cell {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 14px 14px;
+    font-family: inherit;
+    color: var(--ink);
+    background: var(--surface);
+    box-shadow: var(--shadow);
+    min-width: 0;
+    min-height: 64px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 3px;
+    transition: box-shadow 0.15s ease, transform 0.15s ease;
+  }
+  .meal-grid-cell:hover {
+    box-shadow: var(--shadow-lift);
+    transform: translateY(-1px);
+  }
+
+  .meal-cell-dish {
+    font-size: 14.5px;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .meal-cell-empty {
+    font-size: 14px;
+    color: var(--ink-soft);
+    opacity: 0.55;
+    font-weight: 400;
+  }
+  .meal-cell-ingredient-count {
+    font-size: 11px;
+    color: var(--ink-soft);
+  }
+
+  @media (max-width: 720px) {
+    .meal-plan-grid { grid-template-columns: 84px repeat(7, minmax(84px, 1fr)); gap: 6px; overflow-x: auto; }
+    .meal-grid-corner, .meal-grid-header { font-size: 11px; padding: 10px 6px; }
+    .meal-grid-row-label { font-size: 12.5px; padding: 10px 8px; min-height: 48px; }
+    .meal-grid-cell { padding: 10px 10px; min-height: 48px; }
+    .meal-cell-dish { font-size: 12.5px; }
+    .meal-cell-ingredient-count { font-size: 10px; }
+  }
+
+  .sync-all-btn {
+    font-size: 13px;
+    padding: 8px 16px;
+    background: var(--surface-alt);
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .sync-all-btn:hover { background: var(--line); }
+
+  .ingredients-section-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink-soft);
+    margin-top: 4px;
+  }
+
+  .ingredient-row {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    padding: 6px 0;
+  }
+  .ingredient-row input[type="text"] {
+    flex: 1.6;
+    min-width: 0;
+    padding: 8px 9px;
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    font-family: inherit;
+    font-size: 13.5px;
+  }
+  .ingredient-row input[type="number"] {
+    flex: 0.8;
+    min-width: 0;
+    padding: 8px 9px;
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    font-family: inherit;
+    font-size: 13.5px;
+  }
+  .ingredient-row select {
+    flex: 0.9;
+    min-width: 0;
+    padding: 8px 6px;
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    font-family: inherit;
+    font-size: 13.5px;
+    background: var(--surface);
+    color: var(--ink);
+  }
+  .ingredient-row .delete-btn { flex-shrink: 0; }
+
+  .upcoming-events-section {
+    margin-top: var(--space-5);
+  }
+
+  .upcoming-events-section h3 {
+    font-size: 16px;
+    margin-bottom: var(--space-2);
+  }
+
+  #upcoming-events-list li {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: 12px var(--space-3);
+    border-bottom: 1px solid var(--line);
+  }
+  #upcoming-events-list li:last-child { border-bottom: none; }
+
+  .event-date-chip {
+    background: var(--surface-alt);
+    color: var(--dusty-blue);
+    font-size: 11.5px;
+    font-weight: 700;
+    padding: 4px 8px;
+    border-radius: 6px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .event-info { flex: 1; }
+  .event-info .event-title { font-size: 14.5px; }
+  .event-info .event-time { font-size: 12px; color: var(--ink-soft); }
+
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(38, 49, 43, 0.55);
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-3);
+    z-index: 1000;
+  }
+
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: var(--space-4);
+    width: 100%;
+    max-width: 380px;
+    box-shadow: var(--shadow-lift);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .modal label {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink-soft);
+  }
+
+  .modal input[type="text"],
+  .modal input[type="date"],
+  .modal input[type="time"] {
+    padding: 9px 11px;
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    color: var(--ink);
+    font-weight: 400;
+  }
+
+  .modal .checkbox-label {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .datetime-grid {
+    display: flex;
+    gap: var(--space-2);
+    align-items: stretch;
+  }
+
+  .datetime-rows {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .datetime-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .datetime-label {
+    width: 40px;
+    flex-shrink: 0;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--ink-soft);
+  }
+
+  .datetime-row input[type="date"],
+  .datetime-row input[type="time"] {
+    min-width: 0;
+    padding: 8px 8px;
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    font-size: 12.5px;
+    color: var(--ink);
+  }
+  .datetime-row input[type="date"] { flex: 1.3; }
+  .datetime-row input[type="time"] { flex: 1; }
+
+  .datetime-grid.all-day-mode .time-input { display: none; }
+
+  .allday-toggle {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 0 14px;
+    background: var(--surface-alt);
+    border-radius: 8px;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--ink-soft);
+    white-space: nowrap;
+  }
+  .allday-toggle input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--pine);
+  }
+
+  .color-picker {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .color-swatches {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .color-swatch {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+  }
+
+  .color-swatch.selected {
+    border-color: var(--ink);
+    box-shadow: 0 0 0 2px var(--surface);
+  }
+
+  .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--space-2);
+    margin-top: 4px;
+  }
+</style>
+</head>
+<body>
+
+<div id="app">
+
+  <header class="topbar">
+    <div>
+      <h1>🏡 LifeHub</h1>
+      <div class="tagline">Everything the family needs to remember, in one place</div>
+    </div>
+
+    <div class="family-strip">
+      <span class="family-strip-label">My Family</span>
+      <div class="family-avatars" id="topbar-family-avatars"></div>
+    </div>
+  </header>
+
+  <div class="layout">
+
+    <nav class="sidebar">
+      <button class="nav-btn active" data-view="home"><span class="icon">🏠</span> Home</button>
+
+      <div class="nav-section-label">Personal</div>
+      <button class="nav-btn" data-view="fitness"><span class="icon">🏋️</span> Fitness Tracker</button>
+      <button class="nav-btn" data-view="notes"><span class="icon">📝</span> Notes</button>
+      <button class="nav-btn" data-view="my-calendar"><span class="icon">🗓️</span> My Calendar</button>
+
+      <div class="nav-section-label">Family</div>
+
+      <div class="nav-group">
+        <div class="nav-btn-row">
+          <button class="nav-btn" data-view="calendar" style="flex:1;"><span class="icon">📅</span> Family Calendar</button>
+          <button class="nav-chevron-btn" id="calendar-group-toggle" aria-label="Toggle birthdays and trips dropdown">
+            <span class="chevron" id="calendar-group-chevron">▾</span>
+          </button>
+        </div>
+        <div class="nav-subitems" id="calendar-group-subitems">
+          <button class="nav-btn sub" data-view="birthdays"><span class="icon">🎂</span> Birthdays</button>
+          <button class="nav-btn sub disabled" disabled><span class="icon">✈️</span> Trips &amp; Holidays</button>
+        </div>
+      </div>
+
+      <button class="nav-btn" data-view="shopping"><span class="icon">🛒</span> Shopping</button>
+      <button class="nav-btn" data-view="homework"><span class="icon">📚</span> School &amp; Homeworks</button>
+      <button class="nav-btn disabled" disabled><span class="icon">💸</span> Bills</button>
+      <button class="nav-btn disabled" disabled><span class="icon">🧹</span> Tasks</button>
+      <button class="nav-btn" data-view="mealplans"><span class="icon">🍽️</span> Meal Plans</button>
+    </nav>
+
+    <main>
+
+      <section id="view-home" class="view active">
+        <div class="view-header">
+          <h2>Good to see you 👋</h2>
+          <p>Here's what's happening across the house today.</p>
+        </div>
+
+        <h3 class="home-section-heading">🙋 Personal</h3>
+        <div class="card-grid">
+          <div class="card clickable" data-view="fitness" style="--tape-color: var(--dusty-blue)">
+            <h3>🏋️ Fitness Tracker</h3>
+            <div class="card-body" id="home-fitness-preview">Loading…</div>
+          </div>
+
+          <div class="card clickable" data-view="notes" style="--tape-color: var(--mustard)">
+            <h3>📝 Notes</h3>
+            <div class="card-body" id="home-notes-preview">Loading…</div>
+          </div>
+
+          <div class="card clickable" data-view="my-calendar" style="--tape-color: var(--plum)">
+            <h3>🗓️ My Calendar</h3>
+            <div class="card-body" id="home-my-calendar-preview">Loading…</div>
+          </div>
+        </div>
+
+        <h3 class="home-section-heading">🏡 Family</h3>
+        <div class="card-grid">
+          <div class="card clickable" data-view="shopping" style="--tape-color: var(--pine)">
+            <h3>🛒 Shopping List</h3>
+            <div class="card-body" id="home-shopping-preview">Loading…</div>
+          </div>
+
+          <div class="card clickable" data-view="birthdays" style="--tape-color: var(--plum)">
+            <h3>🎂 Upcoming Birthdays</h3>
+            <div class="card-body" id="home-birthdays-preview">Loading…</div>
+          </div>
+
+          <div class="card clickable" data-view="calendar" style="--tape-color: var(--dusty-blue)">
+            <h3>📅 Family Calendar</h3>
+            <div class="card-body" id="home-calendar-preview">Loading…</div>
+          </div>
+
+          <div class="card clickable" data-view="homework" style="--tape-color: var(--mustard)">
+            <h3>📚 School &amp; Homeworks</h3>
+            <div class="card-body" id="home-homework-preview">Loading…</div>
+          </div>
+
+          <div class="card" style="--tape-color: var(--plum)">
+            <h3>💸 Bills Due Soon</h3>
+            <div class="card-body placeholder">Not built yet — coming soon.</div>
+          </div>
+
+          <div class="card" style="--tape-color: var(--mustard)">
+            <h3>🧹 Household Tasks</h3>
+            <div class="card-body placeholder">Not built yet — coming soon.</div>
+          </div>
+
+          <div class="card clickable" data-view="mealplans" style="--tape-color: var(--dusty-blue)">
+            <h3>🍽️ Meal Plan</h3>
+            <div class="card-body" id="home-mealplan-preview">Loading…</div>
+          </div>
+        </div>
+      </section>
+
+      <section id="view-fitness" class="view">
+        <div class="view-header" style="display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-3);">
+          <div>
+            <h2>🏋️ Fitness Tracker</h2>
+            <p>Personal — only you can see this, regardless of who else uses this device.</p>
+          </div>
+          <button class="btn-ghost" id="toggle-annual-chart-btn" style="white-space: nowrap;">📊 Show My Annual Progress Chart</button>
+        </div>
+
+        <div id="annual-chart-container" style="display: none; margin-bottom: var(--space-4);">
+          <div class="annual-chart-card">
+            <h3>Minutes per Month — <span id="annual-chart-year-label"></span></h3>
+            <svg id="annual-chart-svg" viewBox="0 0 700 260" preserveAspectRatio="xMidYMid meet"></svg>
+          </div>
+        </div>
+
+        <div class="week-slider-row">
+          <button class="btn-ghost" id="week-slider-prev-btn" title="Previous week">‹</button>
+          <input type="range" id="week-slider" min="-52" max="0" value="0" step="1" />
+          <button class="btn-ghost" id="week-slider-next-btn" title="Next week" disabled>›</button>
+        </div>
+        <div class="week-slider-label" id="week-slider-label">This Week</div>
+
+        <div class="fitness-summary" id="fitness-summary">Loading…</div>
+
+        <div class="add-row">
+          <input type="text" id="new-workout-activity" placeholder="Activity… (e.g. Running)" />
+          <input type="number" id="new-workout-duration" placeholder="Minutes" min="1" style="max-width:110px;" />
+          <input type="date" id="new-workout-date" />
+          <button class="btn-primary" id="add-workout-btn">Log Workout</button>
+        </div>
+
+        <ul id="fitness-log-list"></ul>
+
+        <div class="view-header" style="margin-top: var(--space-5); display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-3);">
+          <div>
+            <h2 style="font-size: 20px;">🏋️ Workout Plan</h2>
+            <p>Build your warm up, main workout, and cooldown — with sets and reps for each exercise.</p>
+          </div>
+          <button class="btn-ghost" id="clear-workout-plan-btn" style="color:#a33; white-space:nowrap;">Clear Workout</button>
+        </div>
+
+        <div class="workout-duration-row">
+          <label for="workout-plan-duration">Total time (minutes)</label>
+          <input type="number" id="workout-plan-duration" min="1" placeholder="e.g. 45" />
+        </div>
+
+        <div id="workout-plan-sections"></div>
+      </section>
+
+      <section id="view-notes" class="view">
+        <div class="view-header">
+          <h2>📝 Notes</h2>
+          <p>Personal — only you can see this, regardless of who else uses this device.</p>
+        </div>
+
+        <div id="notes-list-subview">
+          <button class="btn-primary" id="new-note-btn" style="margin-bottom: var(--space-4);">+ New Note</button>
+          <div id="notes-page-grid" class="notes-page-grid"></div>
+        </div>
+
+        <div id="notes-editor-subview" style="display:none;">
+          <div class="note-editor-topbar">
+            <button class="btn-ghost" id="notes-back-btn">← All Notes</button>
+            <button class="btn-ghost" id="delete-note-btn" style="color:#a33;">Delete Note</button>
+          </div>
+
+          <div class="note-mode-row">
+            <div class="note-mode-toggle">
+              <button class="note-mode-btn active" id="tool-type-btn" data-tool="type">✏️ Type</button>
+              <button class="note-mode-btn" id="tool-pen-btn" data-tool="pen">🖊️ Pen</button>
+              <button class="note-mode-btn" id="tool-eraser-btn" data-tool="eraser">🧹 Eraser</button>
+            </div>
+
+            <div class="undo-redo-row">
+              <button class="btn-ghost" id="undo-btn" title="Undo" disabled>↩ Undo</button>
+              <button class="btn-ghost" id="redo-btn" title="Redo" disabled>↪ Redo</button>
+              <button class="btn-ghost" id="clear-drawing-btn">Clear Drawing</button>
+            </div>
+
+            <div class="note-format-toolbar" id="type-format-toolbar">
+              <button class="format-pill-btn" data-format="heading">Heading</button>
+              <button class="format-pill-btn" data-format="subheading">Subheading</button>
+              <button class="format-pill-btn active" data-format="body">Body</button>
+            </div>
+
+            <div class="pen-color-row" id="pen-color-row" style="display:none;">
+              <span class="pen-color-label">Pen</span>
+              <div class="pen-color-swatches" id="pen-color-swatches"></div>
+            </div>
+
+            <div class="eraser-mode-row" id="eraser-mode-row" style="display:none;">
+              <span class="pen-color-label">Erase</span>
+              <button class="format-pill-btn active" id="eraser-object-btn" data-eraser-mode="object">Whole stroke</button>
+              <button class="format-pill-btn" id="eraser-pixel-btn" data-eraser-mode="pixel">Pixel</button>
+            </div>
+          </div>
+
+          <div class="note-page-surface" id="note-page-surface">
+            <input type="text" id="note-title-input" class="note-title-input block-type-heading" placeholder="Title" />
+            <div id="note-blocks-container"></div>
+            <canvas id="note-drawing-canvas" class="note-canvas-overlay tool-type"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <section id="view-shopping" class="view">
+        <div class="view-header">
+          <h2>🛒 Shopping List</h2>
+          <p>Shared with everyone in the family. Anyone can add or tick things off.</p>
+        </div>
+
+        <div class="add-row">
+          <input type="text" id="new-item-input" placeholder="Add an item… (e.g. Milk)" />
+          <label class="checkbox-label">
+            <input type="checkbox" id="new-item-repeating" />
+            Repeats every week
+          </label>
+          <button class="btn-primary" id="add-item-btn">Add</button>
+        </div>
+
+        <ul id="shopping-list"></ul>
+
+        <div class="list-footer">
+          <span id="shopping-summary">Loading…</span>
+          <button class="btn-ghost" id="clear-checked-btn">Clear checked items</button>
+        </div>
+      </section>
+
+      <section id="view-homework" class="view">
+        <div class="view-header">
+          <h2>📚 School &amp; Homeworks</h2>
+          <p>Shared with the family — anyone can add or check off an assignment.</p>
+        </div>
+
+        <div class="add-row" style="flex-wrap: wrap;">
+          <input type="text" id="new-homework-subject" placeholder="Subject… (e.g. Maths)" style="min-width: 140px;" />
+          <input type="text" id="new-homework-description" placeholder="Brief description…" style="min-width: 180px;" />
+          <input type="date" id="new-homework-due-date" />
+          <input type="time" id="new-homework-due-time" />
+          <button class="btn-primary" id="add-homework-btn">Add</button>
+        </div>
+
+        <ul id="homework-active-list"></ul>
+
+        <button class="btn-ghost" id="toggle-completed-homework-btn" style="margin-top: var(--space-3);">▸ Completed (0)</button>
+        <ul id="homework-completed-list" style="display: none; margin-top: var(--space-2);"></ul>
+      </section>
+
+      <section id="view-mealplans" class="view">
+        <div class="view-header" style="display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-3);">
+          <div>
+            <h2>🍽️ Meal Plan</h2>
+            <p>Shared with the family — plan breakfast, snacks, lunch, and dinner for the week.</p>
+          </div>
+          <button class="btn-ghost sync-all-btn" id="sync-all-meals-btn">🛒 Sync All to Shopping List</button>
+        </div>
+
+        <div class="meal-plan-grid" id="meal-plan-grid"></div>
+      </section>
+
+      <section id="view-calendar" class="view">
+        <div class="view-header">
+          <h2>📅 Family Calendar</h2>
+          <p>Shared family events. Click any day to add something to it.</p>
+        </div>
+
+        <label class="checkbox-label" style="margin-bottom: var(--space-3);">
+          <input type="checkbox" id="show-personal-events-checkbox" />
+          Show my personal events <span style="color: var(--ink-soft); font-weight: 400;">— visible only to you, not editable here</span>
+        </label>
+
+        <div class="calendar-toolbar">
+          <button class="month-nav-btn" id="prev-month-btn">‹</button>
+          <h3 id="calendar-month-label">Loading…</h3>
+          <button class="month-nav-btn" id="next-month-btn">›</button>
+        </div>
+
+        <div class="weekday-row">
+          <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span>
+          <span>Thu</span><span>Fri</span><span>Sat</span>
+        </div>
+
+        <div class="calendar-grid" id="calendar-grid"></div>
+
+        <button class="btn-primary" id="quick-add-event-btn" style="margin-top: var(--space-4);">+ Add Event</button>
+
+        <div class="upcoming-events-section">
+          <h3>Upcoming</h3>
+          <ul id="upcoming-events-list"></ul>
+        </div>
+      </section>
+
+      <section id="view-my-calendar" class="view">
+        <div class="view-header">
+          <h2>🗓️ My Calendar</h2>
+          <p>Personal — only you can see this, regardless of who else uses this device.</p>
+        </div>
+
+        <div class="calendar-toolbar">
+          <button class="month-nav-btn" id="my-prev-month-btn">‹</button>
+          <h3 id="my-calendar-month-label">Loading…</h3>
+          <button class="month-nav-btn" id="my-next-month-btn">›</button>
+        </div>
+
+        <div class="weekday-row">
+          <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span>
+          <span>Thu</span><span>Fri</span><span>Sat</span>
+        </div>
+
+        <div class="calendar-grid" id="my-calendar-grid"></div>
+
+        <button class="btn-primary" id="my-quick-add-event-btn" style="margin-top: var(--space-4);">+ Add Event</button>
+
+        <div class="upcoming-events-section">
+          <h3>Upcoming</h3>
+          <ul id="my-upcoming-events-list"></ul>
+        </div>
+      </section>
+
+      <section id="view-birthdays" class="view">
+        <div class="view-header">
+          <h2>🎂 Birthdays</h2>
+          <p>Synced from the Calendar — tick "This is a birthday" on any event to add it here.</p>
+        </div>
+
+        <div class="subtab-row">
+          <button class="subtab-btn active" data-subtab="list">Birthdays</button>
+          <button class="subtab-btn" data-subtab="wishlists">🎁 Family Wishlists</button>
+        </div>
+
+        <div id="birthdays-subtab-list" class="subtab-panel active">
+          <ul id="birthdays-list"></ul>
+        </div>
+
+        <div id="birthdays-subtab-wishlists" class="subtab-panel">
+          <div class="whoami-row">
+            <span class="whoami-label">Who are you?</span>
+            <select id="whoami-select"></select>
+            <input type="text" id="new-family-member-input" placeholder="New family member's name…" />
+            <button class="btn-ghost" id="add-family-member-btn">+ Add</button>
+            <button class="btn-ghost" id="reset-demo-btn" title="Wipes current family/wishlist data and reloads the A/F/B/G test setup">Reset to demo data</button>
+          </div>
+
+          <div id="wishlists-container"></div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <div class="modal-overlay" id="event-modal-overlay">
+    <div class="modal">
+      <h3 id="modal-heading">Add Event</h3>
+
+      <label>
+        Title
+        <input type="text" id="modal-event-title" placeholder="e.g. Football practice" />
+      </label>
+
+      <div id="modal-birthday-row">
+        <label class="checkbox-label">
+          <input type="checkbox" id="modal-event-isbirthday" />
+          🎂 This is a birthday
+        </label>
+      </div>
+
+      <div class="datetime-grid" id="modal-datetime-grid">
+        <div class="datetime-rows">
+          <div class="datetime-row">
+            <span class="datetime-label">Starts</span>
+            <input type="date" id="modal-event-start-date" />
+            <input type="time" id="modal-event-start-time" class="time-input" />
+          </div>
+          <div class="datetime-row">
+            <span class="datetime-label">Ends</span>
+            <input type="date" id="modal-event-end-date" />
+            <input type="time" id="modal-event-end-time" class="time-input" />
+          </div>
+        </div>
+        <label class="allday-toggle">
+          <input type="checkbox" id="modal-event-allday" />
+          All day
+        </label>
+      </div>
+
+      <div class="color-picker">
+        <span class="color-label">Color</span>
+        <div class="color-swatches" id="color-swatches"></div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-ghost" id="modal-delete-btn" style="margin-right: auto; display: none;">Delete event</button>
+        <button class="btn-ghost" id="modal-cancel-btn">Cancel</button>
+        <button class="btn-primary" id="modal-save-btn">Save Event</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="meal-modal-overlay">
+  <div class="modal">
+    <h3 id="meal-modal-heading">Meal</h3>
+
+    <label class="checkbox-label">
+      <input type="checkbox" id="meal-modal-sync-checkbox" />
+      🛒 Sync ingredients to Shopping List
+    </label>
+
+    <label>
+      Dish
+      <input type="text" id="meal-modal-dish-input" placeholder="e.g. Spaghetti Bolognese" />
+    </label>
+
+    <div class="ingredients-section-label">Ingredients</div>
+    <div id="meal-modal-ingredients-list"></div>
+    <button class="btn-ghost" id="meal-modal-add-ingredient-btn">+ Add Ingredient</button>
+
+    <div class="modal-actions">
+      <button class="btn-ghost" id="meal-modal-clear-btn" style="margin-right: auto; color: #a33;">Clear</button>
+      <button class="btn-ghost" id="meal-modal-cancel-btn">Cancel</button>
+      <button class="btn-primary" id="meal-modal-save-btn">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   BROWSER STORAGE POLYFILL — GitHub Pages demo build
+   The original app was built for the Claude artifact environment,
+   which provides `window.storage` (get/set backed by a hosted
+   key-value store, with a `shared` flag distinguishing family-wide
+   data from per-browser personal data). A plain static site has no
+   such thing, so this polyfill backs the exact same API with the
+   browser's own localStorage instead — same get(key, shared) /
+   set(key, value, shared) shape, so NONE of the app code below
+   needed to change.
+
+   Tradeoff, since this is a demo without a real backend: data is
+   saved per-BROWSER, not shared across devices/people — the
+   `shared` flag is accepted for API compatibility but doesn't
+   actually do anything, since there's no server to share through
+   until the Supabase migration is done. Good enough for trying
+   every feature out and giving feedback.
+   ============================================================ */
+window.storage = {
+  get: async (key) => {
+    const value = localStorage.getItem(key);
+    if (value === null) {
+      throw new Error(`No value found for key: ${key}`);
+    }
+    return { value };
+  },
+  set: async (key, value) => {
+    localStorage.setItem(key, value);
+  }
+};
+
+/* ============================================================
+   PART 1 — NAVIGATION
+   ============================================================ */
+function switchView(viewName) {
+  document.querySelectorAll('.view').forEach(el => {
+    el.classList.toggle('active', el.id === 'view-' + viewName);
+  });
+  document.querySelectorAll('.nav-btn').forEach(el => {
+    el.classList.toggle('active', el.dataset.view === viewName);
+  });
+
+  const group = document.querySelector('.nav-group');
+  if (viewName === 'calendar' || viewName === 'birthdays' || viewName === 'trips') {
+    group.classList.add('open');
+  }
+}
+
+document.querySelectorAll('.nav-btn:not(.disabled)').forEach(btn => {
+  btn.addEventListener('click', () => switchView(btn.dataset.view));
+});
+
+document.getElementById('view-home').addEventListener('click', (e) => {
+  const card = e.target.closest('.card.clickable[data-view]');
+  if (card) switchView(card.dataset.view);
+});
+
+document.getElementById('calendar-group-toggle').addEventListener('click', () => {
+  document.querySelector('.nav-group').classList.toggle('open');
+});
+
+
+/* ============================================================
+   PART 2 — DATA + STORAGE
+   ============================================================ */
+
+const SHOPPING_KEY = 'lifehub:shopping-items';
+
+let shoppingItems = [];
+
+async function loadShoppingItems() {
+  try {
+    const result = await window.storage.get(SHOPPING_KEY, true);
+    shoppingItems = result ? JSON.parse(result.value) : [];
+  } catch (err) {
+    shoppingItems = [];
+  }
+  renderShopping();
+}
+
+async function saveShoppingItems() {
+  try {
+    await window.storage.set(SHOPPING_KEY, JSON.stringify(shoppingItems), true);
+  } catch (err) {
+    console.error('Could not save shopping list:', err);
+  }
+}
+
+
+/* ============================================================
+   PART 3 — RENDERING
+   ============================================================ */
+function renderShopping() {
+  const list = document.getElementById('shopping-list');
+  const summary = document.getElementById('shopping-summary');
+  const homePreview = document.getElementById('home-shopping-preview');
+
+  if (shoppingItems.length === 0) {
+    list.innerHTML = `<li class="empty-state" style="border:none;">Your list is empty. Add something above 👆</li>`;
+  } else {
+    list.innerHTML = shoppingItems.map(item => `
+      <li class="${item.checked ? 'checked' : ''}" data-id="${item.id}">
+        <input type="checkbox" class="toggle-checkbox" ${item.checked ? 'checked' : ''} />
+        <span class="item-text">${escapeHtml(item.text)}</span>
+        ${item.repeating ? '<span class="repeat-badge">↻ weekly</span>' : ''}
+        <button class="delete-btn" title="Remove">✕</button>
+      </li>
+    `).join('');
+  }
+
+  const uncheckedCount = shoppingItems.filter(i => !i.checked).length;
+  summary.textContent = `${uncheckedCount} item${uncheckedCount === 1 ? '' : 's'} left to get`;
+
+  if (shoppingItems.length === 0) {
+    homePreview.innerHTML = `<span class="placeholder">List is empty</span>`;
+  } else {
+    const preview = shoppingItems.filter(i => !i.checked).slice(0, 3).map(i => escapeHtml(i.text)).join(', ');
+    homePreview.textContent = uncheckedCount === 0
+      ? 'Everything is ticked off ✓'
+      : `${uncheckedCount} to get: ${preview}${uncheckedCount > 3 ? '…' : ''}`;
+  }
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+
+/* ============================================================
+   PART 4 — ACTIONS (add, toggle, delete, clear)
+   ============================================================ */
+
+function addItem() {
+  const input = document.getElementById('new-item-input');
+  const repeatingBox = document.getElementById('new-item-repeating');
+  const text = input.value.trim();
+  if (!text) return;
+
+  shoppingItems.push({
+    id: crypto.randomUUID(),
+    text: text,
+    checked: false,
+    repeating: repeatingBox.checked
+  });
+
+  input.value = '';
+  repeatingBox.checked = false;
+  input.focus();
+
+  saveShoppingItems();
+  renderShopping();
+}
+
+function toggleItem(id) {
+  const item = shoppingItems.find(i => i.id === id);
+  if (!item) return;
+  item.checked = !item.checked;
+  saveShoppingItems();
+  renderShopping();
+}
+
+function deleteItem(id) {
+  shoppingItems = shoppingItems.filter(i => i.id !== id);
+  saveShoppingItems();
+  renderShopping();
+}
+
+function clearChecked() {
+  shoppingItems = shoppingItems.filter(i => !(i.checked && !i.repeating));
+  saveShoppingItems();
+  renderShopping();
+}
+
+
+/* ============================================================
+   SCHOOL & HOMEWORKS — DATA + STORAGE
+   ============================================================ */
+
+const HOMEWORK_KEY = 'lifehub:homework-items';
+
+let homeworkItems = [];
+let completedHomeworkExpanded = false;
+
+async function loadHomeworkItems() {
+  try {
+    const result = await window.storage.get(HOMEWORK_KEY, true);
+    homeworkItems = result ? JSON.parse(result.value) : [];
+  } catch (err) {
+    homeworkItems = [];
+  }
+  renderHomework();
+  renderHomeHomeworkPreview();
+}
+
+async function saveHomeworkItems() {
+  try {
+    await window.storage.set(HOMEWORK_KEY, JSON.stringify(homeworkItems), true);
+  } catch (err) {
+    console.error('Could not save homework items:', err);
+  }
+}
+
+function getHomeworkDueStatus(item) {
+  const now = new Date();
+  const nowKey = toDateKey(now);
+
+  let isOverdue;
+  if (item.dueTime) {
+    const nowTimeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    isOverdue = item.dueDate < nowKey || (item.dueDate === nowKey && item.dueTime < nowTimeStr);
+  } else {
+    isOverdue = item.dueDate < nowKey;
+  }
+  if (isOverdue) return 'overdue';
+
+  const tomorrowKey = toDateKey(addDaysToDate(now, 1));
+  if (item.dueDate === nowKey || item.dueDate === tomorrowKey) return 'due-soon';
+  return 'normal';
+}
+
+function formatHomeworkDueBadge(item) {
+  const status = getHomeworkDueStatus(item);
+  const dateLabel = item.dueDate === TODAY_KEY ? 'Today' : formatDateChip(item.dueDate);
+  const timeLabel = item.dueTime ? ` · ${formatTime12h(item.dueTime)}` : '';
+  const prefix = status === 'due-soon' ? '! ' : '';
+  return `<span class="homework-due-badge ${status}">${prefix}${dateLabel}${timeLabel}</span>`;
+}
+
+
+/* ============================================================
+   SCHOOL & HOMEWORKS — RENDERING
+   ============================================================ */
+
+function renderHomework() {
+  const activeListEl = document.getElementById('homework-active-list');
+  const completedListEl = document.getElementById('homework-completed-list');
+  const toggleBtn = document.getElementById('toggle-completed-homework-btn');
+  if (!activeListEl) return;
+
+  const active = homeworkItems
+    .filter(h => !h.completed)
+    .sort((a, b) => (a.dueDate + (a.dueTime || '')).localeCompare(b.dueDate + (b.dueTime || '')));
+
+  const completed = homeworkItems
+    .filter(h => h.completed)
+    .sort((a, b) => b.dueDate.localeCompare(a.dueDate));
+
+  activeListEl.innerHTML = active.length === 0
+    ? `<li class="empty-state" style="border:none;">Nothing due — add an assignment above.</li>`
+    : active.map(item => `
+        <li data-id="${item.id}">
+          <input type="checkbox" class="homework-toggle-checkbox" title="Mark complete" />
+          <span class="homework-item-main">
+            <div class="homework-subject">${escapeHtml(item.subject)}</div>
+            ${item.description ? `<div class="homework-description">${escapeHtml(item.description)}</div>` : ''}
+          </span>
+          ${formatHomeworkDueBadge(item)}
+          <button class="delete-btn" title="Remove">✕</button>
+        </li>
+      `).join('');
+
+  toggleBtn.textContent = `${completedHomeworkExpanded ? '▾' : '▸'} Completed (${completed.length})`;
+
+  completedListEl.innerHTML = completed.length === 0
+    ? `<li class="empty-state" style="border:none;">No completed items yet.</li>`
+    : completed.map(item => `
+        <li data-id="${item.id}">
+          <span class="homework-item-main">
+            <div class="homework-completed-subject">${escapeHtml(item.subject)}</div>
+            ${item.description ? `<div class="homework-description">${escapeHtml(item.description)}</div>` : ''}
+          </span>
+          <button class="btn-ghost" data-action="uncomplete" style="font-size: 12px; white-space: nowrap;">Un-complete</button>
+          <button class="delete-btn" title="Remove">✕</button>
+        </li>
+      `).join('');
+}
+
+function renderHomeHomeworkPreview() {
+  const homePreview = document.getElementById('home-homework-preview');
+  if (!homePreview) return;
+
+  const active = homeworkItems.filter(h => !h.completed);
+  if (active.length === 0) {
+    homePreview.innerHTML = `<span class="placeholder">Nothing due</span>`;
+    return;
+  }
+
+  const overdueCount = active.filter(h => getHomeworkDueStatus(h) === 'overdue').length;
+  const dueSoonCount = active.filter(h => getHomeworkDueStatus(h) === 'due-soon').length;
+
+  const parts = [`${active.length} due`];
+  if (overdueCount > 0) parts.push(`${overdueCount} overdue`);
+  if (dueSoonCount > 0) parts.push(`${dueSoonCount} due soon`);
+  homePreview.textContent = parts.join(' · ');
+}
+
+
+/* ============================================================
+   SCHOOL & HOMEWORKS — ACTIONS
+   ============================================================ */
+
+function addHomeworkItem() {
+  const subjectInput = document.getElementById('new-homework-subject');
+  const descriptionInput = document.getElementById('new-homework-description');
+  const dueDateInput = document.getElementById('new-homework-due-date');
+  const dueTimeInput = document.getElementById('new-homework-due-time');
+
+  const subject = subjectInput.value.trim();
+  const description = descriptionInput.value.trim();
+  const dueDate = dueDateInput.value;
+  const dueTime = dueTimeInput.value || '';
+
+  if (!subject || !dueDate) return;
+
+  homeworkItems.push({
+    id: crypto.randomUUID(),
+    subject, description, dueDate, dueTime,
+    completed: false
+  });
+
+  subjectInput.value = '';
+  descriptionInput.value = '';
+  dueDateInput.value = '';
+  dueTimeInput.value = '';
+  subjectInput.focus();
+
+  saveHomeworkItems();
+  renderHomework();
+  renderHomeHomeworkPreview();
+}
+
+function setHomeworkCompleted(id, completed) {
+  const item = homeworkItems.find(h => h.id === id);
+  if (!item) return;
+  item.completed = completed;
+  saveHomeworkItems();
+  renderHomework();
+  renderHomeHomeworkPreview();
+}
+
+function deleteHomeworkItem(id) {
+  homeworkItems = homeworkItems.filter(h => h.id !== id);
+  saveHomeworkItems();
+  renderHomework();
+  renderHomeHomeworkPreview();
+}
+
+
+/* ============================================================
+   SCHOOL & HOMEWORKS — WIRING UP EVENTS
+   ============================================================ */
+
+document.getElementById('add-homework-btn').addEventListener('click', addHomeworkItem);
+document.getElementById('new-homework-subject').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') addHomeworkItem();
+});
+document.getElementById('new-homework-description').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') addHomeworkItem();
+});
+
+document.getElementById('toggle-completed-homework-btn').addEventListener('click', () => {
+  completedHomeworkExpanded = !completedHomeworkExpanded;
+  document.getElementById('homework-completed-list').style.display = completedHomeworkExpanded ? 'block' : 'none';
+  renderHomework();
+});
+
+document.getElementById('homework-active-list').addEventListener('click', (e) => {
+  const li = e.target.closest('li[data-id]');
+  if (!li) return;
+  if (e.target.classList.contains('homework-toggle-checkbox')) {
+    setHomeworkCompleted(li.dataset.id, true);
+  } else if (e.target.classList.contains('delete-btn')) {
+    deleteHomeworkItem(li.dataset.id);
+  }
+});
+
+document.getElementById('homework-completed-list').addEventListener('click', (e) => {
+  const li = e.target.closest('li[data-id]');
+  if (!li) return;
+  if (e.target.dataset.action === 'uncomplete') {
+    setHomeworkCompleted(li.dataset.id, false);
+  } else if (e.target.classList.contains('delete-btn')) {
+    deleteHomeworkItem(li.dataset.id);
+  }
+});
+
+
+/* ============================================================
+   MEAL PLAN — DATA + STORAGE
+   ============================================================ */
+
+const MEAL_PLAN_KEY = 'lifehub:meal-plan';
+
+const MEAL_PLAN_DAYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+const MEAL_PLAN_DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const MEAL_PLAN_MEALS = ['breakfast', 'snack', 'lunch', 'dinner'];
+const MEAL_PLAN_MEAL_LABELS = ['🍳 Breakfast', '🍎 Snack', '🥗 Lunch', '🍽️ Dinner'];
+const MEAL_UNITS = ['g', 'kg', 'ml', 'l', 'tsp', 'tbsp', 'cup', 'oz', 'lb', 'pcs'];
+
+let mealPlan = {};
+
+function emptyMealCell() {
+  return { dish: '', ingredients: [], syncToShoppingList: false };
+}
+
+async function loadMealPlan() {
+  try {
+    const result = await window.storage.get(MEAL_PLAN_KEY, true);
+    mealPlan = result ? JSON.parse(result.value) : {};
+  } catch (err) {
+    mealPlan = {};
+  }
+
+  MEAL_PLAN_DAYS.forEach(day => {
+    if (!mealPlan[day]) mealPlan[day] = {};
+    MEAL_PLAN_MEALS.forEach(meal => {
+      const existing = mealPlan[day][meal];
+      if (!existing || typeof existing === 'string') {
+        mealPlan[day][meal] = { dish: (typeof existing === 'string' ? existing : ''), ingredients: [], syncToShoppingList: false };
+      } else {
+        if (existing.dish === undefined) existing.dish = '';
+        if (!Array.isArray(existing.ingredients)) existing.ingredients = [];
+        if (existing.syncToShoppingList === undefined) existing.syncToShoppingList = false;
+      }
+    });
+  });
+
+  renderMealPlanGrid();
+  renderHomeMealPlanPreview();
+}
+
+async function saveMealPlan() {
+  try {
+    await window.storage.set(MEAL_PLAN_KEY, JSON.stringify(mealPlan), true);
+  } catch (err) {
+    console.error('Could not save meal plan:', err);
+  }
+}
+
+function renderMealPlanGrid() {
+  const container = document.getElementById('meal-plan-grid');
+  if (!container) return;
+
+  let html = `<div class="meal-grid-corner"></div>`;
+  MEAL_PLAN_DAY_LABELS.forEach(label => {
+    html += `<div class="meal-grid-header">${label}</div>`;
+  });
+
+  MEAL_PLAN_MEALS.forEach((mealKey, i) => {
+    html += `<div class="meal-grid-row-label">${MEAL_PLAN_MEAL_LABELS[i]}</div>`;
+    MEAL_PLAN_DAYS.forEach(day => {
+      const cell = mealPlan[day][mealKey];
+      const dishHtml = cell.dish
+        ? `<div class="meal-cell-dish">${escapeHtml(cell.dish)}</div>`
+        : `<div class="meal-cell-empty">➕ Add</div>`;
+      const countHtml = cell.ingredients.length > 0
+        ? `<div class="meal-cell-ingredient-count">${cell.ingredients.length} ingredient${cell.ingredients.length === 1 ? '' : 's'}</div>`
+        : '';
+      html += `<div class="meal-grid-cell" data-day="${day}" data-meal="${mealKey}">${dishHtml}${countHtml}</div>`;
+    });
+  });
+
+  container.innerHTML = html;
+}
+
+function renderHomeMealPlanPreview() {
+  const homePreview = document.getElementById('home-mealplan-preview');
+  if (!homePreview) return;
+
+  const todayDayKey = MEAL_PLAN_DAYS[new Date().getDay()];
+  const todayMeals = mealPlan[todayDayKey] || {};
+  const plannedToday = MEAL_PLAN_MEALS
+    .map((mealKey, i) => todayMeals[mealKey] && todayMeals[mealKey].dish ? `${MEAL_PLAN_MEAL_LABELS[i]}: ${todayMeals[mealKey].dish}` : null)
+    .filter(Boolean);
+
+  homePreview.innerHTML = plannedToday.length === 0
+    ? `<span class="placeholder">Nothing planned for today</span>`
+    : plannedToday.join(' • ');
+}
+
+
+/* ============================================================
+   MEAL MODAL
+   ============================================================ */
+
+let editingMealDay = null;
+let editingMealType = null;
+let modalIngredients = [];
+
+function capitalize(word) {
+  return word.charAt(0).toUpperCase() + word.slice(1);
+}
+
+function openMealModal(day, mealType) {
+  editingMealDay = day;
+  editingMealType = mealType;
+  const cell = mealPlan[day][mealType];
+
+  document.getElementById('meal-modal-heading').textContent = `${capitalize(day)} — ${capitalize(mealType)}`;
+  document.getElementById('meal-modal-dish-input').value = cell.dish || '';
+  document.getElementById('meal-modal-sync-checkbox').checked = !!cell.syncToShoppingList;
+
+  modalIngredients = cell.ingredients.map(ing => ({ ...ing }));
+  renderMealModalIngredients();
+
+  document.getElementById('meal-modal-overlay').classList.add('open');
+  document.getElementById('meal-modal-dish-input').focus();
+}
+
+function closeMealModal() {
+  document.getElementById('meal-modal-overlay').classList.remove('open');
+  editingMealDay = null;
+  editingMealType = null;
+  modalIngredients = [];
+}
+
+function renderMealModalIngredients() {
+  const container = document.getElementById('meal-modal-ingredients-list');
+  if (modalIngredients.length === 0) {
+    container.innerHTML = `<div class="empty-state" style="border:none; padding:8px 2px;">No ingredients yet.</div>`;
+    return;
+  }
+
+  container.innerHTML = modalIngredients.map(ing => `
+    <div class="ingredient-row" data-ingredient-id="${ing.id}">
+      <input type="text" class="ingredient-name-input" placeholder="Ingredient" value="${escapeHtml(ing.name || '')}" />
+      <input type="number" class="ingredient-amount-input" placeholder="Amt" min="0" step="any" value="${ing.amount || ''}" />
+      <select class="ingredient-unit-select">
+        ${MEAL_UNITS.map(u => `<option value="${u}" ${u === ing.unit ? 'selected' : ''}>${u}</option>`).join('')}
+      </select>
+      <button class="delete-btn ingredient-delete-btn" title="Remove ingredient">✕</button>
+    </div>
+  `).join('');
+}
+
+function addIngredientRow() {
+  modalIngredients.push({ id: crypto.randomUUID(), name: '', amount: '', unit: MEAL_UNITS[0] });
+  renderMealModalIngredients();
+  const nameInputs = document.querySelectorAll('.ingredient-name-input');
+  if (nameInputs.length) nameInputs[nameInputs.length - 1].focus();
+}
+
+function deleteIngredientRow(id) {
+  modalIngredients = modalIngredients.filter(ing => ing.id !== id);
+  renderMealModalIngredients();
+}
+
+function saveMealModal() {
+  if (!editingMealDay || !editingMealType) return;
+
+  const dish = document.getElementById('meal-modal-dish-input').value.trim();
+  const syncChecked = document.getElementById('meal-modal-sync-checkbox').checked;
+
+  const cleanedIngredients = modalIngredients
+    .filter(ing => ing.name && ing.name.trim())
+    .map(ing => ({ id: ing.id, name: ing.name.trim(), amount: ing.amount || '', unit: ing.unit || MEAL_UNITS[0] }));
+
+  mealPlan[editingMealDay][editingMealType] = {
+    dish,
+    ingredients: cleanedIngredients,
+    syncToShoppingList: syncChecked
+  };
+
+  if (syncChecked) syncIngredientsToShoppingList(cleanedIngredients);
+
+  saveMealPlan();
+  renderMealPlanGrid();
+  renderHomeMealPlanPreview();
+  closeMealModal();
+}
+
+function clearMealModal() {
+  if (!editingMealDay || !editingMealType) return;
+  mealPlan[editingMealDay][editingMealType] = emptyMealCell();
+  saveMealPlan();
+  renderMealPlanGrid();
+  renderHomeMealPlanPreview();
+  closeMealModal();
+}
+
+function formatIngredientAsShoppingText(ing) {
+  return ing.name.trim();
+}
+
+function getShoppingLineNameKey(text) {
+  return text.trim().toLowerCase();
+}
+
+function syncIngredientsToShoppingList(ingredients) {
+  const existingNameKeys = new Set(shoppingItems.map(item => getShoppingLineNameKey(item.text)));
+  let addedAny = false;
+
+  ingredients.forEach(ing => {
+    const nameKey = ing.name.trim().toLowerCase();
+    if (existingNameKeys.has(nameKey)) return;
+
+    shoppingItems.push({
+      id: crypto.randomUUID(),
+      text: formatIngredientAsShoppingText(ing),
+      checked: false,
+      repeating: false
+    });
+    existingNameKeys.add(nameKey);
+    addedAny = true;
+  });
+
+  if (addedAny) {
+    saveShoppingItems();
+    renderShopping();
+  }
+}
+
+function syncAllMealsToShoppingList() {
+  const allIngredients = [];
+  MEAL_PLAN_DAYS.forEach(day => {
+    MEAL_PLAN_MEALS.forEach(meal => {
+      allIngredients.push(...mealPlan[day][meal].ingredients);
+    });
+  });
+
+  if (allIngredients.length === 0) return;
+  syncIngredientsToShoppingList(allIngredients);
+
+  const btn = document.getElementById('sync-all-meals-btn');
+  const originalText = btn.textContent;
+  btn.textContent = '✓ Synced';
+  setTimeout(() => { btn.textContent = originalText; }, 1500);
+}
+
+
+/* ============================================================
+   MEAL PLAN — WIRING UP EVENTS
+   ============================================================ */
+
+document.getElementById('sync-all-meals-btn').addEventListener('click', syncAllMealsToShoppingList);
+
+document.getElementById('meal-plan-grid').addEventListener('click', (e) => {
+  const cell = e.target.closest('.meal-grid-cell[data-day]');
+  if (!cell) return;
+  openMealModal(cell.dataset.day, cell.dataset.meal);
+});
+
+document.getElementById('meal-modal-add-ingredient-btn').addEventListener('click', addIngredientRow);
+
+document.getElementById('meal-modal-ingredients-list').addEventListener('input', (e) => {
+  const row = e.target.closest('.ingredient-row[data-ingredient-id]');
+  if (!row) return;
+  const ing = modalIngredients.find(i => i.id === row.dataset.ingredientId);
+  if (!ing) return;
+  if (e.target.classList.contains('ingredient-name-input')) ing.name = e.target.value;
+  else if (e.target.classList.contains('ingredient-amount-input')) ing.amount = e.target.value;
+});
+
+document.getElementById('meal-modal-ingredients-list').addEventListener('change', (e) => {
+  if (!e.target.classList.contains('ingredient-unit-select')) return;
+  const row = e.target.closest('.ingredient-row[data-ingredient-id]');
+  if (!row) return;
+  const ing = modalIngredients.find(i => i.id === row.dataset.ingredientId);
+  if (ing) ing.unit = e.target.value;
+});
+
+document.getElementById('meal-modal-ingredients-list').addEventListener('click', (e) => {
+  const btn = e.target.closest('.ingredient-delete-btn');
+  if (!btn) return;
+  const row = btn.closest('.ingredient-row[data-ingredient-id]');
+  deleteIngredientRow(row.dataset.ingredientId);
+});
+
+document.getElementById('meal-modal-save-btn').addEventListener('click', saveMealModal);
+document.getElementById('meal-modal-cancel-btn').addEventListener('click', closeMealModal);
+document.getElementById('meal-modal-clear-btn').addEventListener('click', clearMealModal);
+
+document.getElementById('meal-modal-overlay').addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) closeMealModal();
+});
+
+
+/* ============================================================
+   PART 5 — WIRING UP EVENTS (shopping list)
+   ============================================================ */
+
+document.getElementById('add-item-btn').addEventListener('click', addItem);
+
+document.getElementById('new-item-input').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') addItem();
+});
+
+document.getElementById('clear-checked-btn').addEventListener('click', clearChecked);
+
+document.getElementById('shopping-list').addEventListener('click', (e) => {
+  const li = e.target.closest('li[data-id]');
+  if (!li) return;
+  const id = li.dataset.id;
+
+  if (e.target.classList.contains('toggle-checkbox')) {
+    toggleItem(id);
+  } else if (e.target.classList.contains('delete-btn')) {
+    deleteItem(id);
+  }
+});
+
+
+/* ============================================================
+   CALENDAR — DATA + STORAGE
+   ============================================================ */
+
+const CALENDAR_KEY = 'lifehub:calendar-events';
+const MY_CALENDAR_EVENTS_KEY = 'lifehub:my-calendar-events';
+
+let calendarEvents = [];
+let myCalendarEvents = [];
+
+let familyCurrentMonthDate = new Date();
+familyCurrentMonthDate.setDate(1);
+let myCurrentMonthDate = new Date();
+myCurrentMonthDate.setDate(1);
+
+let showPersonalEventsInFamilyView = false;
+
+async function loadCalendarEvents() {
+  try {
+    const result = await window.storage.get(CALENDAR_KEY, true);
+    calendarEvents = result ? JSON.parse(result.value) : [];
+  } catch (err) {
+    calendarEvents = [];
+  }
+  renderCalendar('family');
+}
+
+async function loadMyCalendarEvents() {
+  try {
+    const result = await window.storage.get(MY_CALENDAR_EVENTS_KEY, true);
+    myCalendarEvents = result ? JSON.parse(result.value) : [];
+  } catch (err) {
+    myCalendarEvents = [];
+  }
+  renderCalendar('personal');
+}
+
+async function saveMyCalendarEvents() {
+  try {
+    await window.storage.set(MY_CALENDAR_EVENTS_KEY, JSON.stringify(myCalendarEvents), true);
+  } catch (err) {
+    console.error('Could not save personal calendar events:', err);
+  }
+}
+
+async function saveCalendarEvents() {
+  try {
+    await window.storage.set(CALENDAR_KEY, JSON.stringify(calendarEvents), true);
+  } catch (err) {
+    console.error('Could not save calendar events:', err);
+  }
+}
+
+
+/* ============================================================
+   BIRTHDAYS — DATA + STORAGE
+   ============================================================ */
+
+const BIRTHDAYS_KEY = 'lifehub:birthdays';
+
+let birthdays = [];
+
+async function loadBirthdays() {
+  try {
+    const result = await window.storage.get(BIRTHDAYS_KEY, true);
+    birthdays = result ? JSON.parse(result.value) : [];
+  } catch (err) {
+    birthdays = [];
+  }
+  renderBirthdays();
+  renderHomeBirthdaysPreview();
+}
+
+async function saveBirthdays() {
+  try {
+    await window.storage.set(BIRTHDAYS_KEY, JSON.stringify(birthdays), true);
+  } catch (err) {
+    console.error('Could not save birthdays:', err);
+  }
+}
+
+function nextBirthdayOccurrence(dateStr) {
+  const [birthYear, month, day] = dateStr.split('-').map(Number);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  let occurrence = new Date(today.getFullYear(), month - 1, day);
+  if (occurrence < today) {
+    occurrence = new Date(today.getFullYear() + 1, month - 1, day);
+  }
+
+  const turningAge = occurrence.getFullYear() - birthYear;
+  return { occurrence, turningAge };
+}
+
+
+/* ============================================================
+   CALENDAR — DATE HELPERS
+   ============================================================ */
+
+function toDateKey(date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+let TODAY_KEY = toDateKey(new Date());
+
+function checkForNewDay() {
+  const currentKey = toDateKey(new Date());
+  if (currentKey === TODAY_KEY) return;
+
+  TODAY_KEY = currentKey;
+
+  renderHomework();
+  renderHomeHomeworkPreview();
+  renderCalendarGrid('family');
+  renderUpcomingEvents('family');
+  renderHomeCalendarPreview('family');
+  renderCalendarGrid('personal');
+  renderUpcomingEvents('personal');
+  renderHomeCalendarPreview('personal');
+  renderBirthdays();
+  renderHomeBirthdaysPreview();
+
+  renderFitnessLog();
+  renderHomeFitnessPreview();
+  const workoutDateInput = document.getElementById('new-workout-date');
+  if (workoutDateInput) {
+    const newWeekStart = getStartOfWeekKey();
+    workoutDateInput.max = TODAY_KEY;
+    workoutDateInput.min = newWeekStart;
+    if (workoutDateInput.value && workoutDateInput.value < newWeekStart) {
+      workoutDateInput.value = TODAY_KEY;
+    }
+  }
+  refreshAnnualChartIfVisible();
+}
+
+const MONTH_NAMES = ['January','February','March','April','May','June',
+  'July','August','September','October','November','December'];
+
+function formatDateChip(dateKey) {
+  const [y, m, d] = dateKey.split('-').map(Number);
+  return `${MONTH_NAMES[m - 1].slice(0, 3)} ${d}`;
+}
+
+function formatTime12h(timeStr) {
+  if (!timeStr) return '';
+  let [h, min] = timeStr.split(':').map(Number);
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  h = h % 12 || 12;
+  return `${h}:${String(min).padStart(2, '0')} ${ampm}`;
+}
+
+function formatEventTimeLabel(ev) {
+  if (ev.allDay) return 'All day';
+  if (ev.startTime && ev.endTime) return `${formatTime12h(ev.startTime)} – ${formatTime12h(ev.endTime)}`;
+  if (ev.startTime) return formatTime12h(ev.startTime);
+  return '';
+}
+
+
+/* ============================================================
+   CALENDAR — COLOR OPTIONS
+   ============================================================ */
+const EVENT_COLORS = [
+  { name: 'Red',        hex: '#C0392B' },
+  { name: 'Orange',     hex: '#D97B3D' },
+  { name: 'Yellow',     hex: '#D9A441' },
+  { name: 'Green',      hex: '#3E6259' },
+  { name: 'Blue',       hex: '#4C7A94' },
+  { name: 'Purple',     hex: '#7A5C9E' },
+  { name: 'Pink',       hex: '#C97BA3' },
+  { name: 'Grey',       hex: '#7A8580' }
+];
+
+const DEFAULT_EVENT_COLOR = EVENT_COLORS[3].hex;
+
+
+/* ============================================================
+   CALENDAR — PUBLIC / BANK HOLIDAYS
+   ============================================================ */
+
+const HOLIDAY_SETS = {
+  UK: [
+    { name: "New Year's Day",                  type: 'fixed',       month: 1,  day: 1,  substitute: true },
+    { name: "Valentine's Day",                 type: 'fixed',       month: 2,  day: 14 },
+    { name: "Mother's Day (Mothering Sunday)", type: 'easterOffset', offset: -21 },
+    { name: 'Good Friday',                     type: 'easterOffset', offset: -2 },
+    { name: 'Easter Monday',                   type: 'easterOffset', offset: 1 },
+    { name: 'Early May Bank Holiday',          type: 'nthWeekday',   month: 5,  weekday: 1, n: 1 },
+    { name: 'Spring Bank Holiday',             type: 'nthWeekday',   month: 5,  weekday: 1, n: -1 },
+    { name: "Father's Day",                    type: 'nthWeekday',   month: 6,  weekday: 0, n: 3 },
+    { name: 'Summer Bank Holiday',             type: 'nthWeekday',   month: 8,  weekday: 1, n: -1 },
+    { name: 'Halloween',                       type: 'fixed',       month: 10, day: 31 },
+    { name: 'Christmas Day',                   type: 'fixed',       month: 12, day: 25, substitute: true },
+    { name: 'Boxing Day',                      type: 'fixed',       month: 12, day: 26, substitute: true },
+    { name: "New Year's Eve",                  type: 'fixed',       month: 12, day: 31 }
+  ]
+};
+
+let currentHolidayCountry = 'UK';
+
+function calculateEaster(year) {
+  const a = year % 19;
+  const b = Math.floor(year / 100);
+  const c = year % 100;
+  const d = Math.floor(b / 4);
+  const e = b % 4;
+  const f = Math.floor((b + 8) / 25);
+  const g = Math.floor((b - f + 1) / 3);
+  const h = (19 * a + b - d - g + 15) % 30;
+  const i = Math.floor(c / 4);
+  const k = c % 4;
+  const l = (32 + 2 * e + 2 * i - h - k) % 7;
+  const m = Math.floor((a + 11 * h + 22 * l) / 451);
+  const month = Math.floor((h + l - 7 * m + 114) / 31);
+  const day = ((h + l - 7 * m + 114) % 31) + 1;
+  return new Date(year, month - 1, day);
+}
+
+function nthWeekdayOfMonth(year, month, weekday, n) {
+  if (n > 0) {
+    const firstOfMonth = new Date(year, month, 1);
+    const firstWeekday = firstOfMonth.getDay();
+    const day = 1 + ((7 + weekday - firstWeekday) % 7) + (n - 1) * 7;
+    return new Date(year, month, day);
+  }
+  const lastDayNum = new Date(year, month + 1, 0).getDate();
+  const lastOfMonth = new Date(year, month, lastDayNum);
+  const lastWeekday = lastOfMonth.getDay();
+  const day = lastDayNum - ((7 + lastWeekday - weekday) % 7);
+  return new Date(year, month, day);
+}
+
+function addDaysToDate(date, days) {
+  const result = new Date(date);
+  result.setDate(result.getDate() + days);
+  return result;
+}
+
+function resolveHolidaysForYear(year, countryCode) {
+  const rules = HOLIDAY_SETS[countryCode] || [];
+  const results = [];
+
+  rules.forEach(rule => {
+    let date;
+    if (rule.type === 'fixed') {
+      date = new Date(year, rule.month - 1, rule.day);
+    } else if (rule.type === 'nthWeekday') {
+      date = nthWeekdayOfMonth(year, rule.month - 1, rule.weekday, rule.n);
+    } else if (rule.type === 'easterOffset') {
+      date = addDaysToDate(calculateEaster(year), rule.offset);
+    } else {
+      return;
+    }
+
+    results.push({ dateKey: toDateKey(date), name: rule.name });
+
+    if (rule.substitute) {
+      const weekday = date.getDay();
+      if (weekday === 0) {
+        results.push({ dateKey: toDateKey(addDaysToDate(date, 1)), name: `${rule.name} (substitute)` });
+      } else if (weekday === 6) {
+        results.push({ dateKey: toDateKey(addDaysToDate(date, 2)), name: `${rule.name} (substitute)` });
+      }
+    }
+  });
+
+  return results;
+}
+
+const holidayCache = new Map();
+
+function getHolidaysForDate(dateKey) {
+  const year = Number(dateKey.slice(0, 4));
+  const cacheKey = `${currentHolidayCountry}-${year}`;
+
+  if (!holidayCache.has(cacheKey)) {
+    holidayCache.set(cacheKey, resolveHolidaysForYear(year, currentHolidayCountry));
+  }
+
+  return holidayCache.get(cacheKey)
+    .filter(h => h.dateKey === dateKey)
+    .map(h => h.name);
+}
+
+
+/* ============================================================
+   CALENDAR — BUILDING A FULL MONTH OF WEEKS
+   ============================================================ */
+function getMonthWeeks(year, month) {
+  const firstOfMonth = new Date(year, month, 1);
+  const firstWeekday = firstOfMonth.getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const totalCells = Math.ceil((firstWeekday + daysInMonth) / 7) * 7;
+
+  const cursor = new Date(year, month, 1 - firstWeekday);
+
+  const weeks = [];
+  for (let w = 0; w < totalCells / 7; w++) {
+    const week = [];
+    for (let d = 0; d < 7; d++) {
+      week.push({
+        dateKey: toDateKey(cursor),
+        dayNumber: cursor.getDate(),
+        inCurrentMonth: cursor.getMonth() === month
+      });
+      cursor.setDate(cursor.getDate() + 1);
+    }
+    weeks.push(week);
+  }
+  return weeks;
+}
+
+
+/* ============================================================
+   CALENDAR — LANE PACKING
+   ============================================================ */
+const MAX_LANES = 3;
+const DAY_NUMBER_HEIGHT = 20;
+const BAR_HEIGHT = 16;
+const BAR_GAP = 3;
+
+function computeWeekPlacements(weekDateKeys, events) {
+  const weekStart = weekDateKeys[0];
+  const weekEnd = weekDateKeys[6];
+
+  const overlapping = events
+    .filter(ev => ev.endDate >= weekStart && ev.startDate <= weekEnd)
+    .sort((a, b) => {
+      if (a.startDate !== b.startDate) return a.startDate.localeCompare(b.startDate);
+      return a.endDate < b.endDate ? 1 : -1;
+    });
+
+  const laneEndCols = [];
+  const placements = [];
+
+  overlapping.forEach(ev => {
+    const clippedStart = ev.startDate < weekStart ? weekStart : ev.startDate;
+    const clippedEnd = ev.endDate > weekEnd ? weekEnd : ev.endDate;
+    const startCol = weekDateKeys.indexOf(clippedStart);
+    const endCol = weekDateKeys.indexOf(clippedEnd);
+
+    let lane = laneEndCols.findIndex(endColOfLane => endColOfLane < startCol);
+    if (lane === -1) {
+      lane = laneEndCols.length;
+      laneEndCols.push(endCol);
+    } else {
+      laneEndCols[lane] = endCol;
+    }
+
+    placements.push({
+      event: ev,
+      startCol,
+      endCol,
+      lane,
+      isTrueStart: clippedStart === ev.startDate,
+      isTrueEnd: clippedEnd === ev.endDate
+    });
+  });
+
+  return placements;
+}
+
+
+/* ============================================================
+   CALENDAR — RENDERING
+   ============================================================ */
+
+const CALENDAR_CONTEXTS = {
+  family: {
+    gridId: 'calendar-grid',
+    monthLabelId: 'calendar-month-label',
+    upcomingListId: 'upcoming-events-list',
+    homePreviewId: 'home-calendar-preview',
+    getMonthDate: () => familyCurrentMonthDate,
+    setMonthDate: (d) => { familyCurrentMonthDate = d; }
+  },
+  personal: {
+    gridId: 'my-calendar-grid',
+    monthLabelId: 'my-calendar-month-label',
+    upcomingListId: 'my-upcoming-events-list',
+    homePreviewId: 'home-my-calendar-preview',
+    getMonthDate: () => myCurrentMonthDate,
+    setMonthDate: (d) => { myCurrentMonthDate = d; }
+  }
+};
+
+function getEventsForContext(which) {
+  if (which === 'personal') {
+    return currentMemberId ? myCalendarEvents.filter(ev => ev.memberId === currentMemberId) : [];
+  }
+  if (showPersonalEventsInFamilyView && currentMemberId) {
+    const overlay = myCalendarEvents
+      .filter(ev => ev.memberId === currentMemberId)
+      .map(ev => ({ ...ev, isPersonalOverlay: true }));
+    return [...calendarEvents, ...overlay];
+  }
+  return calendarEvents;
+}
+
+function renderCalendar(which) {
+  renderCalendarGrid(which);
+  renderUpcomingEvents(which);
+  renderHomeCalendarPreview(which);
+}
+
+function renderCalendarGrid(which) {
+  const ctx = CALENDAR_CONTEXTS[which];
+  const monthDate = ctx.getMonthDate();
+  const year = monthDate.getFullYear();
+  const month = monthDate.getMonth();
+
+  document.getElementById(ctx.monthLabelId).textContent =
+    `${MONTH_NAMES[month]} ${year}`;
+
+  const weeks = getMonthWeeks(year, month);
+  const events = getEventsForContext(which);
+
+  const weeksHtml = weeks.map(week => {
+    const weekDateKeys = week.map(d => d.dateKey);
+    const placements = computeWeekPlacements(weekDateKeys, events);
+
+    const overflowCounts = new Array(7).fill(0);
+    const visiblePlacements = [];
+    placements.forEach(p => {
+      if (p.lane < MAX_LANES) {
+        visiblePlacements.push(p);
+      } else {
+        for (let c = p.startCol; c <= p.endCol; c++) overflowCounts[c]++;
+      }
+    });
+
+    const barsHtml = visiblePlacements.map(p => {
+      const leftPct = (p.startCol / 7) * 100;
+      const widthPct = ((p.endCol - p.startCol + 1) / 7) * 100;
+      const topPx = DAY_NUMBER_HEIGHT + p.lane * (BAR_HEIGHT + BAR_GAP);
+      const radius = `${p.isTrueStart ? '4px' : '0'} ${p.isTrueEnd ? '4px' : '0'} ${p.isTrueEnd ? '4px' : '0'} ${p.isTrueStart ? '4px' : '0'}`;
+      const label = p.isTrueStart ? escapeHtml(p.event.title) : '';
+      const idAttr = p.event.isPersonalOverlay ? '' : `data-id="${p.event.id}"`;
+      const overlayClass = p.event.isPersonalOverlay ? ' event-bar-personal-overlay' : '';
+      return `<div class="event-bar${overlayClass}" ${idAttr} style="left:${leftPct}%; width:calc(${widthPct}% - 2px); top:${topPx}px; background-color:${p.event.color || DEFAULT_EVENT_COLOR}; border-radius:${radius};">${label}</div>`;
+    }).join('');
+
+    const daysHtml = week.map((d, colIdx) => {
+      const isToday = d.dateKey === TODAY_KEY;
+      const holidayNames = getHolidaysForDate(d.dateKey);
+      const overflow = overflowCounts[colIdx];
+      const barsAreaHeight = DAY_NUMBER_HEIGHT + MAX_LANES * (BAR_HEIGHT + BAR_GAP);
+
+      return `
+        <div class="day-cell ${isToday ? 'today' : ''} ${d.inCurrentMonth ? '' : 'other-month'}" data-date="${d.dateKey}">
+          <span class="day-number">${d.dayNumber}</span>
+          ${overflow > 0 ? `<span class="overflow-label" style="margin-top:${barsAreaHeight - DAY_NUMBER_HEIGHT}px;">+${overflow} more</span>` : ''}
+          ${holidayNames.length ? `<span class="holiday-label">${escapeHtml(holidayNames.join(', '))}</span>` : ''}
+        </div>
+      `;
+    }).join('');
+
+    return `<div class="calendar-week">${daysHtml}<div class="week-events-layer">${barsHtml}</div></div>`;
+  }).join('');
+
+  document.getElementById(ctx.gridId).innerHTML = `<div class="calendar-weeks">${weeksHtml}</div>`;
+}
+
+function formatEventDateRange(ev) {
+  const startLabel = ev.startDate === TODAY_KEY ? 'Today' : formatDateChip(ev.startDate);
+  if (ev.endDate === ev.startDate) return startLabel;
+  return `${startLabel} – ${formatDateChip(ev.endDate)}`;
+}
+
+function renderUpcomingEvents(which) {
+  const ctx = CALENDAR_CONTEXTS[which];
+  const list = document.getElementById(ctx.upcomingListId);
+  const events = getEventsForContext(which);
+
+  const upcoming = events
+    .filter(ev => ev.endDate >= TODAY_KEY)
+    .sort((a, b) => (a.startDate + (a.startTime || '')).localeCompare(b.startDate + (b.startTime || '')));
+
+  if (upcoming.length === 0) {
+    list.innerHTML = `<li class="empty-state" style="border:none;">No upcoming events yet.</li>`;
+    return;
+  }
+
+  list.innerHTML = upcoming.map(ev => `
+    <li data-id="${ev.isPersonalOverlay ? '' : ev.id}">
+      <span class="event-date-chip">${formatEventDateRange(ev)}</span>
+      <span class="color-swatch" style="width:12px; height:12px; background-color: ${ev.color || DEFAULT_EVENT_COLOR}; flex-shrink:0;"></span>
+      <span class="event-info">
+        <div class="event-title">${escapeHtml(ev.title)}</div>
+        <div class="event-time">${formatEventTimeLabel(ev)}</div>
+      </span>
+      ${ev.isPersonalOverlay ? `<span class="personal-overlay-badge">Personal</span>` : `<button class="delete-btn" title="Remove">✕</button>`}
+    </li>
+  `).join('');
+}
+
+function renderHomeCalendarPreview(which) {
+  const ctx = CALENDAR_CONTEXTS[which];
+  const homePreview = document.getElementById(ctx.homePreviewId);
+  if (!homePreview) return;
+
+  if (which === 'personal' && !currentMemberId) {
+    homePreview.innerHTML = `<span class="placeholder">Pick who you are to see your calendar</span>`;
+    return;
+  }
+
+  const sourceEvents = which === 'personal'
+    ? myCalendarEvents.filter(ev => ev.memberId === currentMemberId)
+    : calendarEvents;
+
+  const upcoming = sourceEvents
+    .filter(ev => ev.endDate >= TODAY_KEY)
+    .sort((a, b) => (a.startDate + (a.startTime || '')).localeCompare(b.startDate + (b.startTime || '')))
+    .slice(0, 3);
+
+  if (upcoming.length === 0) {
+    homePreview.innerHTML = `<span class="placeholder">Nothing scheduled</span>`;
+    return;
+  }
+
+  homePreview.textContent = upcoming
+    .map(ev => `${ev.startDate === TODAY_KEY ? 'Today' : formatDateChip(ev.startDate)}: ${ev.title}`)
+    .join(' • ');
+}
+
+
+/* ============================================================
+   BIRTHDAYS — RENDERING
+   ============================================================ */
+
+function renderBirthdays() {
+  const list = document.getElementById('birthdays-list');
+
+  if (birthdays.length === 0) {
+    list.innerHTML = `<li class="empty-state" style="border:none; cursor: default;">No birthdays yet. Add one from the Calendar by ticking "This is a birthday" on an event.</li>`;
+    return;
+  }
+
+  const sorted = [...birthdays].sort((a, b) => {
+    return nextBirthdayOccurrence(a.date).occurrence - nextBirthdayOccurrence(b.date).occurrence;
+  });
+
+  list.innerHTML = sorted.map(bday => {
+    const { occurrence, turningAge } = nextBirthdayOccurrence(bday.date);
+    const dateLabel = `${MONTH_NAMES[occurrence.getMonth()].slice(0, 3)} ${occurrence.getDate()}`;
+    const ageLabel = turningAge > 0 ? ` · turning ${turningAge}` : '';
+    return `
+      <li data-event-id="${bday.eventId}">
+        <span class="event-date-chip">${dateLabel}</span>
+        <span class="event-info">
+          <div class="event-title">🎂 ${escapeHtml(bday.name)}</div>
+          <div class="event-time">${dateLabel}${ageLabel}</div>
+        </span>
+      </li>
+    `;
+  }).join('');
+}
+
+function renderHomeBirthdaysPreview() {
+  const homePreview = document.getElementById('home-birthdays-preview');
+
+  if (birthdays.length === 0) {
+    homePreview.innerHTML = `<span class="placeholder">No birthdays added yet</span>`;
+    return;
+  }
+
+  const upcoming = [...birthdays]
+    .sort((a, b) => nextBirthdayOccurrence(a.date).occurrence - nextBirthdayOccurrence(b.date).occurrence)
+    .slice(0, 3);
+
+  homePreview.textContent = upcoming.map(bday => {
+    const { occurrence } = nextBirthdayOccurrence(bday.date);
+    const label = `${MONTH_NAMES[occurrence.getMonth()].slice(0, 3)} ${occurrence.getDate()}`;
+    return `${bday.name} (${label})`;
+  }).join(' • ');
+}
+
+
+/* ============================================================
+   FAMILY WISHLISTS — DATA + STORAGE
+   ============================================================ */
+
+const FAMILY_MEMBERS_KEY = 'lifehub:family-members';
+const WISHLIST_ITEMS_KEY = 'lifehub:wishlist-items';
+const MY_MEMBER_ID_KEY = 'lifehub:my-member-id';
+
+let familyMembers = [];
+let wishlistItems = [];
+let currentMemberId = null;
+
+async function loadFamilyMembers() {
+  try {
+    const result = await window.storage.get(FAMILY_MEMBERS_KEY, true);
+    familyMembers = result ? JSON.parse(result.value) : [];
+  } catch (err) {
+    familyMembers = [];
+  }
+}
+
+async function saveFamilyMembers() {
+  try {
+    await window.storage.set(FAMILY_MEMBERS_KEY, JSON.stringify(familyMembers), true);
+  } catch (err) {
+    console.error('Could not save family members:', err);
+  }
+}
+
+async function loadWishlistItems() {
+  try {
+    const result = await window.storage.get(WISHLIST_ITEMS_KEY, true);
+    wishlistItems = result ? JSON.parse(result.value) : [];
+  } catch (err) {
+    wishlistItems = [];
+  }
+}
+
+async function saveWishlistItems() {
+  try {
+    await window.storage.set(WISHLIST_ITEMS_KEY, JSON.stringify(wishlistItems), true);
+  } catch (err) {
+    console.error('Could not save wishlist items:', err);
+  }
+}
+
+async function loadCurrentMember() {
+  try {
+    const result = await window.storage.get(MY_MEMBER_ID_KEY, false);
+    currentMemberId = result ? JSON.parse(result.value) : null;
+  } catch (err) {
+    currentMemberId = null;
+  }
+}
+
+async function saveCurrentMember() {
+  try {
+    await window.storage.set(MY_MEMBER_ID_KEY, JSON.stringify(currentMemberId), false);
+  } catch (err) {
+    console.error('Could not save current member:', err);
+  }
+}
+
+
+/* ============================================================
+   FAMILY WISHLISTS — RENDERING
+   ============================================================ */
+
+const AVATAR_COLORS = ['#D9A441', '#4C7A94', '#8C4A63', '#6B8F5A', '#C0392B', '#7A5C9E'];
+
+function renderTopbarFamily() {
+  const container = document.getElementById('topbar-family-avatars');
+  if (!container) return;
+
+  if (familyMembers.length === 0) {
+    container.innerHTML = `<span style="color: rgba(255,255,255,0.6); font-size: 12px;">Add family members on the Wishlists tab</span>`;
+    return;
+  }
+
+  container.innerHTML = familyMembers.map((m, i) => {
+    const color = AVATAR_COLORS[i % AVATAR_COLORS.length];
+    const initial = (m.name.trim().charAt(0) || '?').toUpperCase();
+    const isYou = m.id === currentMemberId;
+    return `
+      <div class="family-avatar-chip ${isYou ? 'is-you' : ''}">
+        <div class="family-avatar-circle" style="background-color: ${color};">${escapeHtml(initial)}</div>
+        <span class="family-avatar-name">${escapeHtml(m.name)}</span>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderWhoamiSelect() {
+  const select = document.getElementById('whoami-select');
+
+  if (familyMembers.length === 0) {
+    select.innerHTML = `<option value="">Add a family member first</option>`;
+    select.disabled = true;
+    return;
+  }
+
+  select.disabled = false;
+  select.innerHTML = familyMembers
+    .map(m => `<option value="${m.id}" ${m.id === currentMemberId ? 'selected' : ''}>${escapeHtml(m.name)}</option>`)
+    .join('');
+}
+
+function renderWishlists() {
+  const container = document.getElementById('wishlists-container');
+
+  if (familyMembers.length === 0) {
+    container.innerHTML = `<div class="empty-state" style="border:none;">No family members added yet — add everyone using "+ Add" above to start building wishlists.</div>`;
+    return;
+  }
+
+  const orderedMembers = [...familyMembers].sort((a, b) => {
+    if (a.id === currentMemberId) return -1;
+    if (b.id === currentMemberId) return 1;
+    return 0;
+  });
+
+  container.innerHTML = orderedMembers.map(member => {
+    const isOwner = member.id === currentMemberId;
+    const items = wishlistItems.filter(item => item.memberId === member.id);
+
+    let itemsHtml;
+
+    if (items.length === 0) {
+      itemsHtml = `<div class="empty-state" style="border:none; padding:10px 2px;">${
+        isOwner ? "You haven't added anything yet." : `${escapeHtml(member.name)} hasn't added anything yet.`
+      }</div>`;
+
+    } else if (isOwner) {
+      itemsHtml = `<ul class="wishlist-items">` + items.map(item => `
+        <li data-item-id="${item.id}">
+          <span class="wishlist-item-text">${escapeHtml(item.text)}</span>
+          <button class="delete-btn" title="Remove">✕</button>
+        </li>
+      `).join('') + `</ul>`;
+
+    } else {
+      itemsHtml = `<ul class="wishlist-items">` + items.map(item => {
+        let actionHtml;
+        if (!item.reservedBy) {
+          actionHtml = `<button class="reserve-btn" data-item-id="${item.id}" data-action="reserve">Reserve</button>`;
+        } else if (item.reservedBy === currentMemberId) {
+          actionHtml = `<button class="reserve-btn reserved-by-you" data-item-id="${item.id}" data-action="unreserve">✓ You're getting this</button>`;
+        } else {
+          const reserverName = (familyMembers.find(m => m.id === item.reservedBy) || {}).name || 'Someone';
+          actionHtml = `<span class="reserve-label-taken">Reserved by ${escapeHtml(reserverName)}</span>`;
+        }
+        return `
+          <li data-item-id="${item.id}">
+            <span class="wishlist-item-text">${escapeHtml(item.text)}</span>
+            ${actionHtml}
+          </li>
+        `;
+      }).join('') + `</ul>`;
+    }
+
+    const addButtonLabel = (isOwner && items.length === 0) ? '🎁 Create My Wishlist' : 'Add';
+    const addRowHtml = isOwner ? `
+      <div class="wishlist-add-row">
+        <input type="text" class="wishlist-new-item-input" placeholder="Add something you'd like…" />
+        <button class="btn-primary wishlist-add-btn" data-member-id="${member.id}">${addButtonLabel}</button>
+      </div>
+    ` : '';
+
+    return `
+      <div class="wishlist-card" data-member-id="${member.id}">
+        <div class="wishlist-card-header">
+          🎁 ${isOwner ? 'My Wishlist' : `${escapeHtml(member.name)}'s Wishlist`}
+          ${isOwner ? '<span class="wishlist-you-badge">Yours — reservations hidden from you</span>' : ''}
+        </div>
+        ${itemsHtml}
+        ${addRowHtml}
+      </div>
+    `;
+  }).join('');
+}
+
+
+/* ============================================================
+   FAMILY WISHLISTS — ACTIONS
+   ============================================================ */
+
+function addFamilyMember() {
+  const input = document.getElementById('new-family-member-input');
+  const name = input.value.trim();
+  if (!name) return;
+
+  const newMember = { id: crypto.randomUUID(), name };
+  familyMembers.push(newMember);
+
+  if (!currentMemberId) {
+    currentMemberId = newMember.id;
+    saveCurrentMember();
+  }
+
+  input.value = '';
+  saveFamilyMembers();
+  renderWhoamiSelect();
+  renderWishlists();
+  renderTopbarFamily();
+  renderNotesList();
+  renderHomeNotesPreview();
+  renderFitnessLog();
+  renderHomeFitnessPreview();
+  refreshAnnualChartIfVisible();
+  renderWorkoutPlan();
+  renderCalendar('personal');
+}
+
+function setCurrentMember(id) {
+  currentMemberId = id || null;
+  saveCurrentMember();
+  renderWishlists();
+  renderTopbarFamily();
+
+  activeNoteId = null;
+  document.getElementById('notes-editor-subview').style.display = 'none';
+  document.getElementById('notes-list-subview').style.display = 'block';
+
+  renderNotesList();
+  renderHomeNotesPreview();
+  viewedWeekOffset = 0;
+  renderFitnessLog();
+  renderHomeFitnessPreview();
+  refreshAnnualChartIfVisible();
+  renderWorkoutPlan();
+
+  renderCalendar('personal');
+  renderCalendarGrid('family');
+  renderUpcomingEvents('family');
+}
+
+function addWishlistItem(memberId, text) {
+  wishlistItems.push({ id: crypto.randomUUID(), memberId, text, reservedBy: null });
+  saveWishlistItems();
+  renderWishlists();
+}
+
+function deleteWishlistItem(id) {
+  const item = wishlistItems.find(i => i.id === id);
+  if (!item || item.memberId !== currentMemberId) return;
+  wishlistItems = wishlistItems.filter(i => i.id !== id);
+  saveWishlistItems();
+  renderWishlists();
+}
+
+function reserveItem(id) {
+  const item = wishlistItems.find(i => i.id === id);
+  if (!item) return;
+  if (item.memberId === currentMemberId) return;
+  if (item.reservedBy) return;
+  item.reservedBy = currentMemberId;
+  saveWishlistItems();
+  renderWishlists();
+}
+
+function unreserveItem(id) {
+  const item = wishlistItems.find(i => i.id === id);
+  if (!item) return;
+  if (item.reservedBy !== currentMemberId) return;
+  item.reservedBy = null;
+  saveWishlistItems();
+  renderWishlists();
+}
+
+
+/* ============================================================
+   FAMILY WISHLISTS — DEMO / TEST DATA
+   ============================================================ */
+
+function buildDemoData() {
+  const members = [
+    { id: 'demo-a', name: 'A' },
+    { id: 'demo-f', name: 'F' },
+    { id: 'demo-b', name: 'B' },
+    { id: 'demo-g', name: 'G' }
+  ];
+
+  const items = [
+    { id: crypto.randomUUID(), memberId: 'demo-a', text: 'Cookbook', reservedBy: null },
+    { id: crypto.randomUUID(), memberId: 'demo-a', text: 'Wireless earbuds', reservedBy: 'demo-f' },
+    { id: crypto.randomUUID(), memberId: 'demo-f', text: 'Board game', reservedBy: 'demo-b' },
+    { id: crypto.randomUUID(), memberId: 'demo-f', text: 'Running shoes', reservedBy: null },
+    { id: crypto.randomUUID(), memberId: 'demo-b', text: 'Sci-fi novel', reservedBy: 'demo-g' },
+    { id: crypto.randomUUID(), memberId: 'demo-b', text: 'Coffee grinder', reservedBy: 'demo-a' }
+  ];
+
+  return { members, items, youId: 'demo-g' };
+}
+
+async function seedDemoDataIfEmpty() {
+  if (familyMembers.length > 0) return;
+
+  const demo = buildDemoData();
+  familyMembers = demo.members;
+  wishlistItems = demo.items;
+  currentMemberId = demo.youId;
+
+  await saveFamilyMembers();
+  await saveWishlistItems();
+  await saveCurrentMember();
+}
+
+async function resetDemoData() {
+  const demo = buildDemoData();
+  familyMembers = demo.members;
+  wishlistItems = demo.items;
+  currentMemberId = demo.youId;
+
+  await saveFamilyMembers();
+  await saveWishlistItems();
+  await saveCurrentMember();
+
+  renderWhoamiSelect();
+  renderWishlists();
+  renderTopbarFamily();
+}
+
+
+/* ============================================================
+   FAMILY WISHLISTS — WIRING UP EVENTS
+   ============================================================ */
+
+document.querySelectorAll('.subtab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.subtab-btn').forEach(b => b.classList.toggle('active', b === btn));
+    document.querySelectorAll('.subtab-panel').forEach(p => {
+      p.classList.toggle('active', p.id === 'birthdays-subtab-' + btn.dataset.subtab);
+    });
+  });
+});
+
+document.getElementById('whoami-select').addEventListener('change', (e) => {
+  setCurrentMember(e.target.value);
+});
+
+document.getElementById('add-family-member-btn').addEventListener('click', addFamilyMember);
+document.getElementById('new-family-member-input').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') addFamilyMember();
+});
+
+document.getElementById('reset-demo-btn').addEventListener('click', resetDemoData);
+
+document.getElementById('wishlists-container').addEventListener('click', (e) => {
+  if (e.target.classList.contains('wishlist-add-btn')) {
+    const card = e.target.closest('.wishlist-card');
+    const input = card.querySelector('.wishlist-new-item-input');
+    const text = input.value.trim();
+    if (text) addWishlistItem(e.target.dataset.memberId, text);
+    return;
+  }
+
+  if (e.target.classList.contains('delete-btn')) {
+    const li = e.target.closest('li[data-item-id]');
+    if (li) deleteWishlistItem(li.dataset.itemId);
+    return;
+  }
+
+  if (e.target.dataset.action === 'reserve') {
+    reserveItem(e.target.dataset.itemId);
+    return;
+  }
+
+  if (e.target.dataset.action === 'unreserve') {
+    unreserveItem(e.target.dataset.itemId);
+    return;
+  }
+});
+
+document.getElementById('wishlists-container').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && e.target.classList.contains('wishlist-new-item-input')) {
+    const card = e.target.closest('.wishlist-card');
+    const btn = card.querySelector('.wishlist-add-btn');
+    if (btn) btn.click();
+  }
+});
+
+
+/* ============================================================
+   PERSONAL — NOTES + FITNESS TRACKER
+   ============================================================ */
+
+const NOTES_KEY = 'lifehub:notes';
+const FITNESS_LOG_KEY = 'lifehub:fitness-log';
+
+let notes = [];
+let fitnessLog = [];
+
+async function loadNotes() {
+  try {
+    const result = await window.storage.get(NOTES_KEY, true);
+    notes = result ? JSON.parse(result.value) : [];
+  } catch (err) {
+    notes = [];
+  }
+}
+
+async function saveNotes() {
+  try {
+    await window.storage.set(NOTES_KEY, JSON.stringify(notes), true);
+  } catch (err) {
+    console.error('Could not save notes:', err);
+  }
+}
+
+async function loadFitnessLog() {
+  try {
+    const result = await window.storage.get(FITNESS_LOG_KEY, true);
+    fitnessLog = result ? JSON.parse(result.value) : [];
+  } catch (err) {
+    fitnessLog = [];
+  }
+}
+
+async function saveFitnessLog() {
+  try {
+    await window.storage.set(FITNESS_LOG_KEY, JSON.stringify(fitnessLog), true);
+  } catch (err) {
+    console.error('Could not save fitness log:', err);
+  }
+}
+
+let activeNoteId = null;
+
+function myNotes() {
+  if (!currentMemberId) return [];
+  return notes.filter(n => n.memberId === currentMemberId);
+}
+
+function findMyNote(id) {
+  const note = notes.find(n => n.id === id);
+  if (!note || note.memberId !== currentMemberId) return null;
+  return note;
+}
+
+function renderNotesList() {
+  const grid = document.getElementById('notes-page-grid');
+  if (!grid) return;
+
+  const pages = [...myNotes()].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+
+  if (!currentMemberId) {
+    grid.innerHTML = `<div class="empty-state" style="border:none;">Pick who you are on the Birthdays → Family Wishlists tab first.</div>`;
+    return;
+  }
+
+  if (pages.length === 0) {
+    grid.innerHTML = `<div class="empty-state" style="border:none;">No notes yet — tap "+ New Note" to start your first page.</div>`;
+    return;
+  }
+
+  grid.innerHTML = pages.map(page => {
+    const snippetSource = page.blocks.find(b => b.text.trim()) || { text: '' };
+    return `
+      <div class="note-page-card" data-id="${page.id}">
+        <div class="note-page-title">${escapeHtml(page.title || 'Untitled')}</div>
+        <div class="note-page-snippet">${escapeHtml(snippetSource.text)}</div>
+        <div class="note-page-date">${new Date(page.updatedAt).toLocaleDateString()}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderHomeNotesPreview() {
+  const homePreview = document.getElementById('home-notes-preview');
+  if (!homePreview) return;
+
+  if (!currentMemberId) {
+    homePreview.innerHTML = `<span class="placeholder">Pick who you are to see your notes</span>`;
+    return;
+  }
+
+  const count = myNotes().length;
+  homePreview.innerHTML = count === 0
+    ? `<span class="placeholder">No notes yet</span>`
+    : `${count} note${count === 1 ? '' : 's'}`;
+}
+
+function createNewNote() {
+  if (!currentMemberId) return;
+  const note = {
+    id: crypto.randomUUID(),
+    memberId: currentMemberId,
+    title: '',
+    blocks: [{ id: crypto.randomUUID(), type: 'body', text: '' }],
+    strokes: [],
+    updatedAt: new Date().toISOString()
+  };
+  notes.push(note);
+  saveNotes();
+  openNoteEditor(note.id);
+}
+
+function openNoteEditor(id) {
+  const note = findMyNote(id);
+  if (!note) return;
+
+  activeNoteId = id;
+  focusedBlockId = null;
+  undoStack = [];
+  redoStack = [];
+  document.getElementById('notes-list-subview').style.display = 'none';
+  document.getElementById('notes-editor-subview').style.display = 'block';
+
+  renderNoteEditor();
+  setTool('type');
+  updateUndoRedoButtons();
+
+  resizeCanvasToPage();
+  setupPageResizeObserver();
+}
+
+function closeNoteEditor() {
+  teardownPageResizeObserver();
+  activeNoteId = null;
+  document.getElementById('notes-editor-subview').style.display = 'none';
+  document.getElementById('notes-list-subview').style.display = 'block';
+  renderNotesList();
+  renderHomeNotesPreview();
+}
+
+let focusedBlockId = null;
+
+function renderNoteEditor() {
+  const note = findMyNote(activeNoteId);
+  if (!note) { closeNoteEditor(); return; }
+
+  document.getElementById('note-title-input').value = note.title;
+
+  const blocksContainer = document.getElementById('note-blocks-container');
+  blocksContainer.innerHTML = note.blocks.map(block => `
+    <div class="note-block" data-block-id="${block.id}">
+      <div class="block-text block-type-${block.type}" contenteditable="true" data-placeholder="Type here…">${escapeHtml(block.text)}</div>
+    </div>
+  `).join('');
+
+  if (!focusedBlockId || !note.blocks.some(b => b.id === focusedBlockId)) {
+    focusedBlockId = note.blocks[0].id;
+  }
+  updateFormatToolbarHighlight();
+}
+
+function focusBlockEnd(blockId) {
+  const el = document.querySelector(`.note-block[data-block-id="${blockId}"] .block-text`);
+  if (!el) return;
+  el.focus();
+  const range = document.createRange();
+  range.selectNodeContents(el);
+  range.collapse(false);
+  const sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
+}
+
+function updateFormatToolbarHighlight() {
+  const note = findMyNote(activeNoteId);
+  if (!note || !focusedBlockId) return;
+  const block = note.blocks.find(b => b.id === focusedBlockId);
+  if (!block) return;
+  document.querySelectorAll('.format-pill-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.format === block.type);
+  });
+}
+
+function saveNoteTitle() {
+  const note = findMyNote(activeNoteId);
+  if (!note) return;
+  note.title = document.getElementById('note-title-input').value;
+  note.updatedAt = new Date().toISOString();
+  saveNotes();
+}
+
+function saveBlockText(blockId, el) {
+  const note = findMyNote(activeNoteId);
+  if (!note) return;
+  const block = note.blocks.find(b => b.id === blockId);
+  if (!block) return;
+  block.text = el.textContent;
+  note.updatedAt = new Date().toISOString();
+  saveNotes();
+}
+
+function setFocusedBlockFormat(format) {
+  const note = findMyNote(activeNoteId);
+  if (!note || !focusedBlockId) return;
+  const block = note.blocks.find(b => b.id === focusedBlockId);
+  if (!block) return;
+  block.type = format;
+  note.updatedAt = new Date().toISOString();
+  saveNotes();
+  renderNoteEditor();
+  focusBlockEnd(focusedBlockId);
+}
+
+function addBlock() {
+  const note = findMyNote(activeNoteId);
+  if (!note) return;
+  const newBlock = { id: crypto.randomUUID(), type: 'body', text: '' };
+  note.blocks.push(newBlock);
+  note.updatedAt = new Date().toISOString();
+  saveNotes();
+  focusedBlockId = newBlock.id;
+  renderNoteEditor();
+  focusBlockEnd(newBlock.id);
+}
+
+function deleteBlockAndFocusPrevious(blockId) {
+  const note = findMyNote(activeNoteId);
+  if (!note) return;
+  if (note.blocks.length <= 1) return;
+  const index = note.blocks.findIndex(b => b.id === blockId);
+  if (index === -1) return;
+  note.blocks = note.blocks.filter(b => b.id !== blockId);
+  note.updatedAt = new Date().toISOString();
+  saveNotes();
+  const previousBlock = note.blocks[Math.max(0, index - 1)];
+  focusedBlockId = previousBlock.id;
+  renderNoteEditor();
+  focusBlockEnd(previousBlock.id);
+}
+
+function deleteActiveNote() {
+  if (!activeNoteId) return;
+  notes = notes.filter(n => n.id !== activeNoteId);
+  saveNotes();
+  closeNoteEditor();
+}
+
+let currentTool = 'type';
+let eraserMode = 'object';
+
+function setTool(tool) {
+  currentTool = tool;
+  document.querySelectorAll('.note-mode-btn[data-tool]').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.tool === tool);
+  });
+
+  const canvas = document.getElementById('note-drawing-canvas');
+  canvas.classList.remove('tool-type', 'tool-pen', 'tool-eraser');
+  canvas.classList.add('tool-' + tool);
+
+  document.getElementById('type-format-toolbar').style.display = tool === 'type' ? 'flex' : 'none';
+  document.getElementById('pen-color-row').style.display = tool === 'pen' ? 'flex' : 'none';
+  document.getElementById('eraser-mode-row').style.display = tool === 'eraser' ? 'flex' : 'none';
+}
+
+function setEraserMode(mode) {
+  eraserMode = mode;
+  document.getElementById('eraser-object-btn').classList.toggle('active', mode === 'object');
+  document.getElementById('eraser-pixel-btn').classList.toggle('active', mode === 'pixel');
+}
+
+let isDrawing = false;
+let lastDrawX = 0;
+let lastDrawY = 0;
+let currentStrokePoints = [];
+let undoStack = [];
+let redoStack = [];
+let pageResizeObserver = null;
+
+const ERASER_PIXEL_SIZE = 22;
+const OBJECT_ERASE_THRESHOLD = 14;
+
+const PEN_COLORS = [{ name: 'Ink', hex: '#26312B' }, ...EVENT_COLORS];
+let selectedPenColor = PEN_COLORS[0].hex;
+
+function renderPenColorSwatches() {
+  const container = document.getElementById('pen-color-swatches');
+  if (!container) return;
+  container.innerHTML = PEN_COLORS.map(c => `
+    <button
+      type="button"
+      class="color-swatch ${c.hex === selectedPenColor ? 'selected' : ''}"
+      style="background-color: ${c.hex};"
+      data-color="${c.hex}"
+      title="${c.name}"
+      aria-label="${c.name}"
+    ></button>
+  `).join('');
+}
+
+function resizeCanvasToPage() {
+  const pageSurface = document.getElementById('note-page-surface');
+  const canvas = document.getElementById('note-drawing-canvas');
+  if (!pageSurface || !canvas) return;
+
+  const newWidth = Math.round(pageSurface.clientWidth);
+  const newHeight = Math.round(pageSurface.clientHeight);
+
+  if (canvas.width !== newWidth || canvas.height !== newHeight) {
+    canvas.width = newWidth;
+    canvas.height = newHeight;
+    redrawCanvas();
+  }
+}
+
+function setupPageResizeObserver() {
+  const pageSurface = document.getElementById('note-page-surface');
+  if (pageResizeObserver) pageResizeObserver.disconnect();
+  pageResizeObserver = new ResizeObserver(() => resizeCanvasToPage());
+  pageResizeObserver.observe(pageSurface);
+}
+
+function teardownPageResizeObserver() {
+  if (pageResizeObserver) pageResizeObserver.disconnect();
+  pageResizeObserver = null;
+}
+
+function redrawCanvas() {
+  const canvas = document.getElementById('note-drawing-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  const note = findMyNote(activeNoteId);
+  if (!note) return;
+  (note.strokes || []).forEach(stroke => drawStrokeFull(ctx, stroke));
+}
+
+function drawStrokeFull(ctx, stroke) {
+  ctx.globalCompositeOperation = stroke.mode === 'eraser-pixel' ? 'destination-out' : 'source-over';
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
+
+  if (stroke.points.length === 1) {
+    const p = stroke.points[0];
+    const pressure = p.pressure > 0 ? p.pressure : 0.5;
+    const radius = (stroke.mode === 'eraser-pixel' ? ERASER_PIXEL_SIZE : Math.max(1, pressure * 6)) / 2;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, radius, 0, Math.PI * 2);
+    ctx.fillStyle = stroke.mode === 'eraser-pixel' ? 'rgba(0,0,0,1)' : stroke.color;
+    ctx.fill();
+  } else {
+    for (let i = 1; i < stroke.points.length; i++) {
+      const p0 = stroke.points[i - 1];
+      const p1 = stroke.points[i];
+      const pressure = p1.pressure > 0 ? p1.pressure : 0.5;
+      ctx.lineWidth = stroke.mode === 'eraser-pixel' ? ERASER_PIXEL_SIZE : Math.max(1, pressure * 6);
+      ctx.strokeStyle = stroke.mode === 'eraser-pixel' ? 'rgba(0,0,0,1)' : stroke.color;
+      ctx.beginPath();
+      ctx.moveTo(p0.x, p0.y);
+      ctx.lineTo(p1.x, p1.y);
+      ctx.stroke();
+    }
+  }
+
+  ctx.globalCompositeOperation = 'source-over';
+}
+
+function drawLiveSegment(x0, y0, x1, y1, pressure) {
+  const canvas = document.getElementById('note-drawing-canvas');
+  const ctx = canvas.getContext('2d');
+  ctx.globalCompositeOperation = currentTool === 'eraser' ? 'destination-out' : 'source-over';
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
+  ctx.lineWidth = currentTool === 'eraser' ? ERASER_PIXEL_SIZE : Math.max(1, pressure * 6);
+  ctx.strokeStyle = currentTool === 'eraser' ? 'rgba(0,0,0,1)' : selectedPenColor;
+  ctx.beginPath();
+  ctx.moveTo(x0, y0);
+  ctx.lineTo(x1, y1);
+  ctx.stroke();
+  ctx.globalCompositeOperation = 'source-over';
+}
+
+function getCanvasPoint(e, canvas) {
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+  return { x: (e.clientX - rect.left) * scaleX, y: (e.clientY - rect.top) * scaleY };
+}
+
+function distanceToSegment(px, py, x1, y1, x2, y2) {
+  const dx = x2 - x1, dy = y2 - y1;
+  const lengthSquared = dx * dx + dy * dy;
+  let t = lengthSquared === 0 ? 0 : ((px - x1) * dx + (py - y1) * dy) / lengthSquared;
+  t = Math.max(0, Math.min(1, t));
+  const closestX = x1 + t * dx, closestY = y1 + t * dy;
+  return Math.hypot(px - closestX, py - closestY);
+}
+
+function findStrokeAtPoint(strokes, x, y) {
+  for (let i = strokes.length - 1; i >= 0; i--) {
+    const stroke = strokes[i];
+    if (stroke.mode === 'eraser-pixel') continue;
+
+    if (stroke.points.length === 1) {
+      if (Math.hypot(x - stroke.points[0].x, y - stroke.points[0].y) <= OBJECT_ERASE_THRESHOLD) return stroke.id;
+      continue;
+    }
+    for (let j = 1; j < stroke.points.length; j++) {
+      const d = distanceToSegment(x, y, stroke.points[j - 1].x, stroke.points[j - 1].y, stroke.points[j].x, stroke.points[j].y);
+      if (d <= OBJECT_ERASE_THRESHOLD) return stroke.id;
+    }
+  }
+  return null;
+}
+
+function pushUndoSnapshot() {
+  const note = findMyNote(activeNoteId);
+  if (!note) return;
+  undoStack.push(JSON.parse(JSON.stringify(note.strokes || [])));
+  redoStack = [];
+  updateUndoRedoButtons();
+}
+
+function undo() {
+  const note = findMyNote(activeNoteId);
+  if (!note || undoStack.length === 0) return;
+  redoStack.push(JSON.parse(JSON.stringify(note.strokes || [])));
+  note.strokes = undoStack.pop();
+  note.updatedAt = new Date().toISOString();
+  saveNotes();
+  redrawCanvas();
+  updateUndoRedoButtons();
+}
+
+function redo() {
+  const note = findMyNote(activeNoteId);
+  if (!note || redoStack.length === 0) return;
+  undoStack.push(JSON.parse(JSON.stringify(note.strokes || [])));
+  note.strokes = redoStack.pop();
+  note.updatedAt = new Date().toISOString();
+  saveNotes();
+  redrawCanvas();
+  updateUndoRedoButtons();
+}
+
+function updateUndoRedoButtons() {
+  document.getElementById('undo-btn').disabled = undoStack.length === 0;
+  document.getElementById('redo-btn').disabled = redoStack.length === 0;
+}
+
+function handlePointerDown(e) {
+  if (currentTool === 'type') return;
+  const canvas = document.getElementById('note-drawing-canvas');
+  isDrawing = true;
+  canvas.setPointerCapture(e.pointerId);
+  const pos = getCanvasPoint(e, canvas);
+  lastDrawX = pos.x;
+  lastDrawY = pos.y;
+
+  if (currentTool === 'eraser' && eraserMode === 'object') {
+    eraseObjectAt(pos.x, pos.y);
+    return;
+  }
+
+  currentStrokePoints = [{ x: pos.x, y: pos.y, pressure: e.pressure || 0.5 }];
+}
+
+function handlePointerMove(e) {
+  if (!isDrawing) return;
+  const canvas = document.getElementById('note-drawing-canvas');
+  const pos = getCanvasPoint(e, canvas);
+
+  if (currentTool === 'eraser' && eraserMode === 'object') {
+    eraseObjectAt(pos.x, pos.y);
+    lastDrawX = pos.x;
+    lastDrawY = pos.y;
+    return;
+  }
+
+  const pressure = e.pressure > 0 ? e.pressure : 0.5;
+  currentStrokePoints.push({ x: pos.x, y: pos.y, pressure });
+  drawLiveSegment(lastDrawX, lastDrawY, pos.x, pos.y, pressure);
+
+  lastDrawX = pos.x;
+  lastDrawY = pos.y;
+}
+
+function handlePointerUp() {
+  if (!isDrawing) return;
+  isDrawing = false;
+
+  if (currentTool === 'eraser' && eraserMode === 'object') return;
+
+  if (currentStrokePoints.length > 0) finalizeStroke();
+}
+
+function finalizeStroke() {
+  const note = findMyNote(activeNoteId);
+  if (!note) { currentStrokePoints = []; return; }
+
+  pushUndoSnapshot();
+
+  if (!note.strokes) note.strokes = [];
+  note.strokes.push({
+    id: crypto.randomUUID(),
+    color: currentTool === 'eraser' ? null : selectedPenColor,
+    mode: currentTool === 'eraser' ? 'eraser-pixel' : 'pen',
+    points: currentStrokePoints
+  });
+  currentStrokePoints = [];
+  note.updatedAt = new Date().toISOString();
+  saveNotes();
+  redrawCanvas();
+}
+
+function eraseObjectAt(x, y) {
+  const note = findMyNote(activeNoteId);
+  if (!note || !note.strokes || note.strokes.length === 0) return;
+  const hitId = findStrokeAtPoint(note.strokes, x, y);
+  if (!hitId) return;
+
+  pushUndoSnapshot();
+  note.strokes = note.strokes.filter(s => s.id !== hitId);
+  note.updatedAt = new Date().toISOString();
+  saveNotes();
+  redrawCanvas();
+}
+
+function clearDrawing() {
+  const note = findMyNote(activeNoteId);
+  if (!note) return;
+  if (!note.strokes || note.strokes.length === 0) return;
+  pushUndoSnapshot();
+  note.strokes = [];
+  note.updatedAt = new Date().toISOString();
+  saveNotes();
+  redrawCanvas();
+}
+
+
+/* ---------------- FITNESS TRACKER: rendering + actions ---------------- */
+
+function getStartOfWeekKey(date = new Date()) {
+  const dayOfWeek = date.getDay();
+  return toDateKey(addDaysToDate(date, -dayOfWeek));
+}
+
+let viewedWeekOffset = 0;
+
+function getViewedWeekStartKey() {
+  const [y, m, d] = getStartOfWeekKey().split('-').map(Number);
+  return toDateKey(addDaysToDate(new Date(y, m - 1, d), viewedWeekOffset * 7));
+}
+
+function getViewedWeekEndKey() {
+  const [y, m, d] = getViewedWeekStartKey().split('-').map(Number);
+  return toDateKey(addDaysToDate(new Date(y, m - 1, d), 6));
+}
+
+function formatWeekRangeLabel() {
+  if (viewedWeekOffset === 0) return 'This Week';
+  if (viewedWeekOffset === -1) return 'Last Week';
+  return `${formatDateChip(getViewedWeekStartKey())} – ${formatDateChip(getViewedWeekEndKey())}`;
+}
+
+function updateWeekSliderUI() {
+  const slider = document.getElementById('week-slider');
+  const label = document.getElementById('week-slider-label');
+  const prevBtn = document.getElementById('week-slider-prev-btn');
+  const nextBtn = document.getElementById('week-slider-next-btn');
+  if (!slider) return;
+
+  slider.value = viewedWeekOffset;
+  label.textContent = formatWeekRangeLabel();
+  nextBtn.disabled = viewedWeekOffset >= 0;
+  prevBtn.disabled = viewedWeekOffset <= Number(slider.min);
+}
+
+function goToWeek(offset) {
+  const slider = document.getElementById('week-slider');
+  const min = Number(slider.min);
+  viewedWeekOffset = Math.max(min, Math.min(0, offset));
+  updateWeekSliderUI();
+  renderFitnessLog();
+}
+
+function renderFitnessLog() {
+  const summaryEl = document.getElementById('fitness-summary');
+  const listEl = document.getElementById('fitness-log-list');
+  if (!summaryEl || !listEl) return;
+
+  if (!currentMemberId) {
+    summaryEl.innerHTML = '';
+    listEl.innerHTML = `<li class="empty-state" style="border:none;">Pick who you are on the Birthdays → Family Wishlists tab first.</li>`;
+    return;
+  }
+
+  updateWeekSliderUI();
+
+  const myLog = fitnessLog
+    .filter(w => w.memberId === currentMemberId)
+    .sort((a, b) => b.date.localeCompare(a.date));
+
+  const viewedStartKey = getViewedWeekStartKey();
+  const viewedEndKey = getViewedWeekEndKey();
+  const viewedWeekWorkouts = myLog.filter(w => w.date >= viewedStartKey && w.date <= viewedEndKey);
+  const totalMinutes = viewedWeekWorkouts.reduce((sum, w) => sum + Number(w.duration || 0), 0);
+
+  summaryEl.innerHTML = `
+    <div class="fitness-stat">
+      <span class="stat-value">${viewedWeekWorkouts.length}</span>
+      <span class="stat-label">Workouts</span>
+    </div>
+    <div class="fitness-stat">
+      <span class="stat-value">${totalMinutes}</span>
+      <span class="stat-label">Minutes</span>
+    </div>
+  `;
+
+  if (myLog.length === 0) {
+    listEl.innerHTML = `<li class="empty-state" style="border:none;">No workouts logged yet.</li>`;
+    return;
+  }
+
+  listEl.innerHTML = myLog.map(w => `
+    <li data-id="${w.id}">
+      <span class="log-entry-main">
+        <div class="log-entry-title">${escapeHtml(w.activity)}</div>
+        <div class="log-entry-meta">${w.date === TODAY_KEY ? 'Today' : formatDateChip(w.date)} · ${w.duration} min</div>
+      </span>
+      <button class="delete-btn" title="Remove">✕</button>
+    </li>
+  `).join('');
+}
+
+function renderHomeFitnessPreview() {
+  const homePreview = document.getElementById('home-fitness-preview');
+  if (!homePreview) return;
+
+  if (!currentMemberId) {
+    homePreview.innerHTML = `<span class="placeholder">Pick who you are to see your log</span>`;
+    return;
+  }
+
+  const weekStartKey = getStartOfWeekKey();
+  const thisWeek = fitnessLog.filter(w => w.memberId === currentMemberId && w.date >= weekStartKey);
+
+  if (thisWeek.length === 0) {
+    homePreview.innerHTML = `<span class="placeholder">No workouts logged this week</span>`;
+    return;
+  }
+
+  const totalMinutes = thisWeek.reduce((sum, w) => sum + Number(w.duration || 0), 0);
+  homePreview.textContent = `${thisWeek.length} workout${thisWeek.length === 1 ? '' : 's'} · ${totalMinutes} min this week`;
+}
+
+function addWorkout() {
+  if (!currentMemberId) return;
+  const activityInput = document.getElementById('new-workout-activity');
+  const durationInput = document.getElementById('new-workout-duration');
+  const dateInput = document.getElementById('new-workout-date');
+
+  const activity = activityInput.value.trim();
+  const duration = Number(durationInput.value);
+  const date = dateInput.value || TODAY_KEY;
+
+  if (!activity || !duration || duration <= 0) return;
+  if (date > TODAY_KEY) return;
+  if (date < getStartOfWeekKey()) return;
+
+  fitnessLog.push({ id: crypto.randomUUID(), memberId: currentMemberId, activity, duration, date });
+
+  activityInput.value = '';
+  durationInput.value = '';
+  activityInput.focus();
+
+  saveFitnessLog();
+  renderFitnessLog();
+  renderHomeFitnessPreview();
+  refreshAnnualChartIfVisible();
+}
+
+function deleteWorkout(id) {
+  const entry = fitnessLog.find(w => w.id === id);
+  if (!entry || entry.memberId !== currentMemberId) return;
+  fitnessLog = fitnessLog.filter(w => w.id !== id);
+  saveFitnessLog();
+  renderFitnessLog();
+  renderHomeFitnessPreview();
+  refreshAnnualChartIfVisible();
+}
+
+const MONTH_ABBR = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+function toggleAnnualChart() {
+  const container = document.getElementById('annual-chart-container');
+  const btn = document.getElementById('toggle-annual-chart-btn');
+  const isVisible = container.style.display !== 'none';
+
+  container.style.display = isVisible ? 'none' : 'block';
+  btn.textContent = isVisible ? '📊 Show My Annual Progress Chart' : '📊 Hide Annual Progress Chart';
+
+  if (!isVisible) renderAnnualChart();
+}
+
+function refreshAnnualChartIfVisible() {
+  const container = document.getElementById('annual-chart-container');
+  if (container && container.style.display !== 'none') renderAnnualChart();
+}
+
+function renderAnnualChart() {
+  const svg = document.getElementById('annual-chart-svg');
+  const yearLabel = document.getElementById('annual-chart-year-label');
+  if (!svg || !yearLabel) return;
+
+  if (!currentMemberId) {
+    svg.innerHTML = '';
+    yearLabel.textContent = '';
+    return;
+  }
+
+  const year = new Date().getFullYear();
+  yearLabel.textContent = year;
+
+  const monthTotals = new Array(12).fill(0);
+  fitnessLog
+    .filter(w => w.memberId === currentMemberId)
+    .forEach(w => {
+      const [y, m] = w.date.split('-').map(Number);
+      if (y === year) monthTotals[m - 1] += Number(w.duration || 0);
+    });
+
+  const maxMinutes = Math.max(1, ...monthTotals);
+  const chartWidth = 700, chartHeight = 260;
+  const paddingTop = 24, paddingBottom = 34, paddingSides = 16;
+  const plotHeight = chartHeight - paddingTop - paddingBottom;
+  const slotWidth = (chartWidth - paddingSides * 2) / 12;
+  const barWidth = slotWidth * 0.55;
+  const currentMonthIndex = new Date().getMonth();
+
+  const bars = monthTotals.map((minutes, i) => {
+    const barHeight = (minutes / maxMinutes) * plotHeight;
+    const x = paddingSides + i * slotWidth + (slotWidth - barWidth) / 2;
+    const y = paddingTop + (plotHeight - barHeight);
+    const barColor = i === currentMonthIndex ? 'var(--pine)' : 'var(--dusty-blue)';
+
+    return `
+      <rect x="${x}" y="${y}" width="${barWidth}" height="${Math.max(barHeight, 0)}" rx="3" style="fill: ${barColor};" />
+      ${minutes > 0 ? `<text x="${x + barWidth / 2}" y="${y - 6}" text-anchor="middle" font-size="10" fill="var(--ink-soft)">${minutes}</text>` : ''}
+      <text x="${x + barWidth / 2}" y="${chartHeight - paddingBottom + 16}" text-anchor="middle" font-size="11" fill="var(--ink-soft)">${MONTH_ABBR[i]}</text>
+    `;
+  }).join('');
+
+  svg.innerHTML = `
+    <line x1="${paddingSides}" y1="${paddingTop + plotHeight}" x2="${chartWidth - paddingSides}" y2="${paddingTop + plotHeight}" stroke="var(--line)" stroke-width="1" />
+    ${bars}
+  `;
+}
+
+
+/* ---------------- WORKOUT PLAN: data + storage ---------------- */
+
+const WORKOUT_PLANS_KEY = 'lifehub:workout-plans';
+
+const WORKOUT_PLAN_SECTIONS = [
+  { key: 'warmup', label: 'Warm Up', icon: '🔥' },
+  { key: 'main', label: 'Main Body', icon: '💪' },
+  { key: 'cooldown', label: 'Cooldown', icon: '🧊' }
+];
+
+let workoutPlans = [];
+
+async function loadWorkoutPlans() {
+  try {
+    const result = await window.storage.get(WORKOUT_PLANS_KEY, true);
+    workoutPlans = result ? JSON.parse(result.value) : [];
+  } catch (err) {
+    workoutPlans = [];
+  }
+}
+
+async function saveWorkoutPlans() {
+  try {
+    await window.storage.set(WORKOUT_PLANS_KEY, JSON.stringify(workoutPlans), true);
+  } catch (err) {
+    console.error('Could not save workout plans:', err);
+  }
+}
+
+function myWorkoutPlan() {
+  if (!currentMemberId) return null;
+  return workoutPlans.find(p => p.memberId === currentMemberId) || null;
+}
+
+function ensureMyWorkoutPlan() {
+  let plan = myWorkoutPlan();
+  if (!plan) {
+    plan = {
+      id: crypto.randomUUID(),
+      memberId: currentMemberId,
+      durationMinutes: '',
+      warmup: [],
+      main: [],
+      cooldown: [],
+      updatedAt: new Date().toISOString()
+    };
+    workoutPlans.push(plan);
+  }
+  return plan;
+}
+
+function renderWorkoutPlan() {
+  const durationInput = document.getElementById('workout-plan-duration');
+  const sectionsContainer = document.getElementById('workout-plan-sections');
+  if (!durationInput || !sectionsContainer) return;
+
+  if (!currentMemberId) {
+    durationInput.value = '';
+    durationInput.disabled = true;
+    sectionsContainer.innerHTML = `<div class="empty-state" style="border:none;">Pick who you are on the Birthdays → Family Wishlists tab first.</div>`;
+    return;
+  }
+
+  durationInput.disabled = false;
+  const plan = myWorkoutPlan();
+  durationInput.value = plan ? plan.durationMinutes : '';
+
+  sectionsContainer.innerHTML = WORKOUT_PLAN_SECTIONS.map(section => {
+    const exercises = plan ? plan[section.key] : [];
+
+    const listHtml = exercises.length === 0
+      ? `<li class="empty-state" style="border:none; padding:8px 2px;">No exercises added yet.</li>`
+      : exercises.map(ex => `
+          <li data-exercise-id="${ex.id}">
+            <span class="exercise-name">${escapeHtml(ex.name)}</span>
+            <span class="exercise-meta">${ex.sets} sets × ${ex.reps} reps</span>
+            <button class="delete-btn" title="Remove">✕</button>
+          </li>
+        `).join('');
+
+    return `
+      <div class="workout-plan-block" data-section="${section.key}">
+        <h4>${section.icon} ${section.label}</h4>
+        <ul class="exercise-list">${listHtml}</ul>
+        <div class="exercise-add-row">
+          <input type="text" class="exercise-name-input" placeholder="Exercise name" />
+          <input type="number" class="exercise-sets-input" placeholder="Sets" min="1" />
+          <input type="number" class="exercise-reps-input" placeholder="Reps" min="1" />
+          <button class="btn-primary exercise-add-btn" data-section="${section.key}">Add</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function setWorkoutDuration(value) {
+  if (!currentMemberId) return;
+  const plan = ensureMyWorkoutPlan();
+  plan.durationMinutes = value;
+  plan.updatedAt = new Date().toISOString();
+  saveWorkoutPlans();
+}
+
+function addExercise(sectionKey, name, sets, reps) {
+  if (!currentMemberId || !name || !sets || !reps) return;
+  const plan = ensureMyWorkoutPlan();
+  plan[sectionKey].push({ id: crypto.randomUUID(), name, sets, reps });
+  plan.updatedAt = new Date().toISOString();
+  saveWorkoutPlans();
+  renderWorkoutPlan();
+}
+
+function deleteExercise(sectionKey, exerciseId) {
+  const plan = myWorkoutPlan();
+  if (!plan) return;
+  plan[sectionKey] = plan[sectionKey].filter(ex => ex.id !== exerciseId);
+  plan.updatedAt = new Date().toISOString();
+  saveWorkoutPlans();
+  renderWorkoutPlan();
+}
+
+function clearWorkoutPlan() {
+  const plan = myWorkoutPlan();
+  if (!plan) return;
+  plan.durationMinutes = '';
+  WORKOUT_PLAN_SECTIONS.forEach(section => { plan[section.key] = []; });
+  plan.updatedAt = new Date().toISOString();
+  saveWorkoutPlans();
+  renderWorkoutPlan();
+}
+
+
+/* ---------------- WIRING: Notes list ---------------- */
+
+document.getElementById('new-note-btn').addEventListener('click', createNewNote);
+
+document.getElementById('notes-page-grid').addEventListener('click', (e) => {
+  const card = e.target.closest('.note-page-card[data-id]');
+  if (card) openNoteEditor(card.dataset.id);
+});
+
+/* ---------------- WIRING: Notes editor ---------------- */
+
+document.getElementById('notes-back-btn').addEventListener('click', closeNoteEditor);
+document.getElementById('delete-note-btn').addEventListener('click', deleteActiveNote);
+
+document.getElementById('note-title-input').addEventListener('input', saveNoteTitle);
+
+document.getElementById('tool-type-btn').addEventListener('click', () => setTool('type'));
+document.getElementById('tool-pen-btn').addEventListener('click', () => setTool('pen'));
+document.getElementById('tool-eraser-btn').addEventListener('click', () => setTool('eraser'));
+
+document.getElementById('eraser-object-btn').addEventListener('click', () => setEraserMode('object'));
+document.getElementById('eraser-pixel-btn').addEventListener('click', () => setEraserMode('pixel'));
+
+document.getElementById('undo-btn').addEventListener('click', undo);
+document.getElementById('redo-btn').addEventListener('click', redo);
+
+document.getElementById('type-format-toolbar').addEventListener('click', (e) => {
+  const btn = e.target.closest('.format-pill-btn[data-format]');
+  if (btn) setFocusedBlockFormat(btn.dataset.format);
+});
+
+document.getElementById('note-blocks-container').addEventListener('focusin', (e) => {
+  if (!e.target.classList.contains('block-text')) return;
+  focusedBlockId = e.target.closest('.note-block').dataset.blockId;
+  updateFormatToolbarHighlight();
+});
+
+document.getElementById('note-blocks-container').addEventListener('input', (e) => {
+  if (!e.target.classList.contains('block-text')) return;
+  const blockId = e.target.closest('.note-block').dataset.blockId;
+  saveBlockText(blockId, e.target);
+});
+
+document.getElementById('note-blocks-container').addEventListener('keydown', (e) => {
+  if (!e.target.classList.contains('block-text')) return;
+  const blockId = e.target.closest('.note-block').dataset.blockId;
+
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    addBlock();
+  } else if (e.key === 'Backspace' && e.target.textContent === '') {
+    e.preventDefault();
+    deleteBlockAndFocusPrevious(blockId);
+  }
+});
+
+document.getElementById('clear-drawing-btn').addEventListener('click', clearDrawing);
+
+document.getElementById('pen-color-swatches').addEventListener('click', (e) => {
+  const swatch = e.target.closest('.color-swatch[data-color]');
+  if (!swatch) return;
+  selectedPenColor = swatch.dataset.color;
+  renderPenColorSwatches();
+});
+
+const drawingCanvas = document.getElementById('note-drawing-canvas');
+drawingCanvas.addEventListener('pointerdown', handlePointerDown);
+drawingCanvas.addEventListener('pointermove', handlePointerMove);
+drawingCanvas.addEventListener('pointerup', handlePointerUp);
+drawingCanvas.addEventListener('pointercancel', handlePointerUp);
+
+/* ---------------- WIRING: Fitness Tracker ---------------- */
+
+document.getElementById('toggle-annual-chart-btn').addEventListener('click', toggleAnnualChart);
+
+document.getElementById('add-workout-btn').addEventListener('click', addWorkout);
+document.getElementById('new-workout-activity').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') addWorkout();
+});
+document.getElementById('fitness-log-list').addEventListener('click', (e) => {
+  const li = e.target.closest('li[data-id]');
+  if (li && e.target.classList.contains('delete-btn')) deleteWorkout(li.dataset.id);
+});
+
+document.getElementById('week-slider').addEventListener('input', (e) => {
+  goToWeek(Number(e.target.value));
+});
+document.getElementById('week-slider-prev-btn').addEventListener('click', () => goToWeek(viewedWeekOffset - 1));
+document.getElementById('week-slider-next-btn').addEventListener('click', () => goToWeek(viewedWeekOffset + 1));
+
+/* ---------------- WIRING: Workout Plan ---------------- */
+
+document.getElementById('workout-plan-duration').addEventListener('input', (e) => {
+  setWorkoutDuration(e.target.value);
+});
+
+document.getElementById('clear-workout-plan-btn').addEventListener('click', clearWorkoutPlan);
+
+document.getElementById('workout-plan-sections').addEventListener('click', (e) => {
+  const addBtn = e.target.closest('.exercise-add-btn[data-section]');
+  if (addBtn) {
+    const block = addBtn.closest('.workout-plan-block');
+    const name = block.querySelector('.exercise-name-input').value.trim();
+    const sets = block.querySelector('.exercise-sets-input').value;
+    const reps = block.querySelector('.exercise-reps-input').value;
+    if (name && sets && reps) addExercise(addBtn.dataset.section, name, sets, reps);
+    return;
+  }
+
+  const deleteBtn = e.target.closest('.delete-btn');
+  if (deleteBtn) {
+    const li = deleteBtn.closest('li[data-exercise-id]');
+    const section = deleteBtn.closest('.workout-plan-block').dataset.section;
+    if (li) deleteExercise(section, li.dataset.exerciseId);
+  }
+});
+
+document.getElementById('workout-plan-sections').addEventListener('keydown', (e) => {
+  const isExerciseField = e.target.classList.contains('exercise-name-input')
+    || e.target.classList.contains('exercise-sets-input')
+    || e.target.classList.contains('exercise-reps-input');
+  if (e.key !== 'Enter' || !isExerciseField) return;
+  e.preventDefault();
+  const block = e.target.closest('.workout-plan-block');
+  const btn = block.querySelector('.exercise-add-btn');
+  if (btn) btn.click();
+});
+
+
+/* ============================================================
+   CALENDAR — THE MODAL
+   ============================================================ */
+
+let editingEventId = null;
+let selectedEventColor = DEFAULT_EVENT_COLOR;
+let activeCalendarContext = 'family';
+
+function openEventModal(dateKey, existingEvent = null, which = 'family') {
+  activeCalendarContext = which;
+  editingEventId = existingEvent ? existingEvent.id : null;
+
+  document.getElementById('modal-heading').textContent = existingEvent ? 'Edit Event' : 'Add Event';
+  document.getElementById('modal-event-title').value = existingEvent ? existingEvent.title : '';
+  document.getElementById('modal-event-start-date').value = existingEvent ? existingEvent.startDate : dateKey;
+  document.getElementById('modal-event-end-date').value = existingEvent ? existingEvent.endDate : dateKey;
+  document.getElementById('modal-event-allday').checked = existingEvent ? existingEvent.allDay : false;
+  document.getElementById('modal-event-start-time').value = existingEvent ? (existingEvent.startTime || '') : '';
+  document.getElementById('modal-event-end-time').value = existingEvent ? (existingEvent.endTime || '') : '';
+  document.getElementById('modal-delete-btn').style.display = existingEvent ? 'block' : 'none';
+
+  const birthdayRow = document.getElementById('modal-birthday-row');
+  birthdayRow.style.display = which === 'family' ? 'block' : 'none';
+
+  const linkedBirthday = (which === 'family' && existingEvent) ? birthdays.find(b => b.eventId === existingEvent.id) : null;
+  document.getElementById('modal-event-isbirthday').checked = !!linkedBirthday;
+
+  selectedEventColor = existingEvent ? (existingEvent.color || DEFAULT_EVENT_COLOR) : DEFAULT_EVENT_COLOR;
+  renderColorSwatches();
+  updateAllDayMode();
+
+  document.getElementById('event-modal-overlay').classList.add('open');
+  document.getElementById('modal-event-title').focus();
+}
+
+function closeEventModal() {
+  document.getElementById('event-modal-overlay').classList.remove('open');
+  editingEventId = null;
+}
+
+function updateAllDayMode() {
+  const allDay = document.getElementById('modal-event-allday').checked;
+  document.getElementById('modal-datetime-grid').classList.toggle('all-day-mode', allDay);
+}
+
+function renderColorSwatches() {
+  const container = document.getElementById('color-swatches');
+  container.innerHTML = EVENT_COLORS.map(c => `
+    <button
+      type="button"
+      class="color-swatch ${c.hex === selectedEventColor ? 'selected' : ''}"
+      style="background-color: ${c.hex};"
+      data-color="${c.hex}"
+      title="${c.name}"
+      aria-label="${c.name}"
+    ></button>
+  `).join('');
+}
+
+function saveEventFromModal() {
+  const title = document.getElementById('modal-event-title').value.trim();
+  const startDate = document.getElementById('modal-event-start-date').value;
+  let endDate = document.getElementById('modal-event-end-date').value;
+  const allDay = document.getElementById('modal-event-allday').checked;
+  const startTime = document.getElementById('modal-event-start-time').value;
+  const endTime = document.getElementById('modal-event-end-time').value;
+  const isBirthday = activeCalendarContext === 'family' && document.getElementById('modal-event-isbirthday').checked;
+
+  if (!title || !startDate) return;
+  if (activeCalendarContext === 'personal' && !currentMemberId) return;
+
+  if (!endDate || endDate < startDate) endDate = startDate;
+
+  const targetArray = activeCalendarContext === 'personal' ? myCalendarEvents : calendarEvents;
+  let savedEvent;
+
+  if (editingEventId) {
+    const ev = targetArray.find(e => e.id === editingEventId);
+    if (ev) {
+      ev.title = title;
+      ev.startDate = startDate;
+      ev.endDate = endDate;
+      ev.allDay = allDay;
+      ev.startTime = allDay ? '' : startTime;
+      ev.endTime = allDay ? '' : endTime;
+      ev.color = selectedEventColor;
+    }
+    savedEvent = ev;
+  } else {
+    savedEvent = {
+      id: crypto.randomUUID(),
+      title, startDate, endDate, allDay,
+      startTime: allDay ? '' : startTime,
+      endTime: allDay ? '' : endTime,
+      color: selectedEventColor,
+      ...(activeCalendarContext === 'personal' ? { memberId: currentMemberId } : {})
+    };
+    targetArray.push(savedEvent);
+  }
+
+  if (activeCalendarContext === 'family') {
+    syncBirthdayForEvent(savedEvent, isBirthday);
+    saveCalendarEvents();
+    renderCalendar('family');
+  } else {
+    saveMyCalendarEvents();
+    renderCalendar('personal');
+    if (showPersonalEventsInFamilyView) renderCalendar('family');
+  }
+
+  closeEventModal();
+}
+
+function syncBirthdayForEvent(event, isBirthday) {
+  const existingIndex = birthdays.findIndex(b => b.eventId === event.id);
+
+  if (isBirthday) {
+    if (existingIndex >= 0) {
+      birthdays[existingIndex].name = event.title;
+      birthdays[existingIndex].date = event.startDate;
+    } else {
+      birthdays.push({
+        id: crypto.randomUUID(),
+        eventId: event.id,
+        name: event.title,
+        date: event.startDate
+      });
+    }
+  } else if (existingIndex >= 0) {
+    birthdays.splice(existingIndex, 1);
+  }
+
+  saveBirthdays();
+  renderBirthdays();
+  renderHomeBirthdaysPreview();
+}
+
+
+/* ============================================================
+   CALENDAR — OTHER ACTIONS
+   ============================================================ */
+
+function deleteEvent(id, which = 'family') {
+  if (which === 'personal') {
+    myCalendarEvents = myCalendarEvents.filter(ev => ev.id !== id);
+    saveMyCalendarEvents();
+    renderCalendar('personal');
+    if (showPersonalEventsInFamilyView) renderCalendar('family');
+    return;
+  }
+
+  calendarEvents = calendarEvents.filter(ev => ev.id !== id);
+
+  const hadLinkedBirthday = birthdays.some(b => b.eventId === id);
+  if (hadLinkedBirthday) {
+    birthdays = birthdays.filter(b => b.eventId !== id);
+    saveBirthdays();
+    renderBirthdays();
+    renderHomeBirthdaysPreview();
+  }
+
+  saveCalendarEvents();
+  renderCalendar('family');
+}
+
+function goToMonth(offset, which) {
+  const ctx = CALENDAR_CONTEXTS[which];
+  const newDate = new Date(ctx.getMonthDate());
+  newDate.setMonth(newDate.getMonth() + offset);
+  ctx.setMonthDate(newDate);
+  renderCalendarGrid(which);
+}
+
+
+/* ============================================================
+   CALENDAR — WIRING UP EVENTS
+   ============================================================ */
+
+document.getElementById('prev-month-btn').addEventListener('click', () => goToMonth(-1, 'family'));
+document.getElementById('next-month-btn').addEventListener('click', () => goToMonth(1, 'family'));
+
+document.getElementById('quick-add-event-btn').addEventListener('click', () => {
+  openEventModal(TODAY_KEY, null, 'family');
+});
+
+document.getElementById('calendar-grid').addEventListener('click', (e) => {
+  const bar = e.target.closest('.event-bar[data-id]');
+  if (bar) {
+    const ev = calendarEvents.find(ev => ev.id === bar.dataset.id);
+    if (ev) openEventModal(ev.startDate, ev, 'family');
+    return;
+  }
+
+  const cell = e.target.closest('.day-cell[data-date]');
+  if (!cell) return;
+  openEventModal(cell.dataset.date, null, 'family');
+});
+
+document.getElementById('upcoming-events-list').addEventListener('click', (e) => {
+  const li = e.target.closest('li[data-id]');
+  if (!li || !li.dataset.id) return;
+
+  if (e.target.classList.contains('delete-btn')) {
+    deleteEvent(li.dataset.id, 'family');
+    return;
+  }
+
+  const ev = calendarEvents.find(ev => ev.id === li.dataset.id);
+  if (ev) openEventModal(ev.startDate, ev, 'family');
+});
+
+document.getElementById('show-personal-events-checkbox').addEventListener('change', (e) => {
+  showPersonalEventsInFamilyView = e.target.checked;
+  renderCalendarGrid('family');
+  renderUpcomingEvents('family');
+});
+
+/* ---------------- MY CALENDAR (Personal) ---------------- */
+
+document.getElementById('my-prev-month-btn').addEventListener('click', () => goToMonth(-1, 'personal'));
+document.getElementById('my-next-month-btn').addEventListener('click', () => goToMonth(1, 'personal'));
+
+document.getElementById('my-quick-add-event-btn').addEventListener('click', () => {
+  openEventModal(TODAY_KEY, null, 'personal');
+});
+
+document.getElementById('my-calendar-grid').addEventListener('click', (e) => {
+  const bar = e.target.closest('.event-bar[data-id]');
+  if (bar) {
+    const ev = myCalendarEvents.find(ev => ev.id === bar.dataset.id);
+    if (ev) openEventModal(ev.startDate, ev, 'personal');
+    return;
+  }
+
+  const cell = e.target.closest('.day-cell[data-date]');
+  if (!cell) return;
+  openEventModal(cell.dataset.date, null, 'personal');
+});
+
+document.getElementById('my-upcoming-events-list').addEventListener('click', (e) => {
+  const li = e.target.closest('li[data-id]');
+  if (!li || !li.dataset.id) return;
+
+  if (e.target.classList.contains('delete-btn')) {
+    deleteEvent(li.dataset.id, 'personal');
+    return;
+  }
+
+  const ev = myCalendarEvents.find(ev => ev.id === li.dataset.id);
+  if (ev) openEventModal(ev.startDate, ev, 'personal');
+});
+
+/* ---------------- Shared modal controls ---------------- */
+
+document.getElementById('modal-event-allday').addEventListener('change', updateAllDayMode);
+
+document.getElementById('color-swatches').addEventListener('click', (e) => {
+  const swatch = e.target.closest('.color-swatch[data-color]');
+  if (!swatch) return;
+  selectedEventColor = swatch.dataset.color;
+  renderColorSwatches();
+});
+
+document.getElementById('modal-save-btn').addEventListener('click', saveEventFromModal);
+document.getElementById('modal-cancel-btn').addEventListener('click', closeEventModal);
+
+document.getElementById('modal-delete-btn').addEventListener('click', () => {
+  if (editingEventId) deleteEvent(editingEventId, activeCalendarContext);
+  closeEventModal();
+});
+
+document.getElementById('event-modal-overlay').addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) closeEventModal();
+});
+
+document.getElementById('birthdays-list').addEventListener('click', (e) => {
+  const li = e.target.closest('li[data-event-id]');
+  if (!li) return;
+  const ev = calendarEvents.find(ev => ev.id === li.dataset.eventId);
+  if (ev) {
+    familyCurrentMonthDate = new Date(ev.startDate.split('-')[0], ev.startDate.split('-')[1] - 1, 1);
+    switchView('calendar');
+    renderCalendarGrid('family');
+    openEventModal(ev.startDate, ev, 'family');
+  }
+});
+
+
+/* ============================================================
+   BIRTHDAYS — RECONCILIATION
+   ============================================================ */
+async function reconcileBirthdays() {
+  const validEventIds = new Set(calendarEvents.map(ev => ev.id));
+  const before = birthdays.length;
+
+  birthdays = birthdays.filter(b => validEventIds.has(b.eventId));
+
+  if (birthdays.length !== before) {
+    console.log(`Removed ${before - birthdays.length} orphaned birthday(s) with no matching calendar event.`);
+    await saveBirthdays();
+  }
+
+  renderBirthdays();
+  renderHomeBirthdaysPreview();
+}
+
+/* ============================================================
+   PART 6 — STARTUP
+   ============================================================ */
+async function init() {
+  await loadShoppingItems();
+  await loadHomeworkItems();
+  await loadMealPlan();
+  await loadCalendarEvents();
+  await loadMyCalendarEvents();
+  await loadBirthdays();
+  await reconcileBirthdays();
+
+  await loadFamilyMembers();
+  await loadWishlistItems();
+  await loadCurrentMember();
+  await loadNotes();
+  await loadFitnessLog();
+  await loadWorkoutPlans();
+
+  await seedDemoDataIfEmpty();
+
+  if (currentMemberId && !familyMembers.some(m => m.id === currentMemberId)) {
+    currentMemberId = null;
+  }
+
+  renderWhoamiSelect();
+  renderWishlists();
+  renderTopbarFamily();
+  renderNotesList();
+  renderHomeNotesPreview();
+  renderPenColorSwatches();
+  renderFitnessLog();
+  renderHomeFitnessPreview();
+  renderWorkoutPlan();
+
+  renderCalendar('personal');
+
+  const workoutDateInput = document.getElementById('new-workout-date');
+  if (workoutDateInput) {
+    workoutDateInput.value = TODAY_KEY;
+    workoutDateInput.max = TODAY_KEY;
+    workoutDateInput.min = getStartOfWeekKey();
+  }
+
+  updateWeekSliderUI();
+}
+init();
+
+function periodicTick() {
+  checkForNewDay();
+  renderHomework();
+  renderHomeHomeworkPreview();
+}
+setInterval(periodicTick, 60000);
+</script>
+
+</body>
+</html>
