@@ -2182,9 +2182,12 @@
       </section>
 
       <section id="view-profile" class="view">
-        <div class="view-header">
-          <h2>👤 Your Profile</h2>
-          <p>Manage your username, icon, and account.</p>
+        <div class="view-header" style="display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-3);">
+          <div>
+            <h2>👤 Your Profile</h2>
+            <p>Manage your username, icon, and account.</p>
+          </div>
+          <button class="btn-ghost" id="profile-back-btn">← Back to Home</button>
         </div>
         <div class="profile-view-wrap">
           <div id="profile-view-body">Loading…</div>
@@ -5782,6 +5785,8 @@ document.getElementById('notes-page-grid').addEventListener('click', (e) => {
 /* ---------------- WIRING: Notes editor ---------------- */
 
 document.getElementById('notes-back-btn').addEventListener('click', closeNoteEditor);
+
+document.getElementById('profile-back-btn').addEventListener('click', () => switchView('home'));
 document.getElementById('delete-note-btn').addEventListener('click', deleteActiveNote);
 
 document.getElementById('note-title-input').addEventListener('input', saveNoteTitle);
