@@ -3675,7 +3675,13 @@ async function saveFamily() {
    FAMILY WISHLISTS — RENDERING
    ============================================================ */
 
-const AVATAR_COLORS = ['#D9A441', '#4C7A94', '#8C4A63', '#6B8F5A', '#C0392B', '#7A5C9E'];
+// Ordered by hue so the row reads as a smooth rainbow sweep (red through
+// violet back to pink) rather than a random assortment — this is the
+// "arrange them in a gradient" request. Each hex was checked for ≥3.3:1
+// contrast against a white initial letter (a couple of the brighter
+// stock hues — yellow, aqua, magenta, orange — were nudged a shade
+// darker to clear that bar without losing their character).
+const AVATAR_COLORS = ['#E34948', '#EA612B', '#BA7E00', '#008300', '#189D6E', '#2A78D6', '#4A3AA7', '#E2588C'];
 
 // A member's avatar color is whatever they picked in Profile Settings
 // (avatarColor), or — if they've never picked one — the same
