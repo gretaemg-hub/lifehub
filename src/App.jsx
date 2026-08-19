@@ -5,6 +5,7 @@ import Login from './pages/Login';
 import HouseholdOnboarding from './pages/HouseholdOnboarding';
 import ShoppingList from './features/shopping/ShoppingList';
 import CalendarView from './features/calendar/CalendarView';
+import HouseholdSettings from './features/household/HouseholdSettings';
 
 // The three states every screen boils down to now, replacing the
 // prototype's implicit "whoever has the tab open" model:
@@ -15,6 +16,7 @@ const TABS = [
   { key: 'shopping', label: '🛒 Shopping List' },
   { key: 'family-calendar', label: '👪 Family Calendar' },
   { key: 'my-calendar', label: '📅 My Calendar' },
+  { key: 'household', label: '🏠 Household' },
 ];
 
 function AppShell() {
@@ -99,6 +101,7 @@ function AppShell() {
           blurb="Only visible to you — enforced by the database itself, not just the UI."
         />
       )}
+      {tab === 'household' && <HouseholdSettings />}
     </div>
   );
 }
