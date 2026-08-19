@@ -2209,7 +2209,6 @@
         <div id="birthdays-subtab-wishlists" class="subtab-panel">
           <div class="whoami-row" id="family-manage-row">
             <span class="whoami-label">Family members</span>
-            <button class="btn-ghost" id="add-family-member-btn" type="button">+ Add an account</button>
             <button class="btn-ghost" id="reset-demo-btn" type="button" title="Wipes this browser's family, members, and wishlists so you can try Create/Join again">Reset family data</button>
           </div>
 
@@ -3750,12 +3749,12 @@ function generateVerificationCode() {
 }
 
 // Topbar shows an avatar chip for every local profile — not just
-// yours — so as more family members are added (via "+ Add a profile",
-// or once this demo has real cross-device sync via Join) their
-// avatars appear here too. Right now there's just one profile, so
-// only your own avatar shows. Next to the avatars: the family code
-// once one exists, or Create/Join a Family shortcuts when it doesn't,
-// so starting the family flow doesn't require a trip to Home.
+// yours — so once this demo has real cross-device sync via Join,
+// every family member's avatar appears here too. Right now there's
+// just one profile per browser, so only your own avatar shows. Next
+// to the avatars: the family code once one exists, or Create/Join a
+// Family shortcuts when it doesn't, so starting the family flow
+// doesn't require a trip to Home.
 function renderTopbarFamily() {
   const container = document.getElementById('topbar-family-avatars');
   const codeEl = document.getElementById('topbar-family-code');
@@ -3794,11 +3793,11 @@ function renderWishlists() {
   const container = document.getElementById('wishlists-container');
 
   const familyHintHtml = !family
-    ? `<div class="gate-hint" style="margin-bottom: var(--space-3);">💡 Add family members from your homepage to start sharing wishlists with others.</div>`
+    ? `<div class="gate-hint" style="margin-bottom: var(--space-3);">💡 Create or join a family from the top of the page to start sharing wishlists with others.</div>`
     : '';
 
   if (familyMembers.length === 0) {
-    container.innerHTML = familyHintHtml + `<div class="empty-state" style="border:none;">No family members added yet — add everyone using "+ Add" above to start building wishlists.</div>`;
+    container.innerHTML = familyHintHtml + `<div class="empty-state" style="border:none;">No family members yet.</div>`;
     return;
   }
 
@@ -3879,13 +3878,14 @@ function renderWishlists() {
 // after the email-entry/verify/account-setup steps of the sign-up
 // gate. Used for your own personal login — the one mandatory step on
 // a brand new browser (switchTo: true — you become the signed-in
-// member) — and for adding an extra account from inside the app once
-// you're already signed in (switchTo: false — e.g. a parent setting
-// up a kid's account on the shared family device, without switching
-// who's currently "you"). Nothing here touches `family` — creating an
-// account has never required a family to exist. The profile picture
-// and avatar color aren't set here — those are edited afterward from
-// Profile Settings.
+// member). The `switchTo: false` path (adding an extra account from
+// inside the app without switching who's currently "you") is no
+// longer reachable from the UI — the "+ Add an account" button under
+// Wishlists was removed since it kept leaving stray test/demo
+// accounts sitting around as phantom "family members." Nothing here
+// touches `family` — creating an account has never required a family
+// to exist. The profile picture and avatar color aren't set here —
+// those are edited afterward from Profile Settings.
 function createAccount(email, username, passwordHash, { switchTo }) {
   const member = {
     id: crypto.randomUUID(),
@@ -4035,18 +4035,44 @@ function generateFamilyCode() {
   return code;
 }
 
-// Creating a family is now purely additive: you already have your own
-// personal profile by the time you can reach this (Create a Family
-// only appears on the signed-in Home screen), so this just generates
-// a shareable code — it never touches your existing profile, notes,
-// fitness log, or wishlist data.
+// Creating a family is purely additive with respect to YOUR OWN
+// profile — you already have one by the time you can reach this
+// (Create a Family only appears on the signed-in Home screen), so
+// this never touches your own notes, fitness log, or wishlist data.
+//
+// It does, however, drop any OTHER local accounts already sitting in
+// this browser (e.g. test profiles from before "+ Add an account" was
+// removed, or members of a previous family that got reset). Without
+// this, a brand-new family would silently inherit unrelated old
+// accounts as "family members," since familyMembers is stored
+// per-browser rather than per-family. Their personal data goes with
+// them, same as deleteAccount() — only shared data (shopping list,
+// family calendar, homework, meal plans) was never scoped to one
+// member and is unaffected either way.
 async function createFamily(name, password) {
+  const staleMemberIds = familyMembers.filter(m => m.id !== currentMemberId).map(m => m.id);
+  if (staleMemberIds.length) {
+    familyMembers = familyMembers.filter(m => m.id === currentMemberId);
+    wishlistItems = wishlistItems.filter(i => !staleMemberIds.includes(i.memberId));
+    notes = notes.filter(n => !staleMemberIds.includes(n.memberId));
+    fitnessLog = fitnessLog.filter(w => !staleMemberIds.includes(w.memberId));
+    workoutPlans = workoutPlans.filter(p => !staleMemberIds.includes(p.memberId));
+    myCalendarEvents = myCalendarEvents.filter(ev => !staleMemberIds.includes(ev.memberId));
+    await saveFamilyMembers();
+    await saveWishlistItems();
+    await saveNotes();
+    await saveFitnessLog();
+    await saveWorkoutPlans();
+    await saveMyCalendarEvents();
+  }
+
   family = {
     code: generateFamilyCode(),
     password: password ? password : null,
     name: name ? name.trim() : ''
   };
   await saveFamily();
+  renderWishlists();
 }
 
 // Only checks against the single family already stored in THIS
@@ -4560,11 +4586,6 @@ document.getElementById('topbar-create-family-btn').addEventListener('click', ()
 
 document.getElementById('topbar-join-family-btn').addEventListener('click', () => {
   showGate('join');
-});
-
-document.getElementById('add-family-member-btn').addEventListener('click', () => {
-  gateContext = { switchTo: false, cancelStep: null };
-  showGate('email-entry');
 });
 
 document.getElementById('topbar-family-avatars').addEventListener('click', (e) => {
