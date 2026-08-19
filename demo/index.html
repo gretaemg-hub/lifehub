@@ -1706,6 +1706,11 @@
 
         <h3 class="home-section-heading">🏡 Family</h3>
         <div class="card-grid">
+          <div class="card" style="--tape-color: var(--pine)" id="home-family-card">
+            <h3>👪 Family</h3>
+            <div class="card-body" id="home-family-card-body">Loading…</div>
+          </div>
+
           <div class="card clickable" data-view="shopping" style="--tape-color: var(--pine)">
             <h3>🛒 Shopping List</h3>
             <div class="card-body" id="home-shopping-preview">Loading…</div>
@@ -3457,7 +3462,7 @@ function renderTopbarFamily() {
   if (logoutBtn) logoutBtn.style.display = currentMemberId ? '' : 'none';
 
   if (familyMembers.length === 0) {
-    container.innerHTML = `<span style="color: rgba(255,255,255,0.6); font-size: 12px;">No family yet</span>`;
+    container.innerHTML = `<span style="color: rgba(255,255,255,0.6); font-size: 12px;">No profiles yet</span>`;
     return;
   }
 
@@ -3477,11 +3482,45 @@ function renderTopbarFamily() {
   }).join('');
 }
 
+// The "Family" card on Home is the discoverable entry point for
+// turning your personal LifeHub login into a shared family: it shows
+// Create/Join buttons until a family exists, then the code to share
+// with more people. See showGate()/createFamily()/attemptJoinFamily()
+// above for how those two actions work.
+function renderHomeFamilyCard() {
+  const body = document.getElementById('home-family-card-body');
+  if (!body) return;
+
+  if (!family) {
+    body.innerHTML = `
+      <p style="margin:0 0 10px;">Invite your family to share calendars, shopping lists, and wishlists.</p>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button type="button" class="btn-primary" id="home-create-family-btn">➕ Create a Family</button>
+        <button type="button" class="btn-ghost" id="home-join-family-btn">🔑 Join a Family</button>
+      </div>
+    `;
+    return;
+  }
+
+  body.innerHTML = `
+    <p style="margin:0 0 8px;">${family.name ? escapeHtml(family.name) : 'Your family'} is set up — shared features are unlocked for everyone who joins.</p>
+    <div class="family-code-display" style="flex-direction:row; justify-content:flex-start; gap:12px; padding:10px 14px; font-size:19px; letter-spacing:2px;">
+      <span>${escapeHtml(family.code)}</span>
+      ${family.password ? `<span class="family-code-password">Password: ${escapeHtml(family.password)}</span>` : ''}
+    </div>
+    <button type="button" class="btn-ghost" id="home-copy-family-code-btn" style="margin-top:8px;">📋 Copy code to invite more</button>
+  `;
+}
+
 function renderWishlists() {
   const container = document.getElementById('wishlists-container');
 
+  const familyHintHtml = !family
+    ? `<div class="gate-hint" style="margin-bottom: var(--space-3);">💡 Add family members from your homepage to start sharing wishlists with others.</div>`
+    : '';
+
   if (familyMembers.length === 0) {
-    container.innerHTML = `<div class="empty-state" style="border:none;">No family members added yet — add everyone using "+ Add" above to start building wishlists.</div>`;
+    container.innerHTML = familyHintHtml + `<div class="empty-state" style="border:none;">No family members added yet — add everyone using "+ Add" above to start building wishlists.</div>`;
     return;
   }
 
@@ -3549,6 +3588,8 @@ function renderWishlists() {
       </div>
     `;
   }).join('');
+
+  container.innerHTML = familyHintHtml + container.innerHTML;
 }
 
 
@@ -3557,11 +3598,13 @@ function renderWishlists() {
    ============================================================ */
 
 // Creates a real member profile (name + optional picture). Used for:
-// the mandatory profile step right after creating/joining a family
-// (switchTo: true — you become the signed-in member), and for adding
-// an extra profile from inside the app once you're already signed in
-// (switchTo: false — e.g. a parent setting up a kid's profile on the
-// shared family device, without switching who's currently "you").
+// your own personal login — the one mandatory step on a brand new
+// browser (switchTo: true — you become the signed-in member) — and
+// for adding an extra profile from inside the app once you're already
+// signed in (switchTo: false — e.g. a parent setting up a kid's
+// profile on the shared family device, without switching who's
+// currently "you"). Nothing here touches `family` — creating a
+// profile has never required a family to exist.
 function createProfile(name, pictureDataUrl, { switchTo }) {
   const member = { id: crypto.randomUUID(), name: name.trim(), pictureDataUrl: pictureDataUrl || null };
   familyMembers.push(member);
@@ -3572,6 +3615,7 @@ function createProfile(name, pictureDataUrl, { switchTo }) {
   } else {
     renderTopbarFamily();
     renderWishlists();
+    renderHomeFamilyCard();
   }
 
   return member;
@@ -3582,6 +3626,7 @@ function setCurrentMember(id) {
   saveCurrentMember();
   renderWishlists();
   renderTopbarFamily();
+  renderHomeFamilyCard();
 
   activeNoteId = null;
   document.getElementById('notes-editor-subview').style.display = 'none';
@@ -3600,7 +3645,7 @@ function setCurrentMember(id) {
   renderUpcomingEvents('family');
 
   // No member signed in (fresh load, or "Log out") -> block the app
-  // behind the family gate. Otherwise make sure the gate is closed.
+  // behind the sign-in gate. Otherwise make sure the gate is closed.
   if (currentMemberId) {
     hideGate();
   } else {
@@ -3674,20 +3719,18 @@ function generateFamilyCode() {
   return code;
 }
 
+// Creating a family is now purely additive: you already have your own
+// personal profile by the time you can reach this (Create a Family
+// only appears on the signed-in Home screen), so this just generates
+// a shareable code — it never touches your existing profile, notes,
+// fitness log, or wishlist data.
 async function createFamily(name, password) {
   family = {
     code: generateFamilyCode(),
     password: password ? password : null,
     name: name ? name.trim() : ''
   };
-  familyMembers = [];
-  wishlistItems = [];
-  currentMemberId = null;
-
   await saveFamily();
-  await saveFamilyMembers();
-  await saveWishlistItems();
-  await saveCurrentMember();
 }
 
 // Only checks against the single family already stored in THIS
@@ -3723,6 +3766,7 @@ async function resetFamilyData() {
 
   renderTopbarFamily();
   renderWishlists();
+  renderHomeFamilyCard();
   showGate();
 }
 
@@ -3744,7 +3788,7 @@ document.querySelectorAll('.subtab-btn').forEach(btn => {
    FAMILY GATE — STATE + RENDERING
    ============================================================ */
 
-let gateStep = 'choice';
+let gateStep = 'profile-form';
 let gateContext = null;
 let gateError = '';
 let pendingProfilePicture = null;
@@ -3752,15 +3796,20 @@ let pendingProfilePicture = null;
 function showGate(step) {
   if (step) {
     gateStep = step;
-  } else if (!family) {
-    gateStep = 'choice';
-    gateContext = null;
-  } else if (familyMembers.length === 0) {
+  } else if (!currentMemberId && familyMembers.length === 0) {
+    // Brand new browser, nobody has ever created a profile here — this
+    // is the one mandatory step: your own personal login. Family
+    // create/join is a separate, optional action reached later from
+    // the "Family" card on the Home screen, once you're signed in.
     gateStep = 'profile-form';
-    gateContext = { switchTo: true, cancelStep: null };
-  } else {
+    gateContext = { switchTo: true, cancelStep: null, isFirstRun: true };
+  } else if (!currentMemberId) {
+    // Logged out, but this browser already has one or more profiles.
     gateStep = 'pick-profile';
-    gateContext = { switchTo: true, justJoined: false };
+    gateContext = { switchTo: true };
+  } else {
+    hideGate();
+    return;
   }
   gateError = '';
   pendingProfilePicture = null;
@@ -3770,29 +3819,6 @@ function showGate(step) {
 
 function hideGate() {
   document.getElementById('family-gate-overlay').classList.remove('open');
-}
-
-function renderGateChoiceHtml() {
-  return `
-    <h2 class="gate-title">🏡 Welcome to LifeHub</h2>
-    <p class="gate-subtitle">Start a new family, or join one you've been invited to.</p>
-    <div class="gate-choice-buttons">
-      <button type="button" class="gate-big-btn" data-gate-action="go-create">
-        <span class="gate-big-icon">➕</span>
-        <span>
-          <div class="gate-big-label">Create a Family</div>
-          <div class="gate-big-desc">Get a code to share with your family</div>
-        </span>
-      </button>
-      <button type="button" class="gate-big-btn" data-gate-action="go-join">
-        <span class="gate-big-icon">🔑</span>
-        <span>
-          <div class="gate-big-label">Join my Family</div>
-          <div class="gate-big-desc">Enter the code someone sent you</div>
-        </span>
-      </button>
-    </div>
-  `;
 }
 
 function renderGateCreateHtml() {
@@ -3812,7 +3838,7 @@ function renderGateCreateHtml() {
         <button type="submit" class="btn-primary">Create Family</button>
       </div>
     </form>
-    <button type="button" class="gate-back-link" data-gate-action="go-choice">‹ Back</button>
+    <button type="button" class="gate-back-link" data-gate-action="close-gate">‹ Back</button>
   `;
 }
 
@@ -3825,9 +3851,9 @@ function renderGateCodeRevealHtml() {
       <span class="family-code-password">${family.password ? `Password: ${escapeHtml(family.password)}` : 'No password set'}</span>
     </div>
     <button type="button" class="btn-ghost" data-gate-action="copy-code">📋 Copy code</button>
-    <p class="gate-hint">Next, set up your own profile.</p>
+    <p class="gate-hint">Send this to your family — once they join, shared features light up for everyone.</p>
     <div class="gate-actions">
-      <button type="button" class="btn-primary" data-gate-action="continue-to-profile">Continue</button>
+      <button type="button" class="btn-primary" data-gate-action="close-gate">Done</button>
     </div>
   `;
 }
@@ -3848,13 +3874,11 @@ function renderGateJoinHtml() {
         <button type="submit" class="btn-primary">Join Family</button>
       </div>
     </form>
-    <button type="button" class="gate-back-link" data-gate-action="go-choice">‹ Back</button>
+    <button type="button" class="gate-back-link" data-gate-action="close-gate">‹ Back</button>
   `;
 }
 
 function renderGatePickProfileHtml() {
-  const justJoined = !!(gateContext && gateContext.justJoined);
-  const heading = justJoined ? "🎉 You're in!" : 'Welcome back';
   const familyLabel = (family && family.name) ? ` — ${escapeHtml(family.name)}` : '';
 
   const chipsHtml = familyMembers.length ? `
@@ -3876,7 +3900,7 @@ function renderGatePickProfileHtml() {
   ` : '';
 
   return `
-    <h2 class="gate-title">${heading}${familyLabel}</h2>
+    <h2 class="gate-title">Welcome back${familyLabel}</h2>
     <p class="gate-subtitle">${familyMembers.length ? 'Choose your profile, or create a new one.' : "Let's set up your profile."}</p>
     ${chipsHtml}
     <button type="button" class="gate-big-btn" data-gate-action="go-new-profile">
@@ -3886,18 +3910,21 @@ function renderGatePickProfileHtml() {
         <div class="gate-big-desc">Set up a name and picture</div>
       </span>
     </button>
-    ${justJoined ? '' : `<button type="button" class="gate-back-link" data-gate-action="reset-family">Not your family? Reset this browser's family data</button>`}
+    <button type="button" class="gate-back-link" data-gate-action="reset-family">Not your data? Reset this browser</button>
   `;
 }
 
 function renderGateProfileFormHtml() {
   const isOnboarding = !!(gateContext && gateContext.switchTo);
+  const isFirstRun = !!(gateContext && gateContext.isFirstRun);
   const hasCancel = !!(gateContext && gateContext.cancelStep) || !isOnboarding;
   const cancelAction = (gateContext && gateContext.cancelStep) ? 'cancel-profile' : 'cancel-profile-hide';
 
   return `
     <h2 class="gate-title">👤 ${isOnboarding ? 'Create your profile' : 'Add a family member'}</h2>
-    <p class="gate-subtitle">Add your name and, if you'd like, a profile picture.</p>
+    <p class="gate-subtitle">${isFirstRun
+      ? "This is your own LifeHub login. Add your name and, if you'd like, a profile picture — you can invite family later from your homepage."
+      : "Add your name and, if you'd like, a profile picture."}</p>
     <form class="gate-form" id="gate-profile-form">
       <div class="profile-picture-picker">
         <div class="profile-picture-preview" id="gate-profile-preview">👤</div>
@@ -3920,14 +3947,13 @@ function renderGateProfileFormHtml() {
 function renderGateStep() {
   const content = document.getElementById('family-gate-content');
   const renderers = {
-    'choice': renderGateChoiceHtml,
     'create': renderGateCreateHtml,
     'code-reveal': renderGateCodeRevealHtml,
     'join': renderGateJoinHtml,
     'pick-profile': renderGatePickProfileHtml,
     'profile-form': renderGateProfileFormHtml
   };
-  content.innerHTML = (renderers[gateStep] || renderGateChoiceHtml)();
+  content.innerHTML = (renderers[gateStep] || renderGatePickProfileHtml)();
 }
 
 
@@ -3940,15 +3966,7 @@ document.getElementById('family-gate-content').addEventListener('click', (e) => 
   if (!btn) return;
   const action = btn.dataset.gateAction;
 
-  if (action === 'go-choice') { showGate('choice'); return; }
-  if (action === 'go-create') { showGate('create'); return; }
-  if (action === 'go-join') { showGate('join'); return; }
-
-  if (action === 'continue-to-profile') {
-    gateContext = { switchTo: true, cancelStep: null };
-    showGate('profile-form');
-    return;
-  }
+  if (action === 'close-gate') { hideGate(); return; }
 
   if (action === 'copy-code') {
     if (family && navigator.clipboard) {
@@ -3977,7 +3995,11 @@ document.getElementById('family-gate-content').addEventListener('click', (e) => 
   }
 
   if (action === 'cancel-profile') {
-    showGate(gateContext && gateContext.cancelStep ? gateContext.cancelStep : 'choice');
+    if (gateContext && gateContext.cancelStep) {
+      showGate(gateContext.cancelStep);
+    } else {
+      hideGate();
+    }
     return;
   }
 
@@ -3994,6 +4016,7 @@ document.getElementById('family-gate-content').addEventListener('submit', (e) =>
     const password = document.getElementById('gate-create-password').value.trim();
     createFamily(name, password).then(() => {
       renderTopbarFamily();
+      renderHomeFamilyCard();
       showGate('code-reveal');
     });
     return;
@@ -4009,12 +4032,12 @@ document.getElementById('family-gate-content').addEventListener('submit', (e) =>
       renderGateStep();
       return;
     }
-    gateContext = {
-      switchTo: true,
-      justJoined: true,
-      cancelStep: familyMembers.length ? 'pick-profile' : null
-    };
-    showGate(familyMembers.length ? 'pick-profile' : 'profile-form');
+    // Joining never changes your own profile — you already had one to
+    // reach this screen (Join is only ever opened from the signed-in
+    // Home screen). It just confirms you're synced with this family.
+    renderTopbarFamily();
+    renderHomeFamilyCard();
+    hideGate();
     return;
   }
 
@@ -4061,6 +4084,29 @@ document.getElementById('add-family-member-btn').addEventListener('click', () =>
 
 document.getElementById('reset-demo-btn').addEventListener('click', () => {
   resetFamilyData();
+});
+
+// The "Family" card on Home — this is the discoverable entry point
+// the rest of the app funnels into: Create/Join are only ever opened
+// from here (or the equivalent state on the sign-in gate for a
+// returning family member), never forced on a brand new visitor.
+document.getElementById('home-family-card').addEventListener('click', (e) => {
+  if (e.target.id === 'home-create-family-btn') {
+    showGate('create');
+    return;
+  }
+  if (e.target.id === 'home-join-family-btn') {
+    showGate('join');
+    return;
+  }
+  if (e.target.id === 'home-copy-family-code-btn') {
+    if (family && navigator.clipboard) {
+      navigator.clipboard.writeText(family.code).catch(() => {});
+      const original = e.target.textContent;
+      e.target.textContent = '✅ Copied';
+      setTimeout(() => { e.target.textContent = original; }, 1500);
+    }
+  }
 });
 
 document.getElementById('wishlists-container').addEventListener('click', (e) => {
@@ -5455,6 +5501,7 @@ async function init() {
 
   renderWishlists();
   renderTopbarFamily();
+  renderHomeFamilyCard();
 
   if (currentMemberId) {
     hideGate();
