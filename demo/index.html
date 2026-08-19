@@ -179,6 +179,13 @@
   }
   .family-strip-create:hover { background: rgba(255,255,255,0.85); }
 
+  .family-strip-join {
+    color: white;
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.4);
+  }
+  .family-strip-join:hover { background: rgba(255,255,255,0.22); }
+
   /* ============================================================
      FAMILY GATE — create/join/profile onboarding overlay
      ============================================================ */
@@ -1654,6 +1661,7 @@
       <div class="family-avatars" id="topbar-family-avatars"></div>
       <span class="family-strip-code" id="topbar-family-code"></span>
       <button class="family-strip-create" id="topbar-create-family-btn" type="button" style="display:none;">➕ Create a Family</button>
+      <button class="family-strip-create family-strip-join" id="topbar-join-family-btn" type="button" style="display:none;">🔑 Join a Family</button>
       <button class="family-strip-logout" id="topbar-logout-btn" type="button" style="display:none;">Log out</button>
     </div>
   </header>
@@ -1718,11 +1726,6 @@
 
         <h3 class="home-section-heading">🏡 Family</h3>
         <div class="card-grid">
-          <div class="card" style="--tape-color: var(--pine)" id="home-family-card">
-            <h3>👪 Family</h3>
-            <div class="card-body" id="home-family-card-body">Loading…</div>
-          </div>
-
           <div class="card clickable" data-view="shopping" style="--tape-color: var(--pine)">
             <h3>🛒 Shopping List</h3>
             <div class="card-body" id="home-shopping-preview">Loading…</div>
@@ -3464,69 +3467,45 @@ async function saveFamily() {
 
 const AVATAR_COLORS = ['#D9A441', '#4C7A94', '#8C4A63', '#6B8F5A', '#C0392B', '#7A5C9E'];
 
-// Topbar now only ever shows YOUR OWN profile — not the rest of the
-// family (that list lives on the Wishlists tab and the sign-in
-// picker instead). Next to it: the family code once one exists, or a
-// quick "Create a Family" shortcut when it doesn't, so starting the
-// family flow doesn't require a trip to Home.
+// Topbar shows an avatar chip for every local profile — not just
+// yours — so as more family members are added (via "+ Add a profile",
+// or once this demo has real cross-device sync via Join) their
+// avatars appear here too. Right now there's just one profile, so
+// only your own avatar shows. Next to the avatars: the family code
+// once one exists, or Create/Join a Family shortcuts when it doesn't,
+// so starting the family flow doesn't require a trip to Home.
 function renderTopbarFamily() {
   const container = document.getElementById('topbar-family-avatars');
   const codeEl = document.getElementById('topbar-family-code');
   const createBtn = document.getElementById('topbar-create-family-btn');
+  const joinBtn = document.getElementById('topbar-join-family-btn');
   const logoutBtn = document.getElementById('topbar-logout-btn');
   if (!container) return;
 
   if (codeEl) codeEl.textContent = family ? `Code: ${family.code}` : '';
   if (createBtn) createBtn.style.display = (currentMemberId && !family) ? '' : 'none';
+  if (joinBtn) joinBtn.style.display = (currentMemberId && !family) ? '' : 'none';
   if (logoutBtn) logoutBtn.style.display = currentMemberId ? '' : 'none';
 
-  const me = familyMembers.find(m => m.id === currentMemberId);
-  if (!me) {
+  if (!currentMemberId || familyMembers.length === 0) {
     container.innerHTML = '';
     return;
   }
 
-  const color = AVATAR_COLORS[familyMembers.indexOf(me) % AVATAR_COLORS.length];
-  const initial = (me.name.trim().charAt(0) || '?').toUpperCase();
-  const avatarInner = me.pictureDataUrl
-    ? `<img src="${me.pictureDataUrl}" alt="" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`
-    : escapeHtml(initial);
-  container.innerHTML = `
-    <div class="family-avatar-chip is-you">
-      <div class="family-avatar-circle" style="background-color: ${color};">${avatarInner}</div>
-      <span class="family-avatar-name">${escapeHtml(me.name)}</span>
-    </div>
-  `;
-}
-
-// The "Family" card on Home is the discoverable entry point for
-// turning your personal LifeHub login into a shared family: it shows
-// Create/Join buttons until a family exists, then the code to share
-// with more people. See showGate()/createFamily()/attemptJoinFamily()
-// above for how those two actions work.
-function renderHomeFamilyCard() {
-  const body = document.getElementById('home-family-card-body');
-  if (!body) return;
-
-  if (!family) {
-    body.innerHTML = `
-      <p style="margin:0 0 10px;">Invite your family to share calendars, shopping lists, and wishlists.</p>
-      <div style="display:flex; gap:8px; flex-wrap:wrap;">
-        <button type="button" class="btn-primary" id="home-create-family-btn">➕ Create a Family</button>
-        <button type="button" class="btn-ghost" id="home-join-family-btn">🔑 Join a Family</button>
+  container.innerHTML = familyMembers.map((member, index) => {
+    const color = AVATAR_COLORS[index % AVATAR_COLORS.length];
+    const initial = (member.name.trim().charAt(0) || '?').toUpperCase();
+    const avatarInner = member.pictureDataUrl
+      ? `<img src="${member.pictureDataUrl}" alt="" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`
+      : escapeHtml(initial);
+    const isYou = member.id === currentMemberId ? ' is-you' : '';
+    return `
+      <div class="family-avatar-chip${isYou}">
+        <div class="family-avatar-circle" style="background-color: ${color};">${avatarInner}</div>
+        <span class="family-avatar-name">${escapeHtml(member.name)}</span>
       </div>
     `;
-    return;
-  }
-
-  body.innerHTML = `
-    <p style="margin:0 0 8px;">${family.name ? escapeHtml(family.name) : 'Your family'} is set up — shared features are unlocked for everyone who joins.</p>
-    <div class="family-code-display" style="flex-direction:row; justify-content:flex-start; gap:12px; padding:10px 14px; font-size:19px; letter-spacing:2px;">
-      <span>${escapeHtml(family.code)}</span>
-      ${family.password ? `<span class="family-code-password">Password: ${escapeHtml(family.password)}</span>` : ''}
-    </div>
-    <button type="button" class="btn-ghost" id="home-copy-family-code-btn" style="margin-top:8px;">📋 Copy code to invite more</button>
-  `;
+  }).join('');
 }
 
 function renderWishlists() {
@@ -3632,7 +3611,6 @@ function createProfile(name, pictureDataUrl, { switchTo }) {
   } else {
     renderTopbarFamily();
     renderWishlists();
-    renderHomeFamilyCard();
     hideGate();
   }
 
@@ -3644,7 +3622,6 @@ function setCurrentMember(id) {
   saveCurrentMember();
   renderWishlists();
   renderTopbarFamily();
-  renderHomeFamilyCard();
 
   activeNoteId = null;
   document.getElementById('notes-editor-subview').style.display = 'none';
@@ -3784,7 +3761,6 @@ async function resetFamilyData() {
 
   renderTopbarFamily();
   renderWishlists();
-  renderHomeFamilyCard();
   showGate();
 }
 
@@ -4034,7 +4010,6 @@ document.getElementById('family-gate-content').addEventListener('submit', (e) =>
     const password = document.getElementById('gate-create-password').value.trim();
     createFamily(name, password).then(() => {
       renderTopbarFamily();
-      renderHomeFamilyCard();
       showGate('code-reveal');
     });
     return;
@@ -4051,10 +4026,9 @@ document.getElementById('family-gate-content').addEventListener('submit', (e) =>
       return;
     }
     // Joining never changes your own profile — you already had one to
-    // reach this screen (Join is only ever opened from the signed-in
-    // Home screen). It just confirms you're synced with this family.
+    // reach this screen (Join is only ever opened from the topbar).
+    // It just confirms you're synced with this family.
     renderTopbarFamily();
-    renderHomeFamilyCard();
     hideGate();
     return;
   }
@@ -4099,6 +4073,10 @@ document.getElementById('topbar-create-family-btn').addEventListener('click', ()
   showGate('create');
 });
 
+document.getElementById('topbar-join-family-btn').addEventListener('click', () => {
+  showGate('join');
+});
+
 document.getElementById('add-family-member-btn').addEventListener('click', () => {
   gateContext = { switchTo: false, cancelStep: null };
   showGate('profile-form');
@@ -4106,29 +4084,6 @@ document.getElementById('add-family-member-btn').addEventListener('click', () =>
 
 document.getElementById('reset-demo-btn').addEventListener('click', () => {
   resetFamilyData();
-});
-
-// The "Family" card on Home — this is the discoverable entry point
-// the rest of the app funnels into: Create/Join are only ever opened
-// from here (or the equivalent state on the sign-in gate for a
-// returning family member), never forced on a brand new visitor.
-document.getElementById('home-family-card').addEventListener('click', (e) => {
-  if (e.target.id === 'home-create-family-btn') {
-    showGate('create');
-    return;
-  }
-  if (e.target.id === 'home-join-family-btn') {
-    showGate('join');
-    return;
-  }
-  if (e.target.id === 'home-copy-family-code-btn') {
-    if (family && navigator.clipboard) {
-      navigator.clipboard.writeText(family.code).catch(() => {});
-      const original = e.target.textContent;
-      e.target.textContent = '✅ Copied';
-      setTimeout(() => { e.target.textContent = original; }, 1500);
-    }
-  }
 });
 
 document.getElementById('wishlists-container').addEventListener('click', (e) => {
@@ -5523,7 +5478,6 @@ async function init() {
 
   renderWishlists();
   renderTopbarFamily();
-  renderHomeFamilyCard();
 
   if (currentMemberId) {
     hideGate();
