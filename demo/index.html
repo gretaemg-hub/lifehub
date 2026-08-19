@@ -346,6 +346,178 @@
     max-width: 68px;
   }
 
+  /* ============================================================
+     PROFILE / ACCOUNT SETTINGS page
+     ============================================================ */
+  .profile-view-wrap {
+    max-width: 420px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+
+  .profile-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    text-align: center;
+  }
+
+  .profile-avatar-big {
+    position: relative;
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 34px;
+    font-weight: 700;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    margin-bottom: 6px;
+  }
+
+  .profile-avatar-edit-badge {
+    position: absolute;
+    right: -2px;
+    bottom: -2px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+
+  .icon-editor-panel {
+    display: flex;
+    justify-content: center;
+    margin-top: -4px;
+  }
+
+  .icon-color-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    background: var(--surface-alt);
+    border-radius: 10px;
+    padding: 10px;
+  }
+
+  .icon-color-swatch {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .icon-color-swatch.selected {
+    border-color: var(--ink);
+    box-shadow: 0 0 0 2px var(--surface);
+  }
+
+  .icon-camera-btn {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+  }
+
+  .profile-username-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .profile-username-display {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--ink);
+    margin: 0;
+  }
+
+  .profile-username-edit-btn {
+    font-size: 13px;
+    color: var(--ink-soft);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .profile-username-edit-btn:hover { color: var(--ink); }
+
+  .profile-username-input {
+    padding: 8px 10px;
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    font-size: 15px;
+    font-family: inherit;
+    color: var(--ink);
+  }
+
+  .profile-email-display {
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+
+  .profile-settings-section {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .profile-settings-section h3 {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--ink-soft);
+    margin: 0;
+    padding: 12px 16px 6px;
+  }
+
+  .settings-row-btn {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 13px 16px;
+    border: none;
+    border-top: 1px solid var(--line);
+    background: var(--surface);
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .settings-row-btn:hover { background: var(--surface-alt); }
+
+  .settings-row-danger { color: #C0392B; }
+
+  .settings-confirm-panel {
+    padding: 14px 16px;
+    border-top: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .family-avatar-chip.is-you { cursor: pointer; }
+
   .layout {
     display: grid;
     grid-template-columns: 210px 1fr;
@@ -2001,7 +2173,7 @@
         <div id="birthdays-subtab-wishlists" class="subtab-panel">
           <div class="whoami-row" id="family-manage-row">
             <span class="whoami-label">Family members</span>
-            <button class="btn-ghost" id="add-family-member-btn" type="button">+ Add a profile</button>
+            <button class="btn-ghost" id="add-family-member-btn" type="button">+ Add an account</button>
             <button class="btn-ghost" id="reset-demo-btn" type="button" title="Wipes this browser's family, members, and wishlists so you can try Create/Join again">Reset family data</button>
           </div>
 
@@ -2009,7 +2181,45 @@
         </div>
       </section>
 
+      <section id="view-profile" class="view">
+        <div class="view-header">
+          <h2>👤 Your Profile</h2>
+          <p>Manage your username, icon, and account.</p>
+        </div>
+        <div class="profile-view-wrap">
+          <div id="profile-view-body">Loading…</div>
+        </div>
+      </section>
+
     </main>
+  </div>
+
+  <div class="modal-overlay" id="photo-source-modal-overlay">
+    <div class="modal" style="max-width:320px;">
+      <h3 style="margin:0;">Add a profile picture</h3>
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <button type="button" class="gate-big-btn" id="photo-source-camera-btn">
+          <span class="gate-big-icon">📷</span>
+          <span>
+            <div class="gate-big-label">Take Photo</div>
+            <div class="gate-big-desc">Use your camera</div>
+          </span>
+        </button>
+        <button type="button" class="gate-big-btn" id="photo-source-library-btn">
+          <span class="gate-big-icon">🖼️</span>
+          <span>
+            <div class="gate-big-label">Choose from Library</div>
+            <div class="gate-big-desc">Pick an existing photo</div>
+          </span>
+        </button>
+      </div>
+      <button type="button" class="btn-ghost" id="photo-source-cancel-btn">Cancel</button>
+      <!-- Native file inputs: the browser itself prompts for camera/photo-
+           library permission the first time each is used — no custom
+           permission UI needed here. -->
+      <input type="file" id="profile-photo-camera-input" accept="image/*" capture="user" style="display:none;" />
+      <input type="file" id="profile-photo-library-input" accept="image/*" style="display:none;" />
+    </div>
   </div>
 
   <div class="modal-overlay" id="event-modal-overlay">
@@ -3467,6 +3677,33 @@ async function saveFamily() {
 
 const AVATAR_COLORS = ['#D9A441', '#4C7A94', '#8C4A63', '#6B8F5A', '#C0392B', '#7A5C9E'];
 
+// A member's avatar color is whatever they picked in Profile Settings
+// (avatarColor), or — if they've never picked one — the same
+// index-cycled default color it always used to get, so existing
+// accounts don't all jump to one color the moment this shipped.
+function getMemberColor(member, index) {
+  return (member && member.avatarColor) || AVATAR_COLORS[index % AVATAR_COLORS.length];
+}
+
+// Client-side-only password hashing. There's no backend in this demo,
+// so this can't provide real security — anyone with the browser's
+// localStorage can see the hash and, in principle, brute-force it
+// offline. It exists purely so a password isn't sitting around in
+// plaintext next to everything else in localStorage. The real
+// Supabase-backed app hashes (and salts) passwords properly, server-side.
+async function sha256Hex(text) {
+  const bytes = new TextEncoder().encode(text);
+  const digest = await crypto.subtle.digest('SHA-256', bytes);
+  return Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+// Demo mode has no email server to actually deliver this to, so the
+// email-verify screen displays it directly instead — see
+// renderGateEmailVerifyHtml().
+function generateVerificationCode() {
+  return String(Math.floor(100000 + Math.random() * 900000));
+}
+
 // Topbar shows an avatar chip for every local profile — not just
 // yours — so as more family members are added (via "+ Add a profile",
 // or once this demo has real cross-device sync via Join) their
@@ -3493,7 +3730,7 @@ function renderTopbarFamily() {
   }
 
   container.innerHTML = familyMembers.map((member, index) => {
-    const color = AVATAR_COLORS[index % AVATAR_COLORS.length];
+    const color = getMemberColor(member, index);
     const initial = (member.name.trim().charAt(0) || '?').toUpperCase();
     const avatarInner = member.pictureDataUrl
       ? `<img src="${member.pictureDataUrl}" alt="" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`
@@ -3593,16 +3830,26 @@ function renderWishlists() {
    FAMILY WISHLISTS — ACTIONS
    ============================================================ */
 
-// Creates a real member profile (name + optional picture). Used for:
-// your own personal login — the one mandatory step on a brand new
-// browser (switchTo: true — you become the signed-in member) — and
-// for adding an extra profile from inside the app once you're already
-// signed in (switchTo: false — e.g. a parent setting up a kid's
-// profile on the shared family device, without switching who's
-// currently "you"). Nothing here touches `family` — creating a
-// profile has never required a family to exist.
-function createProfile(name, pictureDataUrl, { switchTo }) {
-  const member = { id: crypto.randomUUID(), name: name.trim(), pictureDataUrl: pictureDataUrl || null };
+// Creates a real account — email, username, and a hashed password —
+// after the email-entry/verify/account-setup steps of the sign-up
+// gate. Used for your own personal login — the one mandatory step on
+// a brand new browser (switchTo: true — you become the signed-in
+// member) — and for adding an extra account from inside the app once
+// you're already signed in (switchTo: false — e.g. a parent setting
+// up a kid's account on the shared family device, without switching
+// who's currently "you"). Nothing here touches `family` — creating an
+// account has never required a family to exist. The profile picture
+// and avatar color aren't set here — those are edited afterward from
+// Profile Settings.
+function createAccount(email, username, passwordHash, { switchTo }) {
+  const member = {
+    id: crypto.randomUUID(),
+    email: email.trim(),
+    name: username.trim(),
+    passwordHash,
+    pictureDataUrl: null,
+    avatarColor: null
+  };
   familyMembers.push(member);
   saveFamilyMembers();
 
@@ -3615,6 +3862,35 @@ function createProfile(name, pictureDataUrl, { switchTo }) {
   }
 
   return member;
+}
+
+// Deletes an account and every piece of that member's personal data —
+// notes, fitness log, workout plan, personal calendar events, and
+// wishlist items. Shared data (shopping list, family calendar,
+// homework, meal plans) is untouched since it was never scoped to one
+// member. If you're deleting yourself, this also logs you out.
+async function deleteAccount(memberId) {
+  familyMembers = familyMembers.filter(m => m.id !== memberId);
+  wishlistItems = wishlistItems.filter(i => i.memberId !== memberId);
+  notes = notes.filter(n => n.memberId !== memberId);
+  fitnessLog = fitnessLog.filter(w => w.memberId !== memberId);
+  workoutPlans = workoutPlans.filter(p => p.memberId !== memberId);
+  myCalendarEvents = myCalendarEvents.filter(ev => ev.memberId !== memberId);
+
+  await saveFamilyMembers();
+  await saveWishlistItems();
+  await saveNotes();
+  await saveFitnessLog();
+  await saveWorkoutPlans();
+  await saveMyCalendarEvents();
+
+  if (currentMemberId === memberId) {
+    switchView('home');
+    setCurrentMember(null);
+  } else {
+    renderTopbarFamily();
+    renderWishlists();
+  }
 }
 
 function setCurrentMember(id) {
@@ -3782,23 +4058,23 @@ document.querySelectorAll('.subtab-btn').forEach(btn => {
    FAMILY GATE — STATE + RENDERING
    ============================================================ */
 
-let gateStep = 'profile-form';
+let gateStep = 'email-entry';
 let gateContext = null;
 let gateError = '';
-let pendingProfilePicture = null;
 
 function showGate(step) {
   if (step) {
     gateStep = step;
   } else if (!currentMemberId && familyMembers.length === 0) {
-    // Brand new browser, nobody has ever created a profile here — this
-    // is the one mandatory step: your own personal login. Family
-    // create/join is a separate, optional action reached later from
-    // the "Family" card on the Home screen, once you're signed in.
-    gateStep = 'profile-form';
+    // Brand new browser, nobody has ever created an account here —
+    // this is the one mandatory step: your own personal login (email
+    // → verification code → username/password). Family create/join is
+    // a separate, optional action reached later from the topbar, once
+    // you're signed in.
+    gateStep = 'email-entry';
     gateContext = { switchTo: true, cancelStep: null, isFirstRun: true };
   } else if (!currentMemberId) {
-    // Logged out, but this browser already has one or more profiles.
+    // Logged out, but this browser already has one or more accounts.
     gateStep = 'pick-profile';
     gateContext = { switchTo: true };
   } else {
@@ -3806,7 +4082,6 @@ function showGate(step) {
     return;
   }
   gateError = '';
-  pendingProfilePicture = null;
   document.getElementById('family-gate-overlay').classList.add('open');
   renderGateStep();
 }
@@ -3878,7 +4153,7 @@ function renderGatePickProfileHtml() {
   const chipsHtml = familyMembers.length ? `
     <div class="member-pick-row">
       ${familyMembers.map((m, i) => {
-        const color = AVATAR_COLORS[i % AVATAR_COLORS.length];
+        const color = getMemberColor(m, i);
         const initial = (m.name.trim().charAt(0) || '?').toUpperCase();
         const avatarInner = m.pictureDataUrl
           ? `<img src="${m.pictureDataUrl}" alt="" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`
@@ -3895,46 +4170,132 @@ function renderGatePickProfileHtml() {
 
   return `
     <h2 class="gate-title">Welcome back${familyLabel}</h2>
-    <p class="gate-subtitle">${familyMembers.length ? 'Choose your profile, or create a new one.' : "Let's set up your profile."}</p>
+    <p class="gate-subtitle">${familyMembers.length ? 'Choose your account, or create a new one.' : "Let's set up your account."}</p>
     ${chipsHtml}
-    <button type="button" class="gate-big-btn" data-gate-action="go-new-profile">
+    <button type="button" class="gate-big-btn" data-gate-action="go-new-account">
       <span class="gate-big-icon">👤</span>
       <span>
-        <div class="gate-big-label">+ New profile</div>
-        <div class="gate-big-desc">Set up a name and picture</div>
+        <div class="gate-big-label">+ New account</div>
+        <div class="gate-big-desc">Sign up with your email</div>
       </span>
     </button>
     <button type="button" class="gate-back-link" data-gate-action="reset-family">Not your data? Reset this browser</button>
   `;
 }
 
-function renderGateProfileFormHtml() {
-  const isOnboarding = !!(gateContext && gateContext.switchTo);
+// Stage 1 of sign-up: email address. Nothing is created yet — this
+// just kicks off the (simulated) verification email.
+function renderGateEmailEntryHtml() {
   const isFirstRun = !!(gateContext && gateContext.isFirstRun);
-  const hasCancel = !!(gateContext && gateContext.cancelStep) || !isOnboarding;
-  const cancelAction = (gateContext && gateContext.cancelStep) ? 'cancel-profile' : 'cancel-profile-hide';
+  const hasCancel = !!(gateContext && (gateContext.cancelStep || gateContext.switchTo === false));
+  const cancelAction = (gateContext && gateContext.cancelStep) ? 'cancel-signup' : 'cancel-signup-hide';
+  const prevEmail = (gateContext && gateContext.pendingEmail) || '';
 
   return `
-    <h2 class="gate-title">👤 ${isOnboarding ? 'Create your profile' : 'Add a family member'}</h2>
+    <h2 class="gate-title">👋 Welcome to LifeHub</h2>
     <p class="gate-subtitle">${isFirstRun
-      ? "This is your own LifeHub login. Add your name and, if you'd like, a profile picture — you can invite family later from your homepage."
-      : "Add your name and, if you'd like, a profile picture."}</p>
-    <form class="gate-form" id="gate-profile-form">
-      <div class="profile-picture-picker">
-        <div class="profile-picture-preview" id="gate-profile-preview">👤</div>
-        <label style="flex:1;">Profile picture (optional)
-          <input type="file" id="gate-profile-picture-input" accept="image/*" />
-        </label>
-      </div>
-      <label>Name
-        <input type="text" id="gate-profile-name" placeholder="e.g. Alex" maxlength="40" required />
+      ? "Let's set up your account. First, what's your email address?"
+      : "What's the email address for this account?"}</p>
+    <form class="gate-form" id="gate-email-form">
+      <label>Email address
+        <input type="email" id="gate-email-input" placeholder="you@example.com" value="${escapeHtml(prevEmail)}" required />
       </label>
       ${gateError ? `<div class="gate-error">${escapeHtml(gateError)}</div>` : ''}
       <div class="gate-actions">
         ${hasCancel ? `<button type="button" class="btn-ghost" data-gate-action="${cancelAction}">Cancel</button>` : ''}
-        <button type="submit" class="btn-primary">Save profile</button>
+        <button type="submit" class="btn-primary">Send code</button>
       </div>
     </form>
+  `;
+}
+
+// Stage 2: enter the code that was "emailed" to you. This demo has no
+// backend and can't send real email, so — same honesty policy as the
+// family code feature — the code is shown right on screen instead of
+// pretending to deliver it.
+function renderGateEmailVerifyHtml() {
+  const email = (gateContext && gateContext.pendingEmail) || '';
+  const code = (gateContext && gateContext.pendingCode) || '';
+
+  return `
+    <h2 class="gate-title">📧 Check your email</h2>
+    <p class="gate-subtitle">We sent a 6-digit code to <strong>${escapeHtml(email)}</strong>.</p>
+    <div class="family-code-display" style="font-size:22px; letter-spacing:3px;">
+      <span>${escapeHtml(code)}</span>
+      <span class="family-code-password">Demo mode — no real email is sent, so your code is shown right here.</span>
+    </div>
+    <form class="gate-form" id="gate-verify-form">
+      <label>Verification code
+        <input type="text" id="gate-verify-code" placeholder="e.g. 482913" maxlength="6" inputmode="numeric" autocomplete="one-time-code" required />
+      </label>
+      ${gateError ? `<div class="gate-error">${escapeHtml(gateError)}</div>` : ''}
+      <div class="gate-actions">
+        <button type="button" class="btn-ghost" data-gate-action="resend-code">Resend code</button>
+        <button type="submit" class="btn-primary">Verify</button>
+      </div>
+    </form>
+    <button type="button" class="gate-back-link" data-gate-action="back-to-email">‹ Use a different email</button>
+  `;
+}
+
+// Stage 3: choose a username and password (entered twice, cross-
+// checked before the account is actually created).
+function renderGateAccountSetupHtml() {
+  const email = (gateContext && gateContext.pendingEmail) || '';
+  const prevUsername = (gateContext && gateContext.pendingUsername) || '';
+
+  return `
+    <h2 class="gate-title">🔐 Create your account</h2>
+    <p class="gate-subtitle">Choose a username and password for ${escapeHtml(email)}.</p>
+    <form class="gate-form" id="gate-account-form">
+      <label>Username
+        <input type="text" id="gate-account-username" placeholder="e.g. alexm" maxlength="30" value="${escapeHtml(prevUsername)}" required />
+      </label>
+      <label>Password
+        <input type="password" id="gate-account-password" placeholder="At least 6 characters" maxlength="60" required />
+      </label>
+      <label>Confirm password
+        <input type="password" id="gate-account-password-confirm" placeholder="Enter it again" maxlength="60" required />
+      </label>
+      ${gateError ? `<div class="gate-error">${escapeHtml(gateError)}</div>` : ''}
+      <div class="gate-actions">
+        <button type="submit" class="btn-primary">Create account</button>
+      </div>
+    </form>
+    <button type="button" class="gate-back-link" data-gate-action="back-to-verify">‹ Back</button>
+  `;
+}
+
+// Returning user: they picked an existing local account on the
+// "Welcome back" screen — confirm it's really them with their password
+// before switching to it.
+function renderGateSigninPasswordHtml() {
+  const member = familyMembers.find(m => m.id === (gateContext && gateContext.pendingMemberId));
+  if (!member) return renderGatePickProfileHtml();
+
+  const idx = familyMembers.indexOf(member);
+  const color = getMemberColor(member, idx);
+  const initial = (member.name.trim().charAt(0) || '?').toUpperCase();
+  const avatarInner = member.pictureDataUrl
+    ? `<img src="${member.pictureDataUrl}" alt="" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`
+    : escapeHtml(initial);
+
+  return `
+    <div style="display:flex; flex-direction:column; align-items:center; gap:8px;">
+      <div class="profile-picture-preview" style="width:64px; height:64px; font-size:24px; background-color:${color}; color:white;">${avatarInner}</div>
+      <h2 class="gate-title" style="margin:0;">${escapeHtml(member.name)}</h2>
+    </div>
+    <p class="gate-subtitle" style="text-align:center;">Enter your password to sign in.</p>
+    <form class="gate-form" id="gate-signin-form">
+      <label>Password
+        <input type="password" id="gate-signin-password" placeholder="Password" maxlength="60" required />
+      </label>
+      ${gateError ? `<div class="gate-error">${escapeHtml(gateError)}</div>` : ''}
+      <div class="gate-actions">
+        <button type="submit" class="btn-primary">Sign in</button>
+      </div>
+    </form>
+    <button type="button" class="gate-back-link" data-gate-action="close-signin">‹ Back</button>
   `;
 }
 
@@ -3945,7 +4306,10 @@ function renderGateStep() {
     'code-reveal': renderGateCodeRevealHtml,
     'join': renderGateJoinHtml,
     'pick-profile': renderGatePickProfileHtml,
-    'profile-form': renderGateProfileFormHtml
+    'email-entry': renderGateEmailEntryHtml,
+    'email-verify': renderGateEmailVerifyHtml,
+    'account-setup': renderGateAccountSetupHtml,
+    'signin-password': renderGateSigninPasswordHtml
   };
   content.innerHTML = (renderers[gateStep] || renderGatePickProfileHtml)();
 }
@@ -3972,14 +4336,37 @@ document.getElementById('family-gate-content').addEventListener('click', (e) => 
     return;
   }
 
-  if (action === 'go-new-profile') {
+  if (action === 'go-new-account') {
     gateContext = { switchTo: true, cancelStep: familyMembers.length ? 'pick-profile' : null };
-    showGate('profile-form');
+    showGate('email-entry');
     return;
   }
 
   if (action === 'pick-member') {
-    setCurrentMember(btn.dataset.memberId);
+    gateContext = { pendingMemberId: btn.dataset.memberId };
+    showGate('signin-password');
+    return;
+  }
+
+  if (action === 'close-signin') {
+    showGate('pick-profile');
+    return;
+  }
+
+  if (action === 'back-to-email') {
+    showGate('email-entry');
+    return;
+  }
+
+  if (action === 'back-to-verify') {
+    showGate('email-verify');
+    return;
+  }
+
+  if (action === 'resend-code') {
+    if (gateContext) gateContext.pendingCode = generateVerificationCode();
+    gateError = '';
+    renderGateStep();
     return;
   }
 
@@ -3988,7 +4375,7 @@ document.getElementById('family-gate-content').addEventListener('click', (e) => 
     return;
   }
 
-  if (action === 'cancel-profile') {
+  if (action === 'cancel-signup') {
     if (gateContext && gateContext.cancelStep) {
       showGate(gateContext.cancelStep);
     } else {
@@ -3997,7 +4384,7 @@ document.getElementById('family-gate-content').addEventListener('click', (e) => 
     return;
   }
 
-  if (action === 'cancel-profile-hide') {
+  if (action === 'cancel-signup-hide') {
     hideGate();
     return;
   }
@@ -4033,28 +4420,81 @@ document.getElementById('family-gate-content').addEventListener('submit', (e) =>
     return;
   }
 
-  if (e.target.id === 'gate-profile-form') {
+  if (e.target.id === 'gate-email-form') {
     e.preventDefault();
-    const name = document.getElementById('gate-profile-name').value.trim();
-    if (!name) return;
-    createProfile(name, pendingProfilePicture, { switchTo: !!(gateContext && gateContext.switchTo) });
+    const email = document.getElementById('gate-email-input').value.trim();
+    if (!email) return;
+    gateContext = gateContext || {};
+    gateContext.pendingEmail = email;
+    gateContext.pendingCode = generateVerificationCode();
+    gateError = '';
+    showGate('email-verify');
     return;
   }
-});
 
-document.getElementById('family-gate-content').addEventListener('change', (e) => {
-  if (e.target.id !== 'gate-profile-picture-input') return;
-  const file = e.target.files && e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = () => {
-    pendingProfilePicture = reader.result;
-    const preview = document.getElementById('gate-profile-preview');
-    if (preview) {
-      preview.innerHTML = `<img src="${pendingProfilePicture}" alt="" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+  if (e.target.id === 'gate-verify-form') {
+    e.preventDefault();
+    const entered = document.getElementById('gate-verify-code').value.trim();
+    if (!gateContext || entered !== gateContext.pendingCode) {
+      gateError = "That code doesn't match. Double-check it and try again.";
+      renderGateStep();
+      return;
     }
-  };
-  reader.readAsDataURL(file);
+    gateError = '';
+    showGate('account-setup');
+    return;
+  }
+
+  if (e.target.id === 'gate-account-form') {
+    e.preventDefault();
+    const username = document.getElementById('gate-account-username').value.trim();
+    const password = document.getElementById('gate-account-password').value;
+    const confirmPassword = document.getElementById('gate-account-password-confirm').value;
+
+    if (!username) return;
+    gateContext = gateContext || {};
+    gateContext.pendingUsername = username;
+    const taken = familyMembers.some(m => m.name.trim().toLowerCase() === username.toLowerCase());
+    if (taken) {
+      gateError = 'That username is already taken on this device. Try another.';
+      renderGateStep();
+      return;
+    }
+    if (password.length < 6) {
+      gateError = 'Password must be at least 6 characters.';
+      renderGateStep();
+      return;
+    }
+    if (password !== confirmPassword) {
+      gateError = "Passwords don't match. Try again.";
+      renderGateStep();
+      return;
+    }
+
+    const email = (gateContext && gateContext.pendingEmail) || '';
+    const switchTo = !!(gateContext && gateContext.switchTo);
+    sha256Hex(password).then(passwordHash => {
+      createAccount(email, username, passwordHash, { switchTo });
+    });
+    return;
+  }
+
+  if (e.target.id === 'gate-signin-form') {
+    e.preventDefault();
+    const member = familyMembers.find(m => m.id === (gateContext && gateContext.pendingMemberId));
+    if (!member) { showGate('pick-profile'); return; }
+    const entered = document.getElementById('gate-signin-password').value;
+    sha256Hex(entered).then(hash => {
+      if (hash !== member.passwordHash) {
+        gateError = 'Incorrect password. Try again.';
+        renderGateStep();
+        return;
+      }
+      gateError = '';
+      setCurrentMember(member.id);
+    });
+    return;
+  }
 });
 
 document.getElementById('family-gate-content').addEventListener('input', (e) => {
@@ -4079,12 +4519,319 @@ document.getElementById('topbar-join-family-btn').addEventListener('click', () =
 
 document.getElementById('add-family-member-btn').addEventListener('click', () => {
   gateContext = { switchTo: false, cancelStep: null };
-  showGate('profile-form');
+  showGate('email-entry');
+});
+
+document.getElementById('topbar-family-avatars').addEventListener('click', (e) => {
+  if (e.target.closest('.family-avatar-chip.is-you')) openProfileView();
 });
 
 document.getElementById('reset-demo-btn').addEventListener('click', () => {
   resetFamilyData();
 });
+
+
+/* ============================================================
+   PROFILE / ACCOUNT SETTINGS
+   ============================================================
+   Reached by clicking your own avatar in the topbar. Lets you change
+   your username and icon (a background color, or a photo taken with
+   the camera / chosen from your photo library — the browser itself
+   prompts for camera/library permission the first time, no custom
+   permission UI needed), change your password, or delete your account.
+   ============================================================ */
+
+let profileEditingIcon = false;
+let profileEditingUsername = false;
+let profileUsernameError = '';
+let profileChangingPassword = false;
+let profilePasswordError = '';
+let profileConfirmingDelete = false;
+
+function openProfileView() {
+  profileEditingIcon = false;
+  profileEditingUsername = false;
+  profileUsernameError = '';
+  profileChangingPassword = false;
+  profilePasswordError = '';
+  profileConfirmingDelete = false;
+  switchView('profile');
+  renderProfileView();
+}
+
+function renderProfileView() {
+  const body = document.getElementById('profile-view-body');
+  if (!body || !currentMemberId) return;
+  const member = familyMembers.find(m => m.id === currentMemberId);
+  if (!member) return;
+
+  const idx = familyMembers.indexOf(member);
+  const color = getMemberColor(member, idx);
+  const initial = (member.name.trim().charAt(0) || '?').toUpperCase();
+  const avatarInner = member.pictureDataUrl
+    ? `<img src="${member.pictureDataUrl}" alt="" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`
+    : escapeHtml(initial);
+
+  const iconEditorHtml = profileEditingIcon ? `
+    <div class="icon-editor-panel">
+      <div class="icon-color-row">
+        ${AVATAR_COLORS.map(c => `
+          <button type="button" class="icon-color-swatch${member.avatarColor === c ? ' selected' : ''}" style="background-color:${c};" data-profile-action="pick-color" data-color="${c}" title="Use this color"></button>
+        `).join('')}
+        <button type="button" class="icon-color-swatch icon-camera-btn" data-profile-action="open-photo-sheet" title="Add a photo">📷</button>
+      </div>
+    </div>
+  ` : '';
+
+  const usernameHtml = profileEditingUsername ? `
+    <div class="profile-username-row">
+      <input type="text" id="profile-username-input" class="profile-username-input" value="${escapeHtml(member.name)}" maxlength="30" />
+      <button type="button" class="btn-primary" data-profile-action="save-username">Save</button>
+      <button type="button" class="btn-ghost" data-profile-action="cancel-edit-username">Cancel</button>
+    </div>
+    ${profileUsernameError ? `<div class="gate-error">${escapeHtml(profileUsernameError)}</div>` : ''}
+  ` : `
+    <div class="profile-username-row">
+      <h2 class="profile-username-display">${escapeHtml(member.name)}</h2>
+      <button type="button" class="profile-username-edit-btn" data-profile-action="edit-username" title="Edit username">✎</button>
+    </div>
+  `;
+
+  const passwordSectionHtml = profileChangingPassword ? `
+    <div class="settings-confirm-panel">
+      <form class="gate-form" id="profile-password-form">
+        <label>Current password
+          <input type="password" id="profile-current-password" maxlength="60" required />
+        </label>
+        <label>New password
+          <input type="password" id="profile-new-password" placeholder="At least 6 characters" maxlength="60" required />
+        </label>
+        <label>Confirm new password
+          <input type="password" id="profile-new-password-confirm" maxlength="60" required />
+        </label>
+        ${profilePasswordError ? `<div class="gate-error">${escapeHtml(profilePasswordError)}</div>` : ''}
+        <div class="gate-actions">
+          <button type="button" class="btn-ghost" data-profile-action="cancel-change-password">Cancel</button>
+          <button type="submit" class="btn-primary">Save password</button>
+        </div>
+      </form>
+    </div>
+  ` : '';
+
+  const deleteSectionHtml = profileConfirmingDelete ? `
+    <div class="settings-confirm-panel">
+      <div class="gate-error">This deletes your account and all of your personal data on this browser — profile, notes, fitness log, workout plan, personal calendar events, and wishlist items. This can't be undone.</div>
+      <div class="gate-actions">
+        <button type="button" class="btn-ghost" data-profile-action="cancel-delete-account">Cancel</button>
+        <button type="button" class="btn-primary" style="background:#C0392B;" data-profile-action="confirm-delete-account">Yes, delete my account</button>
+      </div>
+    </div>
+  ` : '';
+
+  body.innerHTML = `
+    <div class="profile-header">
+      <button type="button" class="profile-avatar-big" style="background-color:${color};" data-profile-action="toggle-icon-editor">
+        ${avatarInner}
+        <span class="profile-avatar-edit-badge">✎</span>
+      </button>
+      ${iconEditorHtml}
+      ${usernameHtml}
+      <div class="profile-email-display">${escapeHtml(member.email || '')}</div>
+    </div>
+
+    <div class="profile-settings-section">
+      <h3>Account Settings</h3>
+      <button type="button" class="settings-row-btn" data-profile-action="toggle-change-password">🔒 Change password</button>
+      ${passwordSectionHtml}
+      <button type="button" class="settings-row-btn" data-profile-action="log-out">🚪 Log out</button>
+      <button type="button" class="settings-row-btn settings-row-danger" data-profile-action="toggle-delete-account">🗑️ Delete account</button>
+      ${deleteSectionHtml}
+    </div>
+  `;
+}
+
+document.getElementById('profile-view-body').addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-profile-action]');
+  if (!btn || !currentMemberId) return;
+  const action = btn.dataset.profileAction;
+  const member = familyMembers.find(m => m.id === currentMemberId);
+  if (!member) return;
+
+  if (action === 'toggle-icon-editor') {
+    profileEditingIcon = !profileEditingIcon;
+    renderProfileView();
+    return;
+  }
+
+  if (action === 'pick-color') {
+    member.avatarColor = btn.dataset.color;
+    saveFamilyMembers();
+    renderProfileView();
+    renderTopbarFamily();
+    return;
+  }
+
+  if (action === 'open-photo-sheet') {
+    document.getElementById('photo-source-modal-overlay').classList.add('open');
+    return;
+  }
+
+  if (action === 'edit-username') {
+    profileEditingUsername = true;
+    profileUsernameError = '';
+    renderProfileView();
+    return;
+  }
+
+  if (action === 'cancel-edit-username') {
+    profileEditingUsername = false;
+    profileUsernameError = '';
+    renderProfileView();
+    return;
+  }
+
+  if (action === 'save-username') {
+    const input = document.getElementById('profile-username-input');
+    const newName = input.value.trim();
+    if (!newName) return;
+    const taken = familyMembers.some(m => m.id !== currentMemberId && m.name.trim().toLowerCase() === newName.toLowerCase());
+    if (taken) {
+      profileUsernameError = 'That username is already taken on this device. Try another.';
+      renderProfileView();
+      return;
+    }
+    member.name = newName;
+    saveFamilyMembers();
+    profileEditingUsername = false;
+    profileUsernameError = '';
+    renderProfileView();
+    renderTopbarFamily();
+    renderWishlists();
+    return;
+  }
+
+  if (action === 'toggle-change-password') {
+    profileChangingPassword = !profileChangingPassword;
+    profilePasswordError = '';
+    renderProfileView();
+    return;
+  }
+
+  if (action === 'cancel-change-password') {
+    profileChangingPassword = false;
+    profilePasswordError = '';
+    renderProfileView();
+    return;
+  }
+
+  if (action === 'log-out') {
+    switchView('home');
+    setCurrentMember(null);
+    return;
+  }
+
+  if (action === 'toggle-delete-account') {
+    profileConfirmingDelete = !profileConfirmingDelete;
+    renderProfileView();
+    return;
+  }
+
+  if (action === 'cancel-delete-account') {
+    profileConfirmingDelete = false;
+    renderProfileView();
+    return;
+  }
+
+  if (action === 'confirm-delete-account') {
+    deleteAccount(currentMemberId);
+    return;
+  }
+});
+
+document.getElementById('profile-view-body').addEventListener('submit', (e) => {
+  if (e.target.id !== 'profile-password-form') return;
+  e.preventDefault();
+  const member = familyMembers.find(m => m.id === currentMemberId);
+  if (!member) return;
+
+  const current = document.getElementById('profile-current-password').value;
+  const next = document.getElementById('profile-new-password').value;
+  const nextConfirm = document.getElementById('profile-new-password-confirm').value;
+
+  sha256Hex(current).then(currentHash => {
+    if (currentHash !== member.passwordHash) {
+      profilePasswordError = 'Current password is incorrect.';
+      renderProfileView();
+      return;
+    }
+    if (next.length < 6) {
+      profilePasswordError = 'New password must be at least 6 characters.';
+      renderProfileView();
+      return;
+    }
+    if (next !== nextConfirm) {
+      profilePasswordError = "New passwords don't match.";
+      renderProfileView();
+      return;
+    }
+    sha256Hex(next).then(newHash => {
+      member.passwordHash = newHash;
+      saveFamilyMembers();
+      profileChangingPassword = false;
+      profilePasswordError = '';
+      renderProfileView();
+    });
+  });
+});
+
+function applyProfilePicture(dataUrl) {
+  const member = familyMembers.find(m => m.id === currentMemberId);
+  if (!member) return;
+  member.pictureDataUrl = dataUrl;
+  saveFamilyMembers();
+  profileEditingIcon = false;
+  renderProfileView();
+  renderTopbarFamily();
+}
+
+document.getElementById('profile-photo-camera-input').addEventListener('change', (e) => {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => applyProfilePicture(reader.result);
+  reader.readAsDataURL(file);
+  e.target.value = '';
+});
+
+document.getElementById('profile-photo-library-input').addEventListener('change', (e) => {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => applyProfilePicture(reader.result);
+  reader.readAsDataURL(file);
+  e.target.value = '';
+});
+
+document.getElementById('photo-source-camera-btn').addEventListener('click', () => {
+  document.getElementById('photo-source-modal-overlay').classList.remove('open');
+  document.getElementById('profile-photo-camera-input').click();
+});
+
+document.getElementById('photo-source-library-btn').addEventListener('click', () => {
+  document.getElementById('photo-source-modal-overlay').classList.remove('open');
+  document.getElementById('profile-photo-library-input').click();
+});
+
+document.getElementById('photo-source-cancel-btn').addEventListener('click', () => {
+  document.getElementById('photo-source-modal-overlay').classList.remove('open');
+});
+
+document.getElementById('photo-source-modal-overlay').addEventListener('click', (e) => {
+  if (e.target.id === 'photo-source-modal-overlay') {
+    e.target.classList.remove('open');
+  }
+});
+
 
 document.getElementById('wishlists-container').addEventListener('click', (e) => {
   if (e.target.classList.contains('wishlist-add-btn')) {
