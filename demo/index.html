@@ -2207,11 +2207,6 @@
         </div>
 
         <div id="birthdays-subtab-wishlists" class="subtab-panel">
-          <div class="whoami-row" id="family-manage-row">
-            <span class="whoami-label">Family members</span>
-            <button class="btn-ghost" id="reset-demo-btn" type="button" title="Wipes this browser's family, members, and wishlists so you can try Create/Join again">Reset family data</button>
-          </div>
-
           <div id="wishlists-container"></div>
         </div>
       </section>
@@ -4590,10 +4585,6 @@ document.getElementById('topbar-join-family-btn').addEventListener('click', () =
 
 document.getElementById('topbar-family-avatars').addEventListener('click', (e) => {
   if (e.target.closest('.family-avatar-chip.is-you')) openProfileView();
-});
-
-document.getElementById('reset-demo-btn').addEventListener('click', () => {
-  resetFamilyData();
 });
 
 
