@@ -150,6 +150,183 @@
     font-weight: 700;
   }
 
+  .family-strip-code {
+    font-size: 11px;
+    color: rgba(255,255,255,0.65);
+    white-space: nowrap;
+  }
+
+  .family-strip-logout {
+    font-size: 12px;
+    color: rgba(255,255,255,0.85);
+    background: rgba(255,255,255,0.12);
+    padding: 5px 10px;
+    border-radius: 6px;
+    white-space: nowrap;
+    font-family: inherit;
+  }
+  .family-strip-logout:hover { background: rgba(255,255,255,0.22); }
+
+  /* ============================================================
+     FAMILY GATE — create/join/profile onboarding overlay
+     ============================================================ */
+  .family-gate-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(160deg, var(--pine) 0%, var(--pine-dark) 100%);
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-3);
+    z-index: 2000;
+  }
+  .family-gate-overlay.open { display: flex; }
+
+  .family-gate-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 28px;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: var(--shadow-lift);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .gate-title { font-size: 21px; font-weight: 700; color: var(--ink); margin: 0; }
+  .gate-subtitle { font-size: 13.5px; color: var(--ink-soft); margin: 0; }
+
+  .gate-choice-buttons { display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
+
+  .gate-big-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    text-align: left;
+    font-family: inherit;
+    cursor: pointer;
+  }
+  .gate-big-btn:hover { background: var(--surface-alt); }
+  .gate-big-btn .gate-big-icon { font-size: 22px; flex-shrink: 0; }
+  .gate-big-btn .gate-big-label { font-size: 14.5px; font-weight: 700; color: var(--ink); }
+  .gate-big-btn .gate-big-desc { font-size: 12px; color: var(--ink-soft); margin-top: 2px; }
+
+  .gate-form { display: flex; flex-direction: column; gap: 10px; }
+  .gate-form label {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink-soft);
+  }
+  .gate-form input[type="text"],
+  .gate-form input[type="password"] {
+    padding: 9px 11px;
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    color: var(--ink);
+    font-family: inherit;
+    font-size: 14px;
+  }
+
+  .gate-hint { font-size: 12px; color: var(--ink-soft); margin: 0; }
+  .gate-error {
+    font-size: 12.5px;
+    color: #C0392B;
+    background: rgba(192,57,43,0.08);
+    border-radius: 6px;
+    padding: 8px 10px;
+  }
+  .gate-back-link {
+    align-self: flex-start;
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    text-decoration: underline;
+    font-family: inherit;
+    background: none;
+  }
+  .gate-back-link:hover { color: var(--ink); }
+
+  .family-code-display {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: 4px;
+    color: var(--pine);
+    background: var(--surface-alt);
+    border-radius: 8px;
+    padding: 16px;
+    text-align: center;
+  }
+  .family-code-display .family-code-password {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: normal;
+    color: var(--ink-soft);
+  }
+
+  .gate-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 4px; }
+
+  .profile-picture-picker { display: flex; align-items: center; gap: 12px; }
+  .profile-picture-preview {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: var(--surface-alt);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    color: var(--ink-soft);
+    flex-shrink: 0;
+    border: 1px solid var(--line);
+  }
+
+  .member-pick-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px; }
+  .member-pick-chip {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    width: 68px;
+    font-family: inherit;
+    text-align: center;
+    cursor: pointer;
+  }
+  .member-pick-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: white;
+    font-size: 16px;
+  }
+  .member-pick-name {
+    font-size: 11.5px;
+    color: var(--ink);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 68px;
+  }
+
   .layout {
     display: grid;
     grid-template-columns: 210px 1fr;
@@ -1449,6 +1626,10 @@
 </head>
 <body>
 
+<div class="family-gate-overlay" id="family-gate-overlay">
+  <div class="family-gate-card" id="family-gate-content"></div>
+</div>
+
 <div id="app">
 
   <header class="topbar">
@@ -1460,6 +1641,8 @@
     <div class="family-strip">
       <span class="family-strip-label">My Family</span>
       <div class="family-avatars" id="topbar-family-avatars"></div>
+      <span class="family-strip-code" id="topbar-family-code"></span>
+      <button class="family-strip-logout" id="topbar-logout-btn" type="button" style="display:none;">Log out</button>
     </div>
   </header>
 
@@ -1796,12 +1979,10 @@
         </div>
 
         <div id="birthdays-subtab-wishlists" class="subtab-panel">
-          <div class="whoami-row">
-            <span class="whoami-label">Who are you?</span>
-            <select id="whoami-select"></select>
-            <input type="text" id="new-family-member-input" placeholder="New family member's name…" />
-            <button class="btn-ghost" id="add-family-member-btn">+ Add</button>
-            <button class="btn-ghost" id="reset-demo-btn" title="Wipes current family/wishlist data and reloads the A/F/B/G test setup">Reset to demo data</button>
+          <div class="whoami-row" id="family-manage-row">
+            <span class="whoami-label">Family members</span>
+            <button class="btn-ghost" id="add-family-member-btn" type="button">+ Add a profile</button>
+            <button class="btn-ghost" id="reset-demo-btn" type="button" title="Wipes this browser's family, members, and wishlists so you can try Create/Join again">Reset family data</button>
           </div>
 
           <div id="wishlists-container"></div>
@@ -3184,10 +3365,12 @@ function renderHomeBirthdaysPreview() {
 const FAMILY_MEMBERS_KEY = 'lifehub:family-members';
 const WISHLIST_ITEMS_KEY = 'lifehub:wishlist-items';
 const MY_MEMBER_ID_KEY = 'lifehub:my-member-id';
+const FAMILY_KEY = 'lifehub:family';
 
 let familyMembers = [];
 let wishlistItems = [];
 let currentMemberId = null;
+let family = null; // { code, password, name } — the single family this browser belongs to
 
 async function loadFamilyMembers() {
   try {
@@ -3240,6 +3423,23 @@ async function saveCurrentMember() {
   }
 }
 
+async function loadFamily() {
+  try {
+    const result = await window.storage.get(FAMILY_KEY, true);
+    family = result ? JSON.parse(result.value) : null;
+  } catch (err) {
+    family = null;
+  }
+}
+
+async function saveFamily() {
+  try {
+    await window.storage.set(FAMILY_KEY, JSON.stringify(family), true);
+  } catch (err) {
+    console.error('Could not save family:', err);
+  }
+}
+
 
 /* ============================================================
    FAMILY WISHLISTS — RENDERING
@@ -3249,10 +3449,15 @@ const AVATAR_COLORS = ['#D9A441', '#4C7A94', '#8C4A63', '#6B8F5A', '#C0392B', '#
 
 function renderTopbarFamily() {
   const container = document.getElementById('topbar-family-avatars');
+  const codeEl = document.getElementById('topbar-family-code');
+  const logoutBtn = document.getElementById('topbar-logout-btn');
   if (!container) return;
 
+  if (codeEl) codeEl.textContent = family ? `Code: ${family.code}` : '';
+  if (logoutBtn) logoutBtn.style.display = currentMemberId ? '' : 'none';
+
   if (familyMembers.length === 0) {
-    container.innerHTML = `<span style="color: rgba(255,255,255,0.6); font-size: 12px;">Add family members on the Wishlists tab</span>`;
+    container.innerHTML = `<span style="color: rgba(255,255,255,0.6); font-size: 12px;">No family yet</span>`;
     return;
   }
 
@@ -3260,28 +3465,16 @@ function renderTopbarFamily() {
     const color = AVATAR_COLORS[i % AVATAR_COLORS.length];
     const initial = (m.name.trim().charAt(0) || '?').toUpperCase();
     const isYou = m.id === currentMemberId;
+    const avatarInner = m.pictureDataUrl
+      ? `<img src="${m.pictureDataUrl}" alt="" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`
+      : escapeHtml(initial);
     return `
       <div class="family-avatar-chip ${isYou ? 'is-you' : ''}">
-        <div class="family-avatar-circle" style="background-color: ${color};">${escapeHtml(initial)}</div>
+        <div class="family-avatar-circle" style="background-color: ${color};">${avatarInner}</div>
         <span class="family-avatar-name">${escapeHtml(m.name)}</span>
       </div>
     `;
   }).join('');
-}
-
-function renderWhoamiSelect() {
-  const select = document.getElementById('whoami-select');
-
-  if (familyMembers.length === 0) {
-    select.innerHTML = `<option value="">Add a family member first</option>`;
-    select.disabled = true;
-    return;
-  }
-
-  select.disabled = false;
-  select.innerHTML = familyMembers
-    .map(m => `<option value="${m.id}" ${m.id === currentMemberId ? 'selected' : ''}>${escapeHtml(m.name)}</option>`)
-    .join('');
 }
 
 function renderWishlists() {
@@ -3363,31 +3556,25 @@ function renderWishlists() {
    FAMILY WISHLISTS — ACTIONS
    ============================================================ */
 
-function addFamilyMember() {
-  const input = document.getElementById('new-family-member-input');
-  const name = input.value.trim();
-  if (!name) return;
+// Creates a real member profile (name + optional picture). Used for:
+// the mandatory profile step right after creating/joining a family
+// (switchTo: true — you become the signed-in member), and for adding
+// an extra profile from inside the app once you're already signed in
+// (switchTo: false — e.g. a parent setting up a kid's profile on the
+// shared family device, without switching who's currently "you").
+function createProfile(name, pictureDataUrl, { switchTo }) {
+  const member = { id: crypto.randomUUID(), name: name.trim(), pictureDataUrl: pictureDataUrl || null };
+  familyMembers.push(member);
+  saveFamilyMembers();
 
-  const newMember = { id: crypto.randomUUID(), name };
-  familyMembers.push(newMember);
-
-  if (!currentMemberId) {
-    currentMemberId = newMember.id;
-    saveCurrentMember();
+  if (switchTo) {
+    setCurrentMember(member.id);
+  } else {
+    renderTopbarFamily();
+    renderWishlists();
   }
 
-  input.value = '';
-  saveFamilyMembers();
-  renderWhoamiSelect();
-  renderWishlists();
-  renderTopbarFamily();
-  renderNotesList();
-  renderHomeNotesPreview();
-  renderFitnessLog();
-  renderHomeFitnessPreview();
-  refreshAnnualChartIfVisible();
-  renderWorkoutPlan();
-  renderCalendar('personal');
+  return member;
 }
 
 function setCurrentMember(id) {
@@ -3411,6 +3598,14 @@ function setCurrentMember(id) {
   renderCalendar('personal');
   renderCalendarGrid('family');
   renderUpcomingEvents('family');
+
+  // No member signed in (fresh load, or "Log out") -> block the app
+  // behind the family gate. Otherwise make sure the gate is closed.
+  if (currentMemberId) {
+    hideGate();
+  } else {
+    showGate();
+  }
 }
 
 function addWishlistItem(memberId, text) {
@@ -3448,55 +3643,87 @@ function unreserveItem(id) {
 
 
 /* ============================================================
-   FAMILY WISHLISTS — DEMO / TEST DATA
+   FAMILY GATE — CREATE A FAMILY / JOIN MY FAMILY
+   ============================================================
+   Replaces the old "select who you are" dropdown (which pre-seeded
+   fake A/F/B/G members) with a real create-or-join flow: one person
+   creates a family, gets a shareable code (+ optional password), and
+   everyone else joins with that code. Every family member then makes
+   a real profile — a name plus an optional picture — instead of
+   picking themselves from a list of strangers.
+
+   Tradeoff, same as the rest of this demo: there's no backend here,
+   so "family" data (the code, password, and every member's profile)
+   lives in THIS browser's localStorage only. Create a family in one
+   browser and Join with that code in a *different* browser/device
+   won't find it — there's nowhere shared to look. Within the SAME
+   browser, though, Create then Join (or Reset then Join) works
+   exactly like the real thing, which is enough to try the whole flow
+   end to end. The real Supabase-backed app (src/pages/
+   HouseholdOnboarding.jsx) already solves this properly with actual
+   accounts and a real database.
    ============================================================ */
 
-function buildDemoData() {
-  const members = [
-    { id: 'demo-a', name: 'A' },
-    { id: 'demo-f', name: 'F' },
-    { id: 'demo-b', name: 'B' },
-    { id: 'demo-g', name: 'G' }
-  ];
+const FAMILY_CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no 0/O/1/I — easy to read aloud
 
-  const items = [
-    { id: crypto.randomUUID(), memberId: 'demo-a', text: 'Cookbook', reservedBy: null },
-    { id: crypto.randomUUID(), memberId: 'demo-a', text: 'Wireless earbuds', reservedBy: 'demo-f' },
-    { id: crypto.randomUUID(), memberId: 'demo-f', text: 'Board game', reservedBy: 'demo-b' },
-    { id: crypto.randomUUID(), memberId: 'demo-f', text: 'Running shoes', reservedBy: null },
-    { id: crypto.randomUUID(), memberId: 'demo-b', text: 'Sci-fi novel', reservedBy: 'demo-g' },
-    { id: crypto.randomUUID(), memberId: 'demo-b', text: 'Coffee grinder', reservedBy: 'demo-a' }
-  ];
-
-  return { members, items, youId: 'demo-g' };
+function generateFamilyCode() {
+  let code = '';
+  for (let i = 0; i < 6; i++) {
+    code += FAMILY_CODE_ALPHABET[Math.floor(Math.random() * FAMILY_CODE_ALPHABET.length)];
+  }
+  return code;
 }
 
-async function seedDemoDataIfEmpty() {
-  if (familyMembers.length > 0) return;
+async function createFamily(name, password) {
+  family = {
+    code: generateFamilyCode(),
+    password: password ? password : null,
+    name: name ? name.trim() : ''
+  };
+  familyMembers = [];
+  wishlistItems = [];
+  currentMemberId = null;
 
-  const demo = buildDemoData();
-  familyMembers = demo.members;
-  wishlistItems = demo.items;
-  currentMemberId = demo.youId;
-
+  await saveFamily();
   await saveFamilyMembers();
   await saveWishlistItems();
   await saveCurrentMember();
 }
 
-async function resetDemoData() {
-  const demo = buildDemoData();
-  familyMembers = demo.members;
-  wishlistItems = demo.items;
-  currentMemberId = demo.youId;
+// Only checks against the single family already stored in THIS
+// browser — see the tradeoff note above.
+function attemptJoinFamily(codeInput, passwordInput) {
+  const code = (codeInput || '').trim().toUpperCase();
 
+  if (!family) {
+    return {
+      ok: false,
+      error: "We couldn't find a family on this device yet. This demo saves data per-browser (there's no server yet), so ask whoever created the family to open LifeHub in this same browser first — or create a new family instead."
+    };
+  }
+  if (!code || code !== family.code) {
+    return { ok: false, error: "That code doesn't match. Double check it and try again." };
+  }
+  if (family.password && family.password !== passwordInput) {
+    return { ok: false, error: 'Incorrect password for this family.' };
+  }
+  return { ok: true };
+}
+
+async function resetFamilyData() {
+  family = null;
+  familyMembers = [];
+  wishlistItems = [];
+  currentMemberId = null;
+
+  await saveFamily();
   await saveFamilyMembers();
   await saveWishlistItems();
   await saveCurrentMember();
 
-  renderWhoamiSelect();
-  renderWishlists();
   renderTopbarFamily();
+  renderWishlists();
+  showGate();
 }
 
 
@@ -3513,16 +3740,328 @@ document.querySelectorAll('.subtab-btn').forEach(btn => {
   });
 });
 
-document.getElementById('whoami-select').addEventListener('change', (e) => {
-  setCurrentMember(e.target.value);
+/* ============================================================
+   FAMILY GATE — STATE + RENDERING
+   ============================================================ */
+
+let gateStep = 'choice';
+let gateContext = null;
+let gateError = '';
+let pendingProfilePicture = null;
+
+function showGate(step) {
+  if (step) {
+    gateStep = step;
+  } else if (!family) {
+    gateStep = 'choice';
+    gateContext = null;
+  } else if (familyMembers.length === 0) {
+    gateStep = 'profile-form';
+    gateContext = { switchTo: true, cancelStep: null };
+  } else {
+    gateStep = 'pick-profile';
+    gateContext = { switchTo: true, justJoined: false };
+  }
+  gateError = '';
+  pendingProfilePicture = null;
+  document.getElementById('family-gate-overlay').classList.add('open');
+  renderGateStep();
+}
+
+function hideGate() {
+  document.getElementById('family-gate-overlay').classList.remove('open');
+}
+
+function renderGateChoiceHtml() {
+  return `
+    <h2 class="gate-title">🏡 Welcome to LifeHub</h2>
+    <p class="gate-subtitle">Start a new family, or join one you've been invited to.</p>
+    <div class="gate-choice-buttons">
+      <button type="button" class="gate-big-btn" data-gate-action="go-create">
+        <span class="gate-big-icon">➕</span>
+        <span>
+          <div class="gate-big-label">Create a Family</div>
+          <div class="gate-big-desc">Get a code to share with your family</div>
+        </span>
+      </button>
+      <button type="button" class="gate-big-btn" data-gate-action="go-join">
+        <span class="gate-big-icon">🔑</span>
+        <span>
+          <div class="gate-big-label">Join my Family</div>
+          <div class="gate-big-desc">Enter the code someone sent you</div>
+        </span>
+      </button>
+    </div>
+  `;
+}
+
+function renderGateCreateHtml() {
+  return `
+    <h2 class="gate-title">➕ Create a Family</h2>
+    <p class="gate-subtitle">You'll get a unique code to send to the rest of your family.</p>
+    <form class="gate-form" id="gate-create-form">
+      <label>Family name (optional)
+        <input type="text" id="gate-create-name" placeholder="e.g. The Meiers" maxlength="60" />
+      </label>
+      <label>Password (optional)
+        <input type="password" id="gate-create-password" placeholder="Leave blank for no password" maxlength="60" />
+      </label>
+      <p class="gate-hint">Anyone with the code (and this password, if you set one) can join and sign in every time.</p>
+      ${gateError ? `<div class="gate-error">${escapeHtml(gateError)}</div>` : ''}
+      <div class="gate-actions">
+        <button type="submit" class="btn-primary">Create Family</button>
+      </div>
+    </form>
+    <button type="button" class="gate-back-link" data-gate-action="go-choice">‹ Back</button>
+  `;
+}
+
+function renderGateCodeRevealHtml() {
+  return `
+    <h2 class="gate-title">🎉 Family created!</h2>
+    <p class="gate-subtitle">Share this code with your family so they can join.</p>
+    <div class="family-code-display">
+      <span>${escapeHtml(family.code)}</span>
+      <span class="family-code-password">${family.password ? `Password: ${escapeHtml(family.password)}` : 'No password set'}</span>
+    </div>
+    <button type="button" class="btn-ghost" data-gate-action="copy-code">📋 Copy code</button>
+    <p class="gate-hint">Next, set up your own profile.</p>
+    <div class="gate-actions">
+      <button type="button" class="btn-primary" data-gate-action="continue-to-profile">Continue</button>
+    </div>
+  `;
+}
+
+function renderGateJoinHtml() {
+  return `
+    <h2 class="gate-title">🔑 Join my Family</h2>
+    <p class="gate-subtitle">Enter the code (and password, if one was set) that was shared with you.</p>
+    <form class="gate-form" id="gate-join-form">
+      <label>Family code
+        <input type="text" id="gate-join-code" placeholder="e.g. 7K2P9Q" maxlength="6" style="text-transform:uppercase;" required />
+      </label>
+      <label>Password (if set)
+        <input type="password" id="gate-join-password" placeholder="Leave blank if there's no password" maxlength="60" />
+      </label>
+      ${gateError ? `<div class="gate-error">${escapeHtml(gateError)}</div>` : ''}
+      <div class="gate-actions">
+        <button type="submit" class="btn-primary">Join Family</button>
+      </div>
+    </form>
+    <button type="button" class="gate-back-link" data-gate-action="go-choice">‹ Back</button>
+  `;
+}
+
+function renderGatePickProfileHtml() {
+  const justJoined = !!(gateContext && gateContext.justJoined);
+  const heading = justJoined ? "🎉 You're in!" : 'Welcome back';
+  const familyLabel = (family && family.name) ? ` — ${escapeHtml(family.name)}` : '';
+
+  const chipsHtml = familyMembers.length ? `
+    <div class="member-pick-row">
+      ${familyMembers.map((m, i) => {
+        const color = AVATAR_COLORS[i % AVATAR_COLORS.length];
+        const initial = (m.name.trim().charAt(0) || '?').toUpperCase();
+        const avatarInner = m.pictureDataUrl
+          ? `<img src="${m.pictureDataUrl}" alt="" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`
+          : escapeHtml(initial);
+        return `
+          <button type="button" class="member-pick-chip" data-gate-action="pick-member" data-member-id="${m.id}">
+            <span class="member-pick-avatar" style="background-color:${color};">${avatarInner}</span>
+            <span class="member-pick-name">${escapeHtml(m.name)}</span>
+          </button>
+        `;
+      }).join('')}
+    </div>
+  ` : '';
+
+  return `
+    <h2 class="gate-title">${heading}${familyLabel}</h2>
+    <p class="gate-subtitle">${familyMembers.length ? 'Choose your profile, or create a new one.' : "Let's set up your profile."}</p>
+    ${chipsHtml}
+    <button type="button" class="gate-big-btn" data-gate-action="go-new-profile">
+      <span class="gate-big-icon">👤</span>
+      <span>
+        <div class="gate-big-label">+ New profile</div>
+        <div class="gate-big-desc">Set up a name and picture</div>
+      </span>
+    </button>
+    ${justJoined ? '' : `<button type="button" class="gate-back-link" data-gate-action="reset-family">Not your family? Reset this browser's family data</button>`}
+  `;
+}
+
+function renderGateProfileFormHtml() {
+  const isOnboarding = !!(gateContext && gateContext.switchTo);
+  const hasCancel = !!(gateContext && gateContext.cancelStep) || !isOnboarding;
+  const cancelAction = (gateContext && gateContext.cancelStep) ? 'cancel-profile' : 'cancel-profile-hide';
+
+  return `
+    <h2 class="gate-title">👤 ${isOnboarding ? 'Create your profile' : 'Add a family member'}</h2>
+    <p class="gate-subtitle">Add your name and, if you'd like, a profile picture.</p>
+    <form class="gate-form" id="gate-profile-form">
+      <div class="profile-picture-picker">
+        <div class="profile-picture-preview" id="gate-profile-preview">👤</div>
+        <label style="flex:1;">Profile picture (optional)
+          <input type="file" id="gate-profile-picture-input" accept="image/*" />
+        </label>
+      </div>
+      <label>Name
+        <input type="text" id="gate-profile-name" placeholder="e.g. Alex" maxlength="40" required />
+      </label>
+      ${gateError ? `<div class="gate-error">${escapeHtml(gateError)}</div>` : ''}
+      <div class="gate-actions">
+        ${hasCancel ? `<button type="button" class="btn-ghost" data-gate-action="${cancelAction}">Cancel</button>` : ''}
+        <button type="submit" class="btn-primary">Save profile</button>
+      </div>
+    </form>
+  `;
+}
+
+function renderGateStep() {
+  const content = document.getElementById('family-gate-content');
+  const renderers = {
+    'choice': renderGateChoiceHtml,
+    'create': renderGateCreateHtml,
+    'code-reveal': renderGateCodeRevealHtml,
+    'join': renderGateJoinHtml,
+    'pick-profile': renderGatePickProfileHtml,
+    'profile-form': renderGateProfileFormHtml
+  };
+  content.innerHTML = (renderers[gateStep] || renderGateChoiceHtml)();
+}
+
+
+/* ============================================================
+   FAMILY GATE — WIRING UP EVENTS
+   ============================================================ */
+
+document.getElementById('family-gate-content').addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-gate-action]');
+  if (!btn) return;
+  const action = btn.dataset.gateAction;
+
+  if (action === 'go-choice') { showGate('choice'); return; }
+  if (action === 'go-create') { showGate('create'); return; }
+  if (action === 'go-join') { showGate('join'); return; }
+
+  if (action === 'continue-to-profile') {
+    gateContext = { switchTo: true, cancelStep: null };
+    showGate('profile-form');
+    return;
+  }
+
+  if (action === 'copy-code') {
+    if (family && navigator.clipboard) {
+      navigator.clipboard.writeText(family.code).catch(() => {});
+      const original = btn.textContent;
+      btn.textContent = '✅ Copied';
+      setTimeout(() => { btn.textContent = original; }, 1500);
+    }
+    return;
+  }
+
+  if (action === 'go-new-profile') {
+    gateContext = { switchTo: true, cancelStep: familyMembers.length ? 'pick-profile' : null };
+    showGate('profile-form');
+    return;
+  }
+
+  if (action === 'pick-member') {
+    setCurrentMember(btn.dataset.memberId);
+    return;
+  }
+
+  if (action === 'reset-family') {
+    resetFamilyData();
+    return;
+  }
+
+  if (action === 'cancel-profile') {
+    showGate(gateContext && gateContext.cancelStep ? gateContext.cancelStep : 'choice');
+    return;
+  }
+
+  if (action === 'cancel-profile-hide') {
+    hideGate();
+    return;
+  }
 });
 
-document.getElementById('add-family-member-btn').addEventListener('click', addFamilyMember);
-document.getElementById('new-family-member-input').addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') addFamilyMember();
+document.getElementById('family-gate-content').addEventListener('submit', (e) => {
+  if (e.target.id === 'gate-create-form') {
+    e.preventDefault();
+    const name = document.getElementById('gate-create-name').value;
+    const password = document.getElementById('gate-create-password').value.trim();
+    createFamily(name, password).then(() => {
+      renderTopbarFamily();
+      showGate('code-reveal');
+    });
+    return;
+  }
+
+  if (e.target.id === 'gate-join-form') {
+    e.preventDefault();
+    const code = document.getElementById('gate-join-code').value;
+    const password = document.getElementById('gate-join-password').value;
+    const result = attemptJoinFamily(code, password);
+    if (!result.ok) {
+      gateError = result.error;
+      renderGateStep();
+      return;
+    }
+    gateContext = {
+      switchTo: true,
+      justJoined: true,
+      cancelStep: familyMembers.length ? 'pick-profile' : null
+    };
+    showGate(familyMembers.length ? 'pick-profile' : 'profile-form');
+    return;
+  }
+
+  if (e.target.id === 'gate-profile-form') {
+    e.preventDefault();
+    const name = document.getElementById('gate-profile-name').value.trim();
+    if (!name) return;
+    createProfile(name, pendingProfilePicture, { switchTo: !!(gateContext && gateContext.switchTo) });
+    return;
+  }
 });
 
-document.getElementById('reset-demo-btn').addEventListener('click', resetDemoData);
+document.getElementById('family-gate-content').addEventListener('change', (e) => {
+  if (e.target.id !== 'gate-profile-picture-input') return;
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    pendingProfilePicture = reader.result;
+    const preview = document.getElementById('gate-profile-preview');
+    if (preview) {
+      preview.innerHTML = `<img src="${pendingProfilePicture}" alt="" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+    }
+  };
+  reader.readAsDataURL(file);
+});
+
+document.getElementById('family-gate-content').addEventListener('input', (e) => {
+  if (e.target.id === 'gate-join-code') {
+    const start = e.target.selectionStart;
+    e.target.value = e.target.value.toUpperCase();
+    e.target.setSelectionRange(start, start);
+  }
+});
+
+document.getElementById('topbar-logout-btn').addEventListener('click', () => {
+  setCurrentMember(null);
+});
+
+document.getElementById('add-family-member-btn').addEventListener('click', () => {
+  gateContext = { switchTo: false, cancelStep: null };
+  showGate('profile-form');
+});
+
+document.getElementById('reset-demo-btn').addEventListener('click', () => {
+  resetFamilyData();
+});
 
 document.getElementById('wishlists-container').addEventListener('click', (e) => {
   if (e.target.classList.contains('wishlist-add-btn')) {
@@ -4902,6 +5441,7 @@ async function init() {
   await loadBirthdays();
   await reconcileBirthdays();
 
+  await loadFamily();
   await loadFamilyMembers();
   await loadWishlistItems();
   await loadCurrentMember();
@@ -4909,15 +5449,18 @@ async function init() {
   await loadFitnessLog();
   await loadWorkoutPlans();
 
-  await seedDemoDataIfEmpty();
-
   if (currentMemberId && !familyMembers.some(m => m.id === currentMemberId)) {
     currentMemberId = null;
   }
 
-  renderWhoamiSelect();
   renderWishlists();
   renderTopbarFamily();
+
+  if (currentMemberId) {
+    hideGate();
+  } else {
+    showGate();
+  }
   renderNotesList();
   renderHomeNotesPreview();
   renderPenColorSwatches();
