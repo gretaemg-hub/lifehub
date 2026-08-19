@@ -903,6 +903,42 @@
   }
   .btn-ghost:hover { background: var(--surface-alt); color: var(--ink); }
 
+  .profile-back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--ink-soft);
+    font-size: 13px;
+    font-weight: 600;
+    padding: 6px 14px 6px 8px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--surface);
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  }
+  .profile-back-btn:hover {
+    background: var(--surface-alt);
+    color: var(--pine-dark);
+    border-color: var(--pine);
+  }
+  .profile-back-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--surface-alt);
+    font-size: 12px;
+    line-height: 1;
+    transition: transform 0.15s ease, background 0.15s ease;
+  }
+  .profile-back-btn:hover .profile-back-icon {
+    background: var(--pine);
+    color: #fff;
+    transform: translateX(-2px);
+  }
+
   #shopping-list {
     list-style: none;
     background: var(--surface);
@@ -2185,7 +2221,9 @@
         <div class="view-header">
           <h2>👤 Your Profile</h2>
           <p>Manage your username, icon, and account.</p>
-          <button class="btn-ghost" id="profile-back-btn" style="margin-top: var(--space-2);">← Back to Home</button>
+          <button class="profile-back-btn" id="profile-back-btn" style="margin-top: var(--space-2);">
+            <span class="profile-back-icon">&#10094;</span> Back to Home
+          </button>
         </div>
         <div class="profile-view-wrap">
           <div id="profile-view-body">Loading…</div>
