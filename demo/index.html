@@ -167,6 +167,18 @@
   }
   .family-strip-logout:hover { background: rgba(255,255,255,0.22); }
 
+  .family-strip-create {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--pine-dark);
+    background: white;
+    padding: 6px 12px;
+    border-radius: 6px;
+    white-space: nowrap;
+    font-family: inherit;
+  }
+  .family-strip-create:hover { background: rgba(255,255,255,0.85); }
+
   /* ============================================================
      FAMILY GATE — create/join/profile onboarding overlay
      ============================================================ */
@@ -1639,9 +1651,9 @@
     </div>
 
     <div class="family-strip">
-      <span class="family-strip-label">My Family</span>
       <div class="family-avatars" id="topbar-family-avatars"></div>
       <span class="family-strip-code" id="topbar-family-code"></span>
+      <button class="family-strip-create" id="topbar-create-family-btn" type="button" style="display:none;">➕ Create a Family</button>
       <button class="family-strip-logout" id="topbar-logout-btn" type="button" style="display:none;">Log out</button>
     </div>
   </header>
@@ -3452,34 +3464,39 @@ async function saveFamily() {
 
 const AVATAR_COLORS = ['#D9A441', '#4C7A94', '#8C4A63', '#6B8F5A', '#C0392B', '#7A5C9E'];
 
+// Topbar now only ever shows YOUR OWN profile — not the rest of the
+// family (that list lives on the Wishlists tab and the sign-in
+// picker instead). Next to it: the family code once one exists, or a
+// quick "Create a Family" shortcut when it doesn't, so starting the
+// family flow doesn't require a trip to Home.
 function renderTopbarFamily() {
   const container = document.getElementById('topbar-family-avatars');
   const codeEl = document.getElementById('topbar-family-code');
+  const createBtn = document.getElementById('topbar-create-family-btn');
   const logoutBtn = document.getElementById('topbar-logout-btn');
   if (!container) return;
 
   if (codeEl) codeEl.textContent = family ? `Code: ${family.code}` : '';
+  if (createBtn) createBtn.style.display = (currentMemberId && !family) ? '' : 'none';
   if (logoutBtn) logoutBtn.style.display = currentMemberId ? '' : 'none';
 
-  if (familyMembers.length === 0) {
-    container.innerHTML = `<span style="color: rgba(255,255,255,0.6); font-size: 12px;">No profiles yet</span>`;
+  const me = familyMembers.find(m => m.id === currentMemberId);
+  if (!me) {
+    container.innerHTML = '';
     return;
   }
 
-  container.innerHTML = familyMembers.map((m, i) => {
-    const color = AVATAR_COLORS[i % AVATAR_COLORS.length];
-    const initial = (m.name.trim().charAt(0) || '?').toUpperCase();
-    const isYou = m.id === currentMemberId;
-    const avatarInner = m.pictureDataUrl
-      ? `<img src="${m.pictureDataUrl}" alt="" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`
-      : escapeHtml(initial);
-    return `
-      <div class="family-avatar-chip ${isYou ? 'is-you' : ''}">
-        <div class="family-avatar-circle" style="background-color: ${color};">${avatarInner}</div>
-        <span class="family-avatar-name">${escapeHtml(m.name)}</span>
-      </div>
-    `;
-  }).join('');
+  const color = AVATAR_COLORS[familyMembers.indexOf(me) % AVATAR_COLORS.length];
+  const initial = (me.name.trim().charAt(0) || '?').toUpperCase();
+  const avatarInner = me.pictureDataUrl
+    ? `<img src="${me.pictureDataUrl}" alt="" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`
+    : escapeHtml(initial);
+  container.innerHTML = `
+    <div class="family-avatar-chip is-you">
+      <div class="family-avatar-circle" style="background-color: ${color};">${avatarInner}</div>
+      <span class="family-avatar-name">${escapeHtml(me.name)}</span>
+    </div>
+  `;
 }
 
 // The "Family" card on Home is the discoverable entry point for
@@ -3616,6 +3633,7 @@ function createProfile(name, pictureDataUrl, { switchTo }) {
     renderTopbarFamily();
     renderWishlists();
     renderHomeFamilyCard();
+    hideGate();
   }
 
   return member;
@@ -4075,6 +4093,10 @@ document.getElementById('family-gate-content').addEventListener('input', (e) => 
 
 document.getElementById('topbar-logout-btn').addEventListener('click', () => {
   setCurrentMember(null);
+});
+
+document.getElementById('topbar-create-family-btn').addEventListener('click', () => {
+  showGate('create');
 });
 
 document.getElementById('add-family-member-btn').addEventListener('click', () => {
