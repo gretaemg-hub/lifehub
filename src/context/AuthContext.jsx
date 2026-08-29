@@ -41,6 +41,7 @@ export function AuthProvider({ children }) {
     enterDemoMode: () => setDemoMode(true),
     signUp: (email, password) => supabase.auth.signUp({ email, password }),
     signIn: (email, password) => supabase.auth.signInWithPassword({ email, password }),
+    resendConfirmation: (email) => supabase.auth.resend({ type: 'signup', email }),
     signOut: async () => {
       if (demoMode) {
         setDemoMode(false);
