@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { useHouseholdMembers } from './useHouseholdMembers';
 import { useHousehold } from '../../context/HouseholdContext';
 import { useAuth } from '../../context/AuthContext';
-import { theme, headingFont, primaryButtonStyle } from '../../theme';
+import { Avatar } from '../profile/ProfileSettings';
+import { theme, headingFont, primaryButtonStyle, AVATAR_COLORS } from '../../theme';
 
 // Two things a household needs once it exists: see who's in it, and
 // bring someone else in. Onboarding already covers "join with a
@@ -33,8 +34,6 @@ export default function HouseholdSettings() {
     (i) => i.use_count < i.max_uses && (!i.expires_at || new Date(i.expires_at) > new Date())
   );
 
-  const avatarColors = ['#3E6259', '#D9A441', '#7C6FBA', '#C0674B', '#4B8DA6'];
-
   return (
     <section>
       <style>{`
@@ -57,23 +56,13 @@ export default function HouseholdSettings() {
               key={m.id}
               style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 0', borderBottom: `1px solid ${theme.line}` }}
             >
-              <span
-                style={{
-                  width: 30,
-                  height: 30,
-                  borderRadius: '50%',
-                  background: avatarColors[i % avatarColors.length],
-                  color: '#fff',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: 13,
-                  fontWeight: 700,
-                  flexShrink: 0,
-                }}
-              >
-                {(m.display_name || '?').charAt(0).toUpperCase()}
-              </span>
+              <Avatar
+                name={m.display_name}
+                color={m.avatar_color || AVATAR_COLORS[i % AVATAR_COLORS.length]}
+                url={m.avatar_url}
+                size={30}
+                fontSize={13}
+              />
               <span style={{ flex: 1 }}>
                 {m.display_name}
                 {m.user_id === currentUserId && <span style={{ color: theme.inkSoft, fontSize: 12 }}> (you)</span>}
