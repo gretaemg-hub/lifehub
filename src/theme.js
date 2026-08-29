@@ -70,3 +70,18 @@ export const cardStyle = {
 
 export const headingFont = "'Fraunces', serif";
 export const bodyFont = "'Inter', sans-serif";
+
+// Same order as the friends-demo's AVATAR_COLORS (index.html) — red →
+// orange → gold → green → teal → blue → violet → pink — so a household
+// member's avatar looks the same whether they picked it in the demo or
+// the real app.
+export const AVATAR_COLORS = [
+  '#E34948',
+  '#EA612B',
+  '#BA7E00',
+  '#008300',
+  '#189D6E',
+  '#2A78D6',
+  '#4A3AA7',
+  '#E2588C',
+];

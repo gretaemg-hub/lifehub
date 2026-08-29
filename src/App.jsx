@@ -6,6 +6,8 @@ import HouseholdOnboarding from './pages/HouseholdOnboarding';
 import ShoppingList from './features/shopping/ShoppingList';
 import CalendarView from './features/calendar/CalendarView';
 import HouseholdSettings from './features/household/HouseholdSettings';
+import ProfileSettings, { Avatar } from './features/profile/ProfileSettings';
+import { useProfile } from './features/profile/useProfile';
 import ConfirmedBanner from './components/ConfirmedBanner';
 import { theme, headingFont, bodyFont, cardStyle } from './theme';
 
@@ -44,9 +46,12 @@ function PageLoading({ label }) {
 }
 
 function AppShell() {
-  const { user, loading: authLoading, signOut, demoMode } = useAuth();
+  const { user, loading: authLoading, demoMode } = useAuth();
   const { hasHousehold, loading: householdLoading, memberships, activeHouseholdId } = useHousehold();
   const [tab, setTab] = useState('shopping');
+  const [view, setView] = useState('tabs'); // 'tabs' | 'profile'
+  const profileData = useProfile();
+  const { profile } = profileData;
 
   if (authLoading) return <PageLoading label="Loading…" />;
   if (!user) return <Login />;
@@ -59,7 +64,7 @@ function AppShell() {
     <div style={{ minHeight: '100vh', background: theme.bg, fontFamily: bodyFont, color: theme.ink }}>
       <style>{`
         .lh-tab:hover { color: ${theme.pineDark} !important; }
-        .lh-signout:hover { background: rgba(255,255,255,0.15) !important; }
+        .lh-profile-chip:hover { background: rgba(255,255,255,0.18) !important; }
       `}</style>
 
       {/* Green top bar, matching Login's header so the app never feels
@@ -87,23 +92,31 @@ function AppShell() {
             </div>
           </div>
         </div>
+        {/* Click your own avatar/name to reach Profile Settings — same
+            gesture as the friends-demo. Log out lives inside that page
+            now, alongside change-password and delete-account, instead
+            of sitting out here as a standalone button. */}
         <button
-          className="lh-signout"
-          onClick={signOut}
+          className="lh-profile-chip"
+          onClick={() => setView('profile')}
           style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 9,
             fontFamily: 'inherit',
             background: 'rgba(255,255,255,0.1)',
             color: 'white',
             border: '1px solid rgba(255,255,255,0.3)',
-            borderRadius: 10,
-            padding: '9px 16px',
+            borderRadius: 999,
+            padding: '6px 16px 6px 6px',
             fontSize: 13,
             fontWeight: 600,
             cursor: 'pointer',
             transition: 'background 0.15s',
           }}
         >
-          {demoMode ? 'Exit demo' : 'Sign out'}
+          <Avatar name={profile?.display_name} color={profile?.avatar_color} url={profile?.avatar_url} size={30} fontSize={13} />
+          {profile?.display_name || 'Profile'}
         </button>
       </header>
 
@@ -127,71 +140,79 @@ function AppShell() {
           </div>
         )}
 
-        <nav
-          style={{
-            display: 'flex',
-            gap: 4,
-            marginBottom: 24,
-            background: theme.surface,
-            borderRadius: 14,
-            padding: 6,
-            boxShadow: '0 4px 14px rgba(38, 49, 43, 0.06)',
-            flexWrap: 'wrap',
-          }}
-        >
-          {TABS.map((t) => (
-            <button
-              key={t.key}
-              className="lh-tab"
-              onClick={() => setTab(t.key)}
+        {view === 'profile' ? (
+          <div style={cardStyle}>
+            <ProfileSettings onBack={() => setView('tabs')} {...profileData} />
+          </div>
+        ) : (
+          <>
+            <nav
               style={{
-                fontFamily: 'inherit',
-                flex: '1 1 auto',
-                padding: '10px 14px',
-                background: tab === t.key ? theme.bg : 'transparent',
-                border: 'none',
-                borderRadius: 10,
-                fontWeight: tab === t.key ? 700 : 500,
-                fontSize: 13,
-                cursor: 'pointer',
-                color: tab === t.key ? theme.pineDark : theme.inkSoft,
-                transition: 'color 0.15s',
-                whiteSpace: 'nowrap',
+                display: 'flex',
+                gap: 4,
+                marginBottom: 24,
+                background: theme.surface,
+                borderRadius: 14,
+                padding: 6,
+                boxShadow: '0 4px 14px rgba(38, 49, 43, 0.06)',
+                flexWrap: 'wrap',
               }}
             >
-              {t.label}
-            </button>
-          ))}
-        </nav>
+              {TABS.map((t) => (
+                <button
+                  key={t.key}
+                  className="lh-tab"
+                  onClick={() => setTab(t.key)}
+                  style={{
+                    fontFamily: 'inherit',
+                    flex: '1 1 auto',
+                    padding: '10px 14px',
+                    background: tab === t.key ? theme.bg : 'transparent',
+                    border: 'none',
+                    borderRadius: 10,
+                    fontWeight: tab === t.key ? 700 : 500,
+                    fontSize: 13,
+                    cursor: 'pointer',
+                    color: tab === t.key ? theme.pineDark : theme.inkSoft,
+                    transition: 'color 0.15s',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </nav>
 
-        {/*
-          Shopping List, Family Calendar, and My Calendar are migrated
-          so far. Add the next feature (Homework, Birthdays+Wishlists,
-          Meal Plan, Notes, Fitness Tracker) the same way: a
-          supabase/migrations table (already in 0001_init.sql), a
-          use*Feature.js hook, and a component, following
-          features/shopping/ or features/calendar/ as the template —
-          then add a tab for it above. Give it the same cardStyle wrapper
-          used below so it inherits the theme automatically.
-        */}
-        <div style={cardStyle}>
-          {tab === 'shopping' && <ShoppingList />}
-          {tab === 'family-calendar' && (
-            <CalendarView
-              scope="family"
-              heading="👪 Family Calendar"
-              blurb="Shared with everyone in the household."
-            />
-          )}
-          {tab === 'my-calendar' && (
-            <CalendarView
-              scope="personal"
-              heading="📅 My Calendar"
-              blurb="Only visible to you — enforced by the database itself, not just the UI."
-            />
-          )}
-          {tab === 'household' && <HouseholdSettings />}
-        </div>
+            {/*
+              Shopping List, Family Calendar, and My Calendar are migrated
+              so far. Add the next feature (Homework, Birthdays+Wishlists,
+              Meal Plan, Notes, Fitness Tracker) the same way: a
+              supabase/migrations table (already in 0001_init.sql), a
+              use*Feature.js hook, and a component, following
+              features/shopping/ or features/calendar/ as the template —
+              then add a tab for it above. Give it the same cardStyle wrapper
+              used below so it inherits the theme automatically.
+            */}
+            <div style={cardStyle}>
+              {tab === 'shopping' && <ShoppingList />}
+              {tab === 'family-calendar' && (
+                <CalendarView
+                  scope="family"
+                  heading="👪 Family Calendar"
+                  blurb="Shared with everyone in the household."
+                />
+              )}
+              {tab === 'my-calendar' && (
+                <CalendarView
+                  scope="personal"
+                  heading="📅 My Calendar"
+                  blurb="Only visible to you — enforced by the database itself, not just the UI."
+                />
+              )}
+              {tab === 'household' && <HouseholdSettings />}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
