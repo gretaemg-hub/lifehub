@@ -11,6 +11,7 @@ import {
   formatDateChip,
   formatEventTimeLabel,
 } from './calendarUtils';
+import { theme, headingFont, inputStyle, primaryButtonStyle, secondaryButtonStyle } from '../../theme';
 
 const EMPTY_FORM = { title: '', start_date: '', end_date: '', all_day: true, start_time: '', end_time: '', color: DEFAULT_EVENT_COLOR };
 
@@ -24,6 +25,7 @@ const EMPTY_FORM = { title: '', start_date: '', end_date: '', all_day: true, sta
 // add/edit form is an inline panel instead, consistent with how
 // ShoppingList.jsx keeps things simple. Multi-day events still show
 // up correctly, just as the same chip repeated on every day they span.
+// Renders inside the themed card App.jsx already wraps every tab in.
 export default function CalendarView({ scope, heading, blurb }) {
   const { events, loading, addEvent, updateEvent, deleteEvent } = useCalendarEvents(scope);
   const [monthDate, setMonthDate] = useState(() => {
@@ -84,25 +86,62 @@ export default function CalendarView({ scope, heading, blurb }) {
 
   return (
     <section>
-      <h2 style={{ marginBottom: 2 }}>{heading}</h2>
-      <p style={{ color: '#5B6960', marginTop: 0 }}>{blurb}</p>
+      <style>{`
+        .lh-cal-nav:hover { background: ${theme.surfaceMuted} !important; }
+        .lh-cal-today:hover { border-color: ${theme.pine} !important; color: ${theme.pineDark} !important; }
+        .lh-cal-day:hover { border-color: ${theme.pine} !important; }
+        .lh-cal-input:focus, .lh-cal-select:focus {
+          outline: none;
+          border-color: ${theme.pine} !important;
+          box-shadow: 0 0 0 3px rgba(62, 98, 89, 0.15);
+        }
+        .lh-cal-save:not(:disabled):hover { background: ${theme.pineDark} !important; }
+        .lh-cal-cancel:hover { border-color: ${theme.pine} !important; color: ${theme.pineDark} !important; }
+        .lh-cal-delete:hover { background: ${theme.dangerBg} !important; }
+      `}</style>
 
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '12px 0' }}>
-        <button type="button" onClick={() => goToMonth(-1)} aria-label="Previous month">‹</button>
+      <h2 style={{ fontFamily: headingFont, fontWeight: 600, fontSize: 22, color: theme.pineDark, margin: '0 0 4px' }}>
+        {heading}
+      </h2>
+      <p style={{ color: theme.inkSoft, marginTop: 0, marginBottom: 18, fontSize: 14 }}>{blurb}</p>
+
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+        <button
+          type="button"
+          className="lh-cal-nav"
+          onClick={() => goToMonth(-1)}
+          aria-label="Previous month"
+          style={{ background: 'none', border: 'none', borderRadius: 8, width: 32, height: 32, fontSize: 18, color: theme.pine, cursor: 'pointer' }}
+        >
+          ‹
+        </button>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <strong>{monthLabel(year, month)}</strong>
-          <button type="button" onClick={() => setMonthDate(new Date(new Date().getFullYear(), new Date().getMonth(), 1))} style={{ fontSize: 12 }}>
+          <strong style={{ fontFamily: headingFont, fontSize: 16, color: theme.ink }}>{monthLabel(year, month)}</strong>
+          <button
+            type="button"
+            className="lh-cal-today"
+            onClick={() => setMonthDate(new Date(new Date().getFullYear(), new Date().getMonth(), 1))}
+            style={{ ...secondaryButtonStyle, padding: '5px 12px', fontSize: 11 }}
+          >
             Today
           </button>
         </div>
-        <button type="button" onClick={() => goToMonth(1)} aria-label="Next month">›</button>
+        <button
+          type="button"
+          className="lh-cal-nav"
+          onClick={() => goToMonth(1)}
+          aria-label="Next month"
+          style={{ background: 'none', border: 'none', borderRadius: 8, width: 32, height: 32, fontSize: 18, color: theme.pine, cursor: 'pointer' }}
+        >
+          ›
+        </button>
       </div>
 
       {loading ? (
-        <p>Loading…</p>
+        <p style={{ color: theme.inkSoft }}>Loading…</p>
       ) : (
         <>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 4, fontSize: 11, color: '#5B6960', marginBottom: 4 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 4, fontSize: 11, color: theme.inkSoft, marginBottom: 4, fontWeight: 600 }}>
             {weekdayLabels().map((d) => (
               <div key={d} style={{ textAlign: 'center' }}>{d}</div>
             ))}
@@ -115,19 +154,23 @@ export default function CalendarView({ scope, heading, blurb }) {
               return (
                 <div
                   key={cell.dateKey}
+                  className="lh-cal-day"
                   onClick={() => openAddForm(cell.dateKey)}
                   style={{
                     minHeight: 64,
                     padding: 4,
-                    borderRadius: 6,
-                    border: isToday ? '2px solid #3E6259' : '1px solid #DDE3D6',
-                    background: cell.inCurrentMonth ? 'white' : '#F4F6F1',
-                    color: cell.inCurrentMonth ? 'inherit' : '#A9B2A4',
+                    borderRadius: 8,
+                    border: isToday ? `2px solid ${theme.pine}` : `1px solid ${theme.line}`,
+                    background: cell.inCurrentMonth ? theme.surface : theme.surfaceMuted,
+                    color: cell.inCurrentMonth ? 'inherit' : theme.inkFaint,
                     cursor: 'pointer',
                     fontSize: 12,
+                    transition: 'border-color 0.15s',
                   }}
                 >
-                  <div style={{ fontWeight: isToday ? 700 : 400, marginBottom: 2 }}>{cell.dayNumber}</div>
+                  <div style={{ fontWeight: isToday ? 700 : 400, color: isToday ? theme.pineDark : 'inherit', marginBottom: 2 }}>
+                    {cell.dayNumber}
+                  </div>
                   {dayEvents.slice(0, 3).map((ev) => (
                     <div
                       key={ev.id}
@@ -139,8 +182,8 @@ export default function CalendarView({ scope, heading, blurb }) {
                       style={{
                         background: ev.color || DEFAULT_EVENT_COLOR,
                         color: 'white',
-                        borderRadius: 4,
-                        padding: '1px 4px',
+                        borderRadius: 5,
+                        padding: '1px 5px',
                         marginBottom: 2,
                         whiteSpace: 'nowrap',
                         overflow: 'hidden',
@@ -151,29 +194,31 @@ export default function CalendarView({ scope, heading, blurb }) {
                     </div>
                   ))}
                   {dayEvents.length > 3 && (
-                    <div style={{ color: '#5B6960', fontSize: 10 }}>+{dayEvents.length - 3} more</div>
+                    <div style={{ color: theme.inkSoft, fontSize: 10 }}>+{dayEvents.length - 3} more</div>
                   )}
                 </div>
               );
             })}
           </div>
 
-          <div style={{ marginTop: 20 }}>
-            <h3 style={{ fontSize: 14, marginBottom: 6 }}>Upcoming</h3>
+          <div style={{ marginTop: 22 }}>
+            <h3 style={{ fontFamily: headingFont, fontSize: 15, fontWeight: 600, color: theme.ink, marginBottom: 6 }}>
+              Upcoming
+            </h3>
             {upcoming.length === 0 ? (
-              <p style={{ color: '#5B6960', fontSize: 13 }}>Nothing coming up.</p>
+              <p style={{ color: theme.inkSoft, fontSize: 13 }}>Nothing coming up.</p>
             ) : (
               <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
                 {upcoming.map((ev) => (
                   <li
                     key={ev.id}
                     onClick={() => openEditForm(ev)}
-                    style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0', borderBottom: '1px solid #DDE3D6', cursor: 'pointer', fontSize: 13 }}
+                    style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 0', borderBottom: `1px solid ${theme.line}`, cursor: 'pointer', fontSize: 13 }}
                   >
                     <span style={{ width: 10, height: 10, borderRadius: '50%', background: ev.color || DEFAULT_EVENT_COLOR, flexShrink: 0 }} />
-                    <span style={{ color: '#5B6960', width: 60, flexShrink: 0 }}>{formatDateChip(ev.start_date)}</span>
+                    <span style={{ color: theme.inkSoft, width: 60, flexShrink: 0 }}>{formatDateChip(ev.start_date)}</span>
                     <span style={{ flex: 1 }}>{ev.title}</span>
-                    <span style={{ color: '#5B6960' }}>{formatEventTimeLabel(ev)}</span>
+                    <span style={{ color: theme.inkSoft }}>{formatEventTimeLabel(ev)}</span>
                   </li>
                 ))}
               </ul>
@@ -186,55 +231,85 @@ export default function CalendarView({ scope, heading, blurb }) {
         <form
           onSubmit={handleSubmit}
           style={{
-            marginTop: 20,
-            padding: 16,
-            border: '1px solid #DDE3D6',
-            borderRadius: 8,
+            marginTop: 22,
+            padding: 18,
+            background: theme.surfaceMuted,
+            border: `1px solid ${theme.line}`,
+            borderRadius: 14,
             display: 'flex',
             flexDirection: 'column',
-            gap: 10,
+            gap: 12,
           }}
         >
-          <strong>{editingId === 'new' ? 'Add event' : 'Edit event'}</strong>
+          <strong style={{ fontFamily: headingFont, fontSize: 15, color: theme.pineDark }}>
+            {editingId === 'new' ? 'Add event' : 'Edit event'}
+          </strong>
 
           <input
+            className="lh-cal-input"
             type="text"
             placeholder="Event title"
             value={form.title}
             onChange={(e) => setForm({ ...form, title: e.target.value })}
             required
+            style={inputStyle}
           />
 
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            <label style={{ display: 'flex', flexDirection: 'column', fontSize: 12, gap: 2 }}>
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+            <label style={{ display: 'flex', flexDirection: 'column', fontSize: 12, gap: 4, color: theme.inkSoft, flex: '1 1 140px' }}>
               Start date
-              <input type="date" value={form.start_date} onChange={(e) => setForm({ ...form, start_date: e.target.value })} required />
+              <input
+                className="lh-cal-input"
+                type="date"
+                value={form.start_date}
+                onChange={(e) => setForm({ ...form, start_date: e.target.value })}
+                required
+                style={inputStyle}
+              />
             </label>
-            <label style={{ display: 'flex', flexDirection: 'column', fontSize: 12, gap: 2 }}>
+            <label style={{ display: 'flex', flexDirection: 'column', fontSize: 12, gap: 4, color: theme.inkSoft, flex: '1 1 140px' }}>
               End date
-              <input type="date" value={form.end_date} onChange={(e) => setForm({ ...form, end_date: e.target.value })} />
+              <input
+                className="lh-cal-input"
+                type="date"
+                value={form.end_date}
+                onChange={(e) => setForm({ ...form, end_date: e.target.value })}
+                style={inputStyle}
+              />
             </label>
           </div>
 
-          <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13 }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: theme.inkSoft }}>
             <input type="checkbox" checked={form.all_day} onChange={(e) => setForm({ ...form, all_day: e.target.checked })} />
             All day
           </label>
 
           {!form.all_day && (
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              <label style={{ display: 'flex', flexDirection: 'column', fontSize: 12, gap: 2 }}>
+            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+              <label style={{ display: 'flex', flexDirection: 'column', fontSize: 12, gap: 4, color: theme.inkSoft, flex: '1 1 140px' }}>
                 Start time
-                <input type="time" value={form.start_time} onChange={(e) => setForm({ ...form, start_time: e.target.value })} />
+                <input
+                  className="lh-cal-input"
+                  type="time"
+                  value={form.start_time}
+                  onChange={(e) => setForm({ ...form, start_time: e.target.value })}
+                  style={inputStyle}
+                />
               </label>
-              <label style={{ display: 'flex', flexDirection: 'column', fontSize: 12, gap: 2 }}>
+              <label style={{ display: 'flex', flexDirection: 'column', fontSize: 12, gap: 4, color: theme.inkSoft, flex: '1 1 140px' }}>
                 End time
-                <input type="time" value={form.end_time} onChange={(e) => setForm({ ...form, end_time: e.target.value })} />
+                <input
+                  className="lh-cal-input"
+                  type="time"
+                  value={form.end_time}
+                  onChange={(e) => setForm({ ...form, end_time: e.target.value })}
+                  style={inputStyle}
+                />
               </label>
             </div>
           )}
 
-          <div style={{ display: 'flex', gap: 6 }}>
+          <div style={{ display: 'flex', gap: 8 }}>
             {EVENT_COLORS.map((c) => (
               <button
                 key={c.hex}
@@ -243,24 +318,33 @@ export default function CalendarView({ scope, heading, blurb }) {
                 title={c.name}
                 aria-label={c.name}
                 style={{
-                  width: 22,
-                  height: 22,
+                  width: 24,
+                  height: 24,
                   borderRadius: '50%',
                   background: c.hex,
-                  border: form.color === c.hex ? '2px solid #222' : '1px solid rgba(0,0,0,0.15)',
+                  border: form.color === c.hex ? `2px solid ${theme.ink}` : '1px solid rgba(0,0,0,0.15)',
                   cursor: 'pointer',
                 }}
               />
             ))}
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 6 }}>
             <div style={{ display: 'flex', gap: 8 }}>
-              <button type="submit">{editingId === 'new' ? 'Add event' : 'Save changes'}</button>
-              <button type="button" onClick={closeForm}>Cancel</button>
+              <button className="lh-cal-save" type="submit" style={primaryButtonStyle}>
+                {editingId === 'new' ? 'Add event' : 'Save changes'}
+              </button>
+              <button className="lh-cal-cancel" type="button" onClick={closeForm} style={secondaryButtonStyle}>
+                Cancel
+              </button>
             </div>
             {editingId !== 'new' && (
-              <button type="button" onClick={handleDelete} style={{ color: '#C0392B' }}>
+              <button
+                className="lh-cal-delete"
+                type="button"
+                onClick={handleDelete}
+                style={{ background: 'none', border: 'none', color: theme.danger, fontSize: 13, fontWeight: 600, cursor: 'pointer', borderRadius: 8, padding: '8px 10px' }}
+              >
                 Delete
               </button>
             )}
