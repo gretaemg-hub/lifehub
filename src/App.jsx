@@ -6,6 +6,8 @@ import HouseholdOnboarding from './pages/HouseholdOnboarding';
 import ShoppingList from './features/shopping/ShoppingList';
 import CalendarView from './features/calendar/CalendarView';
 import HouseholdSettings from './features/household/HouseholdSettings';
+import ConfirmedBanner from './components/ConfirmedBanner';
+import { theme, headingFont, bodyFont, cardStyle } from './theme';
 
 // The three states every screen boils down to now, replacing the
 // prototype's implicit "whoever has the tab open" model:
@@ -19,89 +21,178 @@ const TABS = [
   { key: 'household', label: '🏠 Household' },
 ];
 
+// Full-page loading state, styled to match the rest of the app instead
+// of a bare unstyled paragraph — this is what briefly shows on every
+// load while we ask Supabase who's signed in.
+function PageLoading({ label }) {
+  return (
+    <div
+      style={{
+        minHeight: '100vh',
+        background: theme.bg,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontFamily: bodyFont,
+        color: theme.inkSoft,
+        fontSize: 15,
+      }}
+    >
+      {label}
+    </div>
+  );
+}
+
 function AppShell() {
   const { user, loading: authLoading, signOut, demoMode } = useAuth();
   const { hasHousehold, loading: householdLoading, memberships, activeHouseholdId } = useHousehold();
   const [tab, setTab] = useState('shopping');
 
-  if (authLoading) return <p style={{ padding: 40 }}>Loading…</p>;
+  if (authLoading) return <PageLoading label="Loading…" />;
   if (!user) return <Login />;
-  if (householdLoading) return <p style={{ padding: 40 }}>Loading your household…</p>;
+  if (householdLoading) return <PageLoading label="Loading your household…" />;
   if (!hasHousehold) return <HouseholdOnboarding />;
 
   const activeHousehold = memberships.find((m) => m.household_id === activeHouseholdId);
 
   return (
-    <div style={{ fontFamily: 'sans-serif', maxWidth: 640, margin: '0 auto', padding: 24 }}>
-      {demoMode && (
-        <div
+    <div style={{ minHeight: '100vh', background: theme.bg, fontFamily: bodyFont, color: theme.ink }}>
+      <style>{`
+        .lh-tab:hover { color: ${theme.pineDark} !important; }
+        .lh-signout:hover { background: rgba(255,255,255,0.15) !important; }
+      `}</style>
+
+      {/* Green top bar, matching Login's header so the app never feels
+          like a different, more clinical product once you're inside it. */}
+      <header
+        style={{
+          background: theme.pine,
+          color: 'white',
+          padding: '18px 24px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 12,
+          flexWrap: 'wrap',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <span style={{ fontSize: 26 }}>🏡</span>
+          <div>
+            <div style={{ fontFamily: headingFont, fontWeight: 600, fontSize: 22, letterSpacing: 0.3 }}>
+              LifeHub
+            </div>
+            <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.75)' }}>
+              {activeHousehold?.households?.name}
+            </div>
+          </div>
+        </div>
+        <button
+          className="lh-signout"
+          onClick={signOut}
           style={{
-            background: '#FFF6E0',
-            border: '1px solid #E8D8A6',
-            borderRadius: 8,
-            padding: '8px 14px',
-            marginBottom: 16,
+            fontFamily: 'inherit',
+            background: 'rgba(255,255,255,0.1)',
+            color: 'white',
+            border: '1px solid rgba(255,255,255,0.3)',
+            borderRadius: 10,
+            padding: '9px 16px',
             fontSize: 13,
-            color: '#6B5A1E',
+            fontWeight: 600,
+            cursor: 'pointer',
+            transition: 'background 0.15s',
           }}
         >
-          🔧 Demo mode — you're looking at sample data with no backend connected. Nothing here saves after you
-          leave the page.
-        </div>
-      )}
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-        <div>
-          <h1 style={{ margin: 0 }}>🏡 LifeHub</h1>
-          <p style={{ margin: 0, color: '#5B6960', fontSize: 13 }}>{activeHousehold?.households?.name}</p>
-        </div>
-        <button onClick={signOut}>{demoMode ? 'Exit demo' : 'Sign out'}</button>
+          {demoMode ? 'Exit demo' : 'Sign out'}
+        </button>
       </header>
 
-      <nav style={{ display: 'flex', gap: 8, marginBottom: 24, borderBottom: '1px solid #DDE3D6', flexWrap: 'wrap' }}>
-        {TABS.map((t) => (
-          <button
-            key={t.key}
-            onClick={() => setTab(t.key)}
+      <div style={{ maxWidth: 720, margin: '0 auto', padding: '28px 20px 60px' }}>
+        <ConfirmedBanner />
+
+        {demoMode && (
+          <div
             style={{
-              padding: '8px 12px',
-              background: 'none',
-              border: 'none',
-              borderBottom: tab === t.key ? '2px solid #3E6259' : '2px solid transparent',
-              fontWeight: tab === t.key ? 700 : 400,
-              cursor: 'pointer',
-              color: tab === t.key ? '#3E6259' : '#5B6960',
+              background: '#FFF6E0',
+              border: '1px solid #E8D8A6',
+              borderRadius: 12,
+              padding: '10px 16px',
+              marginBottom: 20,
+              fontSize: 13,
+              color: '#6B5A1E',
             }}
           >
-            {t.label}
-          </button>
-        ))}
-      </nav>
+            🔧 Demo mode — you're looking at sample data with no backend connected. Nothing here saves after you
+            leave the page.
+          </div>
+        )}
 
-      {/*
-        Shopping List, Family Calendar, and My Calendar are migrated
-        so far. Add the next feature (Homework, Birthdays+Wishlists,
-        Meal Plan, Notes, Fitness Tracker) the same way: a
-        supabase/migrations table (already in 0001_init.sql), a
-        use*Feature.js hook, and a component, following
-        features/shopping/ or features/calendar/ as the template —
-        then add a tab for it above.
-      */}
-      {tab === 'shopping' && <ShoppingList />}
-      {tab === 'family-calendar' && (
-        <CalendarView
-          scope="family"
-          heading="👪 Family Calendar"
-          blurb="Shared with everyone in the household."
-        />
-      )}
-      {tab === 'my-calendar' && (
-        <CalendarView
-          scope="personal"
-          heading="📅 My Calendar"
-          blurb="Only visible to you — enforced by the database itself, not just the UI."
-        />
-      )}
-      {tab === 'household' && <HouseholdSettings />}
+        <nav
+          style={{
+            display: 'flex',
+            gap: 4,
+            marginBottom: 24,
+            background: theme.surface,
+            borderRadius: 14,
+            padding: 6,
+            boxShadow: '0 4px 14px rgba(38, 49, 43, 0.06)',
+            flexWrap: 'wrap',
+          }}
+        >
+          {TABS.map((t) => (
+            <button
+              key={t.key}
+              className="lh-tab"
+              onClick={() => setTab(t.key)}
+              style={{
+                fontFamily: 'inherit',
+                flex: '1 1 auto',
+                padding: '10px 14px',
+                background: tab === t.key ? theme.bg : 'transparent',
+                border: 'none',
+                borderRadius: 10,
+                fontWeight: tab === t.key ? 700 : 500,
+                fontSize: 13,
+                cursor: 'pointer',
+                color: tab === t.key ? theme.pineDark : theme.inkSoft,
+                transition: 'color 0.15s',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {t.label}
+            </button>
+          ))}
+        </nav>
+
+        {/*
+          Shopping List, Family Calendar, and My Calendar are migrated
+          so far. Add the next feature (Homework, Birthdays+Wishlists,
+          Meal Plan, Notes, Fitness Tracker) the same way: a
+          supabase/migrations table (already in 0001_init.sql), a
+          use*Feature.js hook, and a component, following
+          features/shopping/ or features/calendar/ as the template —
+          then add a tab for it above. Give it the same cardStyle wrapper
+          used below so it inherits the theme automatically.
+        */}
+        <div style={cardStyle}>
+          {tab === 'shopping' && <ShoppingList />}
+          {tab === 'family-calendar' && (
+            <CalendarView
+              scope="family"
+              heading="👪 Family Calendar"
+              blurb="Shared with everyone in the household."
+            />
+          )}
+          {tab === 'my-calendar' && (
+            <CalendarView
+              scope="personal"
+              heading="📅 My Calendar"
+              blurb="Only visible to you — enforced by the database itself, not just the UI."
+            />
+          )}
+          {tab === 'household' && <HouseholdSettings />}
+        </div>
+      </div>
     </div>
   );
 }
