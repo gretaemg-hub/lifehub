@@ -1,18 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-
-// Warm, homey palette — matches the demo build so the real app doesn't
-// feel like a different, more clinical product once people switch over.
-const theme = {
-  bg: '#EEF1E7',
-  surface: '#FFFFFF',
-  ink: '#26312B',
-  inkSoft: '#5B6960',
-  pine: '#3E6259',
-  pineDark: '#2A453D',
-  mustard: '#D9A441',
-  line: '#DDE3D6',
-};
+import { theme } from '../theme';
 
 // Supabase's rate-limit error reads like "For security purposes, you can
 // only request this after 56 seconds." — pull the seconds out so we can
