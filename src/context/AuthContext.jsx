@@ -15,6 +15,19 @@ export function AuthProvider({ children }) {
   const [session, setSession] = useState(undefined); // undefined = "still loading"
   const [demoMode, setDemoMode] = useState(false);
 
+  // The confirmation link Supabase emails redirects back here with
+  // "#access_token=...&type=signup&..." in the URL. supabase-js reads
+  // that hash itself (to log you in) and then scrubs it from the
+  // address bar — but it does that asynchronously, so a *lazy* useState
+  // initializer, which runs synchronously during this component's very
+  // first render, still sees the original hash before it's stripped.
+  // That's what tells us "you just landed here from a confirmation
+  // email," as opposed to an ordinary sign-in, so the UI can say so.
+  const [justConfirmed, setJustConfirmed] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return /type=signup/.test(window.location.hash);
+  });
+
   useEffect(() => {
     if (!isSupabaseConfigured) {
       // No backend to ask — stop "loading" immediately and show Login,
@@ -39,6 +52,8 @@ export function AuthProvider({ children }) {
     configured: isSupabaseConfigured,
     demoMode,
     enterDemoMode: () => setDemoMode(true),
+    justConfirmed,
+    dismissJustConfirmed: () => setJustConfirmed(false),
     signUp: (email, password) => supabase.auth.signUp({ email, password }),
     signIn: (email, password) => supabase.auth.signInWithPassword({ email, password }),
     resendConfirmation: (email) => supabase.auth.resend({ type: 'signup', email }),
