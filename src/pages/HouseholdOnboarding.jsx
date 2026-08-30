@@ -191,7 +191,7 @@ export default function HouseholdOnboarding() {
                   <input
                     className="lh-onboard-input"
                     style={inputStyle}
-                    placeholder="e.g. The Meiers"
+                    placeholder="e.g. Greta's House, or The Meiers"
                     value={householdName}
                     onChange={(e) => setHouseholdName(e.target.value)}
                     required
