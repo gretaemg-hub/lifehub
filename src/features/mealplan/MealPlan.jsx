@@ -173,7 +173,12 @@ export default function MealPlan() {
             </h3>
 
             <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: theme.inkSoft }}>
-              <input type="checkbox" checked={sync} onChange={(e) => setSync(e.target.checked)} />
+              <input
+                type="checkbox"
+                checked={sync}
+                onChange={(e) => setSync(e.target.checked)}
+                style={{ width: 16, height: 16, accentColor: theme.pine }}
+              />
               🛒 Sync ingredients to Shopping List
             </label>
 
