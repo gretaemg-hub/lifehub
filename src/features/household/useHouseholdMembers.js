@@ -25,6 +25,10 @@ export function useHouseholdMembers() {
     if (isDemo) {
       setMembers([
         { id: 'demo-member', user_id: 'demo-user', display_name: 'You', role: 'parent', avatar_color: null, avatar_url: null },
+        // A second member so demo mode has something to show for
+        // reserving a wishlist item, viewing another person's
+        // homework/meal-plan additions, etc. — not persisted anywhere.
+        { id: 'demo-member-2', user_id: 'demo-member-2', display_name: 'Alex', role: 'parent', avatar_color: '#EA612B', avatar_url: null },
       ]);
       setInvites([]);
       setLoading(false);
