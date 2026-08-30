@@ -20,12 +20,12 @@ function seedDemoEvents(scope) {
   const today = todayKey();
   if (scope === 'family') {
     return [
-      { id: `demo-${demoIdCounter++}`, title: 'Parent-teacher evening', start_date: today, end_date: today, all_day: false, start_time: '18:00', end_time: '19:00', color: '#4C7A94' },
-      { id: `demo-${demoIdCounter++}`, title: 'Weekend trip', start_date: today, end_date: today, all_day: true, start_time: null, end_time: null, color: '#D97B3D' },
+      { id: `demo-${demoIdCounter++}`, title: 'Parent-teacher evening', start_date: today, end_date: today, all_day: false, start_time: '18:00', end_time: '19:00', color: '#4C7A94', is_birthday: false },
+      { id: `demo-${demoIdCounter++}`, title: 'Weekend trip', start_date: today, end_date: today, all_day: true, start_time: null, end_time: null, color: '#D97B3D', is_birthday: false },
     ];
   }
   return [
-    { id: `demo-${demoIdCounter++}`, title: 'Gym', start_date: today, end_date: today, all_day: false, start_time: '07:00', end_time: '08:00', color: '#3E6259' },
+    { id: `demo-${demoIdCounter++}`, title: 'Gym', start_date: today, end_date: today, all_day: false, start_time: '07:00', end_time: '08:00', color: '#3E6259', is_birthday: false },
   ];
 }
 
@@ -81,23 +81,37 @@ export function useCalendarEvents(scope) {
       start_time: fields.all_day ? null : fields.start_time || null,
       end_time: fields.all_day ? null : fields.end_time || null,
       color: fields.color || DEFAULT_EVENT_COLOR,
+      // is_birthday only ever comes from CalendarView on the family
+      // scope (the checkbox is hidden for personal events) — kept as
+      // a plain field here rather than scope-gated, since the DB
+      // column exists on both tables' shapes and defaults to false.
+      is_birthday: !!fields.is_birthday,
     };
-    if (!record.title || !record.start_date) return;
+    if (!record.title || !record.start_date) return null;
     if (record.end_date < record.start_date) record.end_date = record.start_date;
 
     if (isDemo) {
-      demoEventsRef.current = [...demoEventsRef.current, { id: `demo-${demoIdCounter++}`, ...record }];
+      const saved = { id: `demo-${demoIdCounter++}`, ...record };
+      demoEventsRef.current = [...demoEventsRef.current, saved];
       load();
-      return;
+      return saved;
     }
-    if (!ownerKey) return;
+    if (!ownerKey) return null;
+    let saved;
     if (scope === 'personal') {
-      await supabase.from(table).insert({ ...record, user_id: ownerKey });
+      const { data } = await supabase.from(table).insert({ ...record, user_id: ownerKey }).select().single();
+      saved = data;
     } else {
       const { data: userData } = await supabase.auth.getUser();
-      await supabase.from(table).insert({ ...record, household_id: ownerKey, created_by: userData.user?.id });
+      const { data } = await supabase
+        .from(table)
+        .insert({ ...record, household_id: ownerKey, created_by: userData.user?.id })
+        .select()
+        .single();
+      saved = data;
     }
     load();
+    return saved;
   }
 
   async function updateEvent(id, fields) {
@@ -109,16 +123,18 @@ export function useCalendarEvents(scope) {
       start_time: fields.all_day ? null : fields.start_time || null,
       end_time: fields.all_day ? null : fields.end_time || null,
       color: fields.color || DEFAULT_EVENT_COLOR,
+      is_birthday: !!fields.is_birthday,
     };
-    if (!record.title || !record.start_date) return;
+    if (!record.title || !record.start_date) return null;
 
     if (isDemo) {
       demoEventsRef.current = demoEventsRef.current.map((ev) => (ev.id === id ? { ...ev, ...record } : ev));
       load();
-      return;
+      return { id, ...record };
     }
     await supabase.from(table).update(record).eq('id', id);
     load();
+    return { id, ...record };
   }
 
   async function deleteEvent(id) {
