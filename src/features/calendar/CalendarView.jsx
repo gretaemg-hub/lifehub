@@ -289,7 +289,12 @@ export default function CalendarView({ scope, heading, blurb }) {
           </div>
 
           <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: theme.inkSoft }}>
-            <input type="checkbox" checked={form.all_day} onChange={(e) => setForm({ ...form, all_day: e.target.checked })} />
+            <input
+              type="checkbox"
+              checked={form.all_day}
+              onChange={(e) => setForm({ ...form, all_day: e.target.checked })}
+              style={{ width: 16, height: 16, accentColor: theme.pine }}
+            />
             All day
           </label>
 
@@ -331,7 +336,7 @@ export default function CalendarView({ scope, heading, blurb }) {
                   height: 24,
                   borderRadius: '50%',
                   background: c.hex,
-                  border: form.color === c.hex ? `2px solid ${theme.ink}` : '1px solid rgba(0,0,0,0.15)',
+                  border: `2px solid ${form.color === c.hex ? theme.ink : 'transparent'}`,
                   cursor: 'pointer',
                 }}
               />
@@ -344,6 +349,7 @@ export default function CalendarView({ scope, heading, blurb }) {
                 type="checkbox"
                 checked={form.is_birthday}
                 onChange={(e) => setForm({ ...form, is_birthday: e.target.checked })}
+                style={{ width: 16, height: 16, accentColor: theme.pine }}
               />
               🎂 This is a birthday
             </label>
