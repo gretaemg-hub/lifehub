@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { HouseholdProvider, useHousehold } from './context/HouseholdContext';
 import Login from './pages/Login';
@@ -102,6 +102,7 @@ function AppShell() {
   const profileData = useProfile();
   const { profile } = profileData;
   const { members, currentUserId } = useHouseholdMembers();
+  const mainRef = useRef(null);
 
   if (authLoading) return <PageLoading label="Loading…" />;
   if (!user) return <Login />;
@@ -112,10 +113,20 @@ function AppShell() {
 
   // Clicking any sidebar item always drops you back into the tab
   // content, even if Profile Settings was open — matches how the demo's
-  // nav always shows you the view you just picked.
+  // nav always shows you the view you just picked. On narrow/phone
+  // widths the sidebar sits in normal document flow above <main>, so
+  // without this, picking a new tab silently swaps the content while
+  // you're still scrolled wherever you were — feels like nothing
+  // happened until you scroll down and find it. Instead we smoothly
+  // bring the content area to the top of the viewport, so switching
+  // tabs reads as "flicking" to a new screen, the way a native app
+  // would, rather than a scroll chore.
   function selectTab(key) {
     setTab(key);
     setView('tabs');
+    requestAnimationFrame(() => {
+      mainRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
   }
 
   return (
@@ -132,7 +143,15 @@ function AppShell() {
         .lh-layout { display: grid; grid-template-columns: 210px 1fr; }
         @media (max-width: 720px) {
           .lh-layout { grid-template-columns: 1fr; }
-          .lh-sidebar { flex-direction: row; overflow-x: auto; border-right: none; border-bottom: 1px solid ${theme.line}; }
+          .lh-sidebar {
+            flex-direction: row;
+            overflow-x: auto;
+            border-right: none;
+            border-bottom: 1px solid ${theme.line};
+            position: sticky;
+            top: 0;
+            z-index: 5;
+          }
         }
 
         .lh-sidebar {
@@ -268,7 +287,7 @@ function AppShell() {
       <div className="lh-layout">
         <Sidebar tab={tab} onSelect={selectTab} />
 
-        <main style={{ padding: '24px', minWidth: 0 }}>
+        <main ref={mainRef} style={{ padding: '24px', minWidth: 0, scrollMarginTop: 12 }}>
           <ConfirmedBanner />
 
           {demoMode && (
