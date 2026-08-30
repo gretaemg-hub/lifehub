@@ -52,7 +52,12 @@ export default function ShoppingList() {
           style={{ ...inputStyle, flex: '1 1 200px' }}
         />
         <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: theme.inkSoft }}>
-          <input type="checkbox" checked={repeating} onChange={(e) => setRepeating(e.target.checked)} />
+          <input
+            type="checkbox"
+            checked={repeating}
+            onChange={(e) => setRepeating(e.target.checked)}
+            style={{ width: 16, height: 16, accentColor: theme.pine }}
+          />
           Repeats every week
         </label>
         <button className="lh-shop-add" type="submit" style={primaryButtonStyle}>
@@ -71,7 +76,12 @@ export default function ShoppingList() {
               key={item.id}
               style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '11px 4px', borderBottom: `1px solid ${theme.line}` }}
             >
-              <input type="checkbox" checked={item.checked} onChange={() => toggleItem(item.id, item.checked)} />
+              <input
+                type="checkbox"
+                checked={item.checked}
+                onChange={() => toggleItem(item.id, item.checked)}
+                style={{ width: 18, height: 18, accentColor: theme.pine, flexShrink: 0 }}
+              />
               <span style={{ flex: 1, textDecoration: item.checked ? 'line-through' : 'none', color: item.checked ? theme.inkFaint : theme.ink }}>
                 {item.text}
               </span>
