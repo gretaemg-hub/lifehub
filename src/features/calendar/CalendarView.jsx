@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useCalendarEvents } from './useCalendarEvents';
+import { useBirthdays } from '../birthdays/useBirthdays';
 import {
   EVENT_COLORS,
   DEFAULT_EVENT_COLOR,
@@ -13,7 +14,7 @@ import {
 } from './calendarUtils';
 import { theme, headingFont, inputStyle, primaryButtonStyle, secondaryButtonStyle } from '../../theme';
 
-const EMPTY_FORM = { title: '', start_date: '', end_date: '', all_day: true, start_time: '', end_time: '', color: DEFAULT_EVENT_COLOR };
+const EMPTY_FORM = { title: '', start_date: '', end_date: '', all_day: true, start_time: '', end_time: '', color: DEFAULT_EVENT_COLOR, is_birthday: false };
 
 // Shared month-grid UI for both Family Calendar (scope="family") and
 // My Calendar (scope="personal") — same component, different backing
@@ -28,6 +29,10 @@ const EMPTY_FORM = { title: '', start_date: '', end_date: '', all_day: true, sta
 // Renders inside the themed card App.jsx already wraps every tab in.
 export default function CalendarView({ scope, heading, blurb }) {
   const { events, loading, addEvent, updateEvent, deleteEvent } = useCalendarEvents(scope);
+  // Birthdays only ever exist on the family calendar — the checkbox
+  // and the sync calls below are no-ops (and this hook does no
+  // network work at all) when scope is "personal".
+  const { syncBirthdayForEvent, deleteForEvent: deleteBirthdayForEvent } = useBirthdays(scope === 'family');
   const [monthDate, setMonthDate] = useState(() => {
     const now = new Date();
     return new Date(now.getFullYear(), now.getMonth(), 1);
@@ -63,6 +68,7 @@ export default function CalendarView({ scope, heading, blurb }) {
       start_time: ev.start_time || '',
       end_time: ev.end_time || '',
       color: ev.color || DEFAULT_EVENT_COLOR,
+      is_birthday: !!ev.is_birthday,
     });
     setEditingId(ev.id);
   }
@@ -74,13 +80,16 @@ export default function CalendarView({ scope, heading, blurb }) {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    if (editingId === 'new') await addEvent(form);
-    else await updateEvent(editingId, form);
+    const saved = editingId === 'new' ? await addEvent(form) : await updateEvent(editingId, form);
+    if (scope === 'family' && saved) await syncBirthdayForEvent(saved, form.is_birthday);
     closeForm();
   }
 
   async function handleDelete() {
-    if (editingId && editingId !== 'new') await deleteEvent(editingId);
+    if (editingId && editingId !== 'new') {
+      await deleteEvent(editingId);
+      if (scope === 'family') await deleteBirthdayForEvent(editingId);
+    }
     closeForm();
   }
 
@@ -328,6 +337,17 @@ export default function CalendarView({ scope, heading, blurb }) {
               />
             ))}
           </div>
+
+          {scope === 'family' && (
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: theme.inkSoft }}>
+              <input
+                type="checkbox"
+                checked={form.is_birthday}
+                onChange={(e) => setForm({ ...form, is_birthday: e.target.checked })}
+              />
+              🎂 This is a birthday
+            </label>
+          )}
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 6 }}>
             <div style={{ display: 'flex', gap: 8 }}>
