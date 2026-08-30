@@ -6,11 +6,14 @@ import HouseholdOnboarding from './pages/HouseholdOnboarding';
 import ShoppingList from './features/shopping/ShoppingList';
 import CalendarView from './features/calendar/CalendarView';
 import HouseholdSettings from './features/household/HouseholdSettings';
+import { useHouseholdMembers } from './features/household/useHouseholdMembers';
 import BirthdaysWishlists from './features/birthdays/BirthdaysWishlists';
 import Homework from './features/homework/Homework';
 import MealPlan from './features/mealplan/MealPlan';
 import Notes from './features/notes/Notes';
 import FitnessTracker from './features/fitness/FitnessTracker';
+import Home from './features/home/Home';
+import Sidebar from './components/Sidebar';
 import ProfileSettings, { Avatar } from './features/profile/ProfileSettings';
 import { useProfile } from './features/profile/useProfile';
 import ConfirmedBanner from './components/ConfirmedBanner';
@@ -21,17 +24,13 @@ import { theme, headingFont, bodyFont, cardStyle } from './theme';
 //   1. Not logged in            -> Login
 //   2. Logged in, no household  -> HouseholdOnboarding
 //   3. Logged in, has household -> the actual app
-const TABS = [
-  { key: 'shopping', label: '🛒 Shopping List' },
-  { key: 'family-calendar', label: '👪 Family Calendar' },
-  { key: 'my-calendar', label: '📅 My Calendar' },
-  { key: 'birthdays', label: '🎂 Birthdays' },
-  { key: 'homework', label: '📚 Homework' },
-  { key: 'meal-plan', label: '🍽️ Meal Plan' },
-  { key: 'notes', label: '📝 Notes' },
-  { key: 'fitness', label: '🏋️ Fitness' },
-  { key: 'household', label: '🏠 Household' },
-];
+//
+// 'home' renders full-width on the sage background (its own taped
+// cards ARE the surface, like the friends-demo's #view-home) — every
+// other tab keeps the white cardStyle wrapper it already had.
+const CARD_TABS = new Set([
+  'shopping', 'family-calendar', 'my-calendar', 'birthdays', 'homework', 'meal-plan', 'notes', 'fitness', 'household',
+]);
 
 // Full-page loading state, styled to match the rest of the app instead
 // of a bare unstyled paragraph — this is what briefly shows on every
@@ -55,13 +54,54 @@ function PageLoading({ label }) {
   );
 }
 
+// The topbar's "My Family" strip — built from real household members
+// instead of the demo's localStorage roster, but the same idea: every
+// member gets a small circle + name, and whichever one is you gets a
+// white ring so it's obvious at a glance without reading every label.
+function FamilyStrip({ members, currentUserId }) {
+  if (members.length === 0) return null;
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+      <span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.7)', textTransform: 'uppercase', letterSpacing: 0.6, whiteSpace: 'nowrap' }}>
+        My Family
+      </span>
+      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+        {members.map((m) => {
+          const isYou = m.user_id === currentUserId;
+          return (
+            <div key={m.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, width: 48 }}>
+              <div style={{ boxShadow: isYou ? '0 0 0 2px white' : 'none', borderRadius: '50%' }}>
+                <Avatar name={m.display_name} color={m.avatar_color} url={m.avatar_url} size={30} fontSize={13} />
+              </div>
+              <span
+                style={{
+                  fontSize: 10.5,
+                  color: isYou ? 'white' : 'rgba(255,255,255,0.85)',
+                  fontWeight: isYou ? 700 : 400,
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  maxWidth: 48,
+                }}
+              >
+                {m.display_name}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function AppShell() {
   const { user, loading: authLoading, demoMode } = useAuth();
   const { hasHousehold, loading: householdLoading, memberships, activeHouseholdId } = useHousehold();
-  const [tab, setTab] = useState('shopping');
+  const [tab, setTab] = useState('home');
   const [view, setView] = useState('tabs'); // 'tabs' | 'profile'
   const profileData = useProfile();
   const { profile } = profileData;
+  const { members, currentUserId } = useHouseholdMembers();
 
   if (authLoading) return <PageLoading label="Loading…" />;
   if (!user) return <Login />;
@@ -70,11 +110,75 @@ function AppShell() {
 
   const activeHousehold = memberships.find((m) => m.household_id === activeHouseholdId);
 
+  // Clicking any sidebar item always drops you back into the tab
+  // content, even if Profile Settings was open — matches how the demo's
+  // nav always shows you the view you just picked.
+  function selectTab(key) {
+    setTab(key);
+    setView('tabs');
+  }
+
   return (
     <div style={{ minHeight: '100vh', background: theme.bg, fontFamily: bodyFont, color: theme.ink }}>
       <style>{`
-        .lh-tab:hover { color: ${theme.pineDark} !important; }
         .lh-profile-chip:hover { background: rgba(255,255,255,0.18) !important; }
+        .lh-nav-btn:hover:not(:disabled) { background: ${theme.surfaceMuted}; color: ${theme.ink}; }
+
+        /* ============================================================
+           LAYOUT — topbar across the top, sidebar + main below it,
+           ported from the friends-demo's #app / .layout grid.
+           ============================================================ */
+        .lh-layout { display: grid; grid-template-columns: 210px 1fr; }
+        @media (max-width: 720px) {
+          .lh-layout { grid-template-columns: 1fr; }
+          .lh-sidebar { flex-direction: row; overflow-x: auto; border-right: none; border-bottom: 1px solid ${theme.line}; }
+        }
+
+        .lh-sidebar {
+          background: ${theme.surface};
+          border-right: 1px solid ${theme.line};
+          display: flex;
+          flex-direction: column;
+          padding: 16px 8px;
+          gap: 4px;
+        }
+
+        /* ============================================================
+           HOME DASHBOARD CARDS — the "index card pinned to a
+           noticeboard with washi tape" look from the demo's .card
+           rules. Cards sit at a slight alternating rotation and lift
+           on hover, with a small rotated tape strip via ::before.
+           ============================================================ */
+        .lh-card-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+          gap: 24px;
+          margin-bottom: 32px;
+        }
+        .lh-card {
+          position: relative;
+          background: ${theme.surface};
+          border-radius: 12px;
+          padding: 16px;
+          box-shadow: 0 2px 8px rgba(38, 49, 43, 0.08);
+          transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+        .lh-card:nth-child(odd) { transform: rotate(-0.6deg); }
+        .lh-card:nth-child(even) { transform: rotate(0.5deg); }
+        .lh-card-clickable { cursor: pointer; }
+        .lh-card-clickable:hover { transform: rotate(0deg) translateY(-2px); box-shadow: 0 6px 20px rgba(38, 49, 43, 0.12); }
+        .lh-card::before {
+          content: "";
+          position: absolute;
+          top: -8px;
+          left: 24px;
+          width: 44px;
+          height: 16px;
+          background: var(--tape-color, ${theme.mustard});
+          opacity: 0.85;
+          transform: rotate(-3deg);
+          border-radius: 2px;
+        }
       `}</style>
 
       {/* Green top bar, matching Login's header so the app never feels
@@ -87,7 +191,7 @@ function AppShell() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          gap: 12,
+          gap: 16,
           flexWrap: 'wrap',
         }}
       >
@@ -102,6 +206,9 @@ function AppShell() {
             </div>
           </div>
         </div>
+
+        <FamilyStrip members={members} currentUserId={currentUserId} />
+
         {/* Click your own avatar/name to reach Profile Settings — same
             gesture as the friends-demo. Log out lives inside that page
             now, alongside change-password and delete-account, instead
@@ -130,80 +237,37 @@ function AppShell() {
         </button>
       </header>
 
-      <div style={{ maxWidth: 720, margin: '0 auto', padding: '28px 20px 60px' }}>
-        <ConfirmedBanner />
+      <div className="lh-layout">
+        <Sidebar tab={tab} onSelect={selectTab} />
 
-        {demoMode && (
-          <div
-            style={{
-              background: '#FFF6E0',
-              border: '1px solid #E8D8A6',
-              borderRadius: 12,
-              padding: '10px 16px',
-              marginBottom: 20,
-              fontSize: 13,
-              color: '#6B5A1E',
-            }}
-          >
-            🔧 Demo mode — you're looking at sample data with no backend connected. Nothing here saves after you
-            leave the page.
-          </div>
-        )}
+        <main style={{ padding: '24px', minWidth: 0 }}>
+          <ConfirmedBanner />
 
-        {view === 'profile' ? (
-          <div style={cardStyle}>
-            <ProfileSettings onBack={() => setView('tabs')} {...profileData} />
-          </div>
-        ) : (
-          <>
-            <nav
+          {demoMode && (
+            <div
               style={{
-                display: 'flex',
-                gap: 4,
-                marginBottom: 24,
-                background: theme.surface,
-                borderRadius: 14,
-                padding: 6,
-                boxShadow: '0 4px 14px rgba(38, 49, 43, 0.06)',
-                flexWrap: 'wrap',
+                background: '#FFF6E0',
+                border: '1px solid #E8D8A6',
+                borderRadius: 12,
+                padding: '10px 16px',
+                marginBottom: 20,
+                fontSize: 13,
+                color: '#6B5A1E',
               }}
             >
-              {TABS.map((t) => (
-                <button
-                  key={t.key}
-                  className="lh-tab"
-                  onClick={() => setTab(t.key)}
-                  style={{
-                    fontFamily: 'inherit',
-                    flex: '1 1 auto',
-                    padding: '10px 14px',
-                    background: tab === t.key ? theme.bg : 'transparent',
-                    border: 'none',
-                    borderRadius: 10,
-                    fontWeight: tab === t.key ? 700 : 500,
-                    fontSize: 13,
-                    cursor: 'pointer',
-                    color: tab === t.key ? theme.pineDark : theme.inkSoft,
-                    transition: 'color 0.15s',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {t.label}
-                </button>
-              ))}
-            </nav>
+              🔧 Demo mode — you're looking at sample data with no backend connected. Nothing here saves after you
+              leave the page.
+            </div>
+          )}
 
-            {/*
-              Shopping List, Family Calendar, and My Calendar are migrated
-              so far. Add the next feature (Homework, Birthdays+Wishlists,
-              Meal Plan, Notes, Fitness Tracker) the same way: a
-              supabase/migrations table (already in 0001_init.sql), a
-              use*Feature.js hook, and a component, following
-              features/shopping/ or features/calendar/ as the template —
-              then add a tab for it above. Give it the same cardStyle wrapper
-              used below so it inherits the theme automatically.
-            */}
+          {view === 'profile' ? (
             <div style={cardStyle}>
+              <ProfileSettings onBack={() => setView('tabs')} {...profileData} />
+            </div>
+          ) : tab === 'home' ? (
+            <Home onNavigate={selectTab} />
+          ) : (
+            <div style={CARD_TABS.has(tab) ? cardStyle : undefined}>
               {tab === 'shopping' && <ShoppingList />}
               {tab === 'family-calendar' && (
                 <CalendarView
@@ -226,8 +290,8 @@ function AppShell() {
               {tab === 'fitness' && <FitnessTracker />}
               {tab === 'household' && <HouseholdSettings />}
             </div>
-          </>
-        )}
+          )}
+        </main>
       </div>
     </div>
   );
