@@ -54,9 +54,27 @@ export function AuthProvider({ children }) {
     enterDemoMode: () => setDemoMode(true),
     justConfirmed,
     dismissJustConfirmed: () => setJustConfirmed(false),
-    signUp: (email, password) => supabase.auth.signUp({ email, password }),
+    // emailRedirectTo is set explicitly here rather than left to
+    // Supabase's dashboard-configured default "Site URL" — without it,
+    // the confirmation link in the email sends people wherever that
+    // dashboard setting happens to point (often unset, or pointing at
+    // something else entirely), which is what was landing people on an
+    // error page instead of back in this app. This always points at
+    // wherever THIS build is actually served from (respecting Vite's
+    // `base` config, so it lands on /lifehub/app/ in production).
+    //
+    // NOTE: Supabase also refuses to redirect anywhere that isn't on
+    // its own "Redirect URLs" allow-list (Authentication -> URL
+    // Configuration in the Supabase dashboard) — if confirmation links
+    // still land on an error page after this change, that allow-list
+    // needs `https://gretaemg-hub.github.io/lifehub/app/**` added to
+    // it (and Site URL set to the same base). That's a dashboard
+    // setting only the project owner can change.
+    signUp: (email, password) =>
+      supabase.auth.signUp({ email, password, options: { emailRedirectTo: `${window.location.origin}${import.meta.env.BASE_URL}` } }),
     signIn: (email, password) => supabase.auth.signInWithPassword({ email, password }),
-    resendConfirmation: (email) => supabase.auth.resend({ type: 'signup', email }),
+    resendConfirmation: (email) =>
+      supabase.auth.resend({ type: 'signup', email, options: { emailRedirectTo: `${window.location.origin}${import.meta.env.BASE_URL}` } }),
     signOut: async () => {
       if (demoMode) {
         setDemoMode(false);
