@@ -89,6 +89,22 @@ export function getMonthCells(year, month) {
   return cells;
 }
 
+// A birthday's stored `date` keeps the original birth year (e.g. the
+// year the calendar event was first created) — this finds the next
+// upcoming occurrence (this year, or next year if it's already
+// passed) and what age they'll be turning, for sorting/labeling the
+// Birthdays list. Ported directly from the prototype's
+// nextBirthdayOccurrence().
+export function nextBirthdayOccurrence(dateKey) {
+  const [birthYear, month, day] = dateKey.split('-').map(Number);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  let occurrence = new Date(today.getFullYear(), month - 1, day);
+  if (occurrence < today) occurrence = new Date(today.getFullYear() + 1, month - 1, day);
+  const turningAge = occurrence.getFullYear() - birthYear;
+  return { occurrence, turningAge };
+}
+
 // An event "occurs on" a given day if the day falls within its
 // [start_date, end_date] span (both inclusive) — multi-day events
 // simply show up as the same chip on every day they cover.
