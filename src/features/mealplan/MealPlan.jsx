@@ -249,6 +249,7 @@ export default function MealPlan() {
               </button>
             </div>
           </div>
+        </div>
       )}
     </section>
   );
