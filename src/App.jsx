@@ -6,6 +6,11 @@ import HouseholdOnboarding from './pages/HouseholdOnboarding';
 import ShoppingList from './features/shopping/ShoppingList';
 import CalendarView from './features/calendar/CalendarView';
 import HouseholdSettings from './features/household/HouseholdSettings';
+import BirthdaysWishlists from './features/birthdays/BirthdaysWishlists';
+import Homework from './features/homework/Homework';
+import MealPlan from './features/mealplan/MealPlan';
+import Notes from './features/notes/Notes';
+import FitnessTracker from './features/fitness/FitnessTracker';
 import ProfileSettings, { Avatar } from './features/profile/ProfileSettings';
 import { useProfile } from './features/profile/useProfile';
 import ConfirmedBanner from './components/ConfirmedBanner';
@@ -20,6 +25,11 @@ const TABS = [
   { key: 'shopping', label: '🛒 Shopping List' },
   { key: 'family-calendar', label: '👪 Family Calendar' },
   { key: 'my-calendar', label: '📅 My Calendar' },
+  { key: 'birthdays', label: '🎂 Birthdays' },
+  { key: 'homework', label: '📚 Homework' },
+  { key: 'meal-plan', label: '🍽️ Meal Plan' },
+  { key: 'notes', label: '📝 Notes' },
+  { key: 'fitness', label: '🏋️ Fitness' },
   { key: 'household', label: '🏠 Household' },
 ];
 
@@ -209,6 +219,11 @@ function AppShell() {
                   blurb="Only visible to you — enforced by the database itself, not just the UI."
                 />
               )}
+              {tab === 'birthdays' && <BirthdaysWishlists />}
+              {tab === 'homework' && <Homework />}
+              {tab === 'meal-plan' && <MealPlan />}
+              {tab === 'notes' && <Notes />}
+              {tab === 'fitness' && <FitnessTracker />}
               {tab === 'household' && <HouseholdSettings />}
             </div>
           </>
