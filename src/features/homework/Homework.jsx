@@ -120,7 +120,12 @@ export default function Homework() {
             const colors = badgeColors[status];
             return (
               <li key={h.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '11px 4px', borderBottom: `1px solid ${theme.line}` }}>
-                <input type="checkbox" checked={false} onChange={() => setCompleted(h.id, true)} style={{ marginTop: 3 }} />
+                <input
+                  type="checkbox"
+                  checked={false}
+                  onChange={() => setCompleted(h.id, true)}
+                  style={{ marginTop: 3, width: 18, height: 18, accentColor: theme.pine, flexShrink: 0 }}
+                />
                 <span style={{ flex: 1 }}>
                   <div style={{ fontWeight: 600, color: theme.ink }}>{h.subject}</div>
                   {h.description && <div style={{ fontSize: 13, color: theme.inkSoft }}>{h.description}</div>}
