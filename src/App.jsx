@@ -122,6 +122,7 @@ function AppShell() {
     <div style={{ minHeight: '100vh', background: theme.bg, fontFamily: bodyFont, color: theme.ink }}>
       <style>{`
         .lh-profile-chip:hover { background: rgba(255,255,255,0.18) !important; }
+        .lh-invite-chip:hover { background: ${theme.surfaceMuted} !important; }
         .lh-nav-btn:hover:not(:disabled) { background: ${theme.surfaceMuted}; color: ${theme.ink}; }
 
         /* ============================================================
@@ -208,6 +209,33 @@ function AppShell() {
         </div>
 
         <FamilyStrip members={members} currentUserId={currentUserId} />
+
+        {/* Quick access to inviting someone, same idea as the demo's
+            topbar "+ Create a Family" button — the actual invite-code
+            UI still lives on the Household tab (one source of truth for
+            that logic), this just jumps straight there instead of
+            making people find it in the sidebar first. */}
+        <button
+          className="lh-invite-chip"
+          onClick={() => selectTab('household')}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+            fontFamily: 'inherit',
+            background: 'white',
+            color: theme.pineDark,
+            border: 'none',
+            borderRadius: 999,
+            padding: '9px 16px',
+            fontSize: 13,
+            fontWeight: 600,
+            cursor: 'pointer',
+            transition: 'background 0.15s',
+          }}
+        >
+          + Add family member
+        </button>
 
         {/* Click your own avatar/name to reach Profile Settings — same
             gesture as the friends-demo. Log out lives inside that page
