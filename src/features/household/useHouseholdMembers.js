@@ -24,11 +24,11 @@ export function useHouseholdMembers() {
   const load = useCallback(async () => {
     if (isDemo) {
       setMembers([
-        { id: 'demo-member', user_id: 'demo-user', display_name: 'You', role: 'parent', avatar_color: null, avatar_url: null },
+        { id: 'demo-member', user_id: 'demo-user', display_name: 'You', avatar_color: null, avatar_url: null },
         // A second member so demo mode has something to show for
         // reserving a wishlist item, viewing another person's
         // homework/meal-plan additions, etc. — not persisted anywhere.
-        { id: 'demo-member-2', user_id: 'demo-member-2', display_name: 'Alex', role: 'parent', avatar_color: '#EA612B', avatar_url: null },
+        { id: 'demo-member-2', user_id: 'demo-member-2', display_name: 'Alex', avatar_color: '#EA612B', avatar_url: null },
       ]);
       setInvites([]);
       setLoading(false);
@@ -39,7 +39,7 @@ export function useHouseholdMembers() {
     const [membersRes, invitesRes] = await Promise.all([
       supabase
         .from('household_members')
-        .select('id, user_id, display_name, role, avatar_color, avatar_url')
+        .select('id, user_id, display_name, avatar_color, avatar_url')
         .eq('household_id', activeHouseholdId)
         .order('created_at', { ascending: true }),
       supabase
