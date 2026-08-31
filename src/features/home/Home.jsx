@@ -209,6 +209,13 @@ export default function Home({ onNavigate }) {
           text={mealPlanPreview(mealPlan.plan)}
           placeholder="Nothing planned for today"
         />
+        <DashCard
+          icon="🏡"
+          title="Household"
+          tapeColor={theme.pine}
+          onClick={() => onNavigate('household')}
+          text="Members & invite codes"
+        />
       </div>
     </div>
   );
