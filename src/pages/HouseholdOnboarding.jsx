@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { useHousehold } from '../context/HouseholdContext';
+import { useAuth } from '../context/AuthContext';
 import ConfirmedBanner from '../components/ConfirmedBanner';
 import { theme, headingFont, bodyFont, inputStyle, primaryButtonStyle } from '../theme';
 
@@ -10,14 +11,28 @@ import { theme, headingFont, bodyFont, inputStyle, primaryButtonStyle } from '..
 // redeem_invite()). Both are Postgres functions defined in
 // supabase/migrations/0001_init.sql — see that file for why this
 // can't just be a plain INSERT from the client.
+//
+// A person who arrived via a family link (HouseholdSettings.jsx's
+// "Share a family link" option) already has a code — it rode along in
+// the URL through sign-up and email confirmation (see
+// AuthContext.jsx's pendingInviteCode/redirectUrl) — so there's no
+// reason to make them pick a tab and retype it. They get a much
+// shorter panel instead: just their name, then straight into the
+// family. The normal create/join choice is still one click away, in
+// case the code turns out to be wrong or they'd rather start their
+// own household.
 export default function HouseholdOnboarding() {
   const { refresh } = useHousehold();
+  const { pendingInviteCode, clearPendingInvite } = useAuth();
+  const [useManual, setUseManual] = useState(false);
   const [tab, setTab] = useState('create'); // 'create' | 'join'
   const [displayName, setDisplayName] = useState('');
   const [householdName, setHouseholdName] = useState('');
   const [inviteCode, setInviteCode] = useState('');
   const [error, setError] = useState(null);
   const [busy, setBusy] = useState(false);
+
+  const showLinkJoin = !!pendingInviteCode && !useManual;
 
   async function handleCreate(e) {
     e.preventDefault();
@@ -43,6 +58,31 @@ export default function HouseholdOnboarding() {
     setBusy(false);
     if (rpcError) setError(rpcError.message);
     else refresh();
+  }
+
+  // Same RPC as handleJoin, just fed the code that arrived via the
+  // link instead of one typed in by hand.
+  async function handleLinkJoin(e) {
+    e.preventDefault();
+    setError(null);
+    setBusy(true);
+    const { error: rpcError } = await supabase.rpc('redeem_invite', {
+      p_code: pendingInviteCode,
+      p_display_name: displayName,
+    });
+    setBusy(false);
+    if (rpcError) {
+      setError(rpcError.message);
+      return;
+    }
+    clearPendingInvite();
+    // Clean the ?invite= param out of the address bar now that it's
+    // been used — matches how supabase-js itself scrubs the
+    // #access_token hash off the URL once it's read it.
+    const url = new URL(window.location.href);
+    url.searchParams.delete('invite');
+    window.history.replaceState(null, '', url);
+    refresh();
   }
 
   return (
@@ -101,150 +141,217 @@ export default function HouseholdOnboarding() {
         <div style={{ width: '100%', maxWidth: 440 }}>
           <ConfirmedBanner />
 
-          <div
-            style={{
-              background: theme.surface,
-              borderRadius: 20,
-              boxShadow: '0 10px 30px rgba(38, 49, 43, 0.12)',
-              padding: '44px 40px',
-            }}
-          >
-            <div style={{ textAlign: 'center', marginBottom: 28 }}>
-              <div style={{ fontSize: 34, marginBottom: 8 }}>👋</div>
-              <h1 style={{ fontFamily: headingFont, fontWeight: 600, fontSize: 26, color: theme.pineDark, marginBottom: 6 }}>
-                Welcome
-              </h1>
-              <p style={{ color: theme.inkSoft, fontSize: 15 }}>
-                Start a new household, or join one you've been invited to.
-              </p>
-            </div>
-
+          {showLinkJoin ? (
             <div
               style={{
-                display: 'flex',
-                gap: 4,
-                background: theme.bg,
-                borderRadius: 12,
-                padding: 4,
-                marginBottom: 24,
+                background: theme.surface,
+                borderRadius: 20,
+                boxShadow: '0 10px 30px rgba(38, 49, 43, 0.12)',
+                padding: '44px 40px',
               }}
             >
+              <div style={{ textAlign: 'center', marginBottom: 28 }}>
+                <div style={{ fontSize: 34, marginBottom: 8 }}>🎉</div>
+                <h1 style={{ fontFamily: headingFont, fontWeight: 600, fontSize: 26, color: theme.pineDark, marginBottom: 6 }}>
+                  You're invited!
+                </h1>
+                <p style={{ color: theme.inkSoft, fontSize: 15 }}>
+                  Just tell us your name and you'll be added to the family straight away.
+                </p>
+              </div>
+
+              <form onSubmit={handleLinkJoin} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: theme.inkSoft, letterSpacing: 0.4, textTransform: 'uppercase' }}>
+                    Your name
+                  </span>
+                  <input
+                    className="lh-onboard-input"
+                    style={inputStyle}
+                    placeholder="e.g. Greta"
+                    value={displayName}
+                    onChange={(e) => setDisplayName(e.target.value)}
+                    required
+                    autoFocus
+                  />
+                </label>
+                {error && (
+                  <p style={{ color: theme.danger, fontSize: 13, background: theme.dangerBg, borderRadius: 8, padding: '8px 12px', margin: 0 }}>
+                    {error}
+                  </p>
+                )}
+                <button className="lh-onboard-submit" type="submit" disabled={busy} style={{ ...primaryButtonStyle, padding: '15px 0', fontSize: 16, opacity: busy ? 0.7 : 1 }}>
+                  {busy ? 'Joining…' : 'Join family'}
+                </button>
+              </form>
+
               <button
                 type="button"
                 className="lh-onboard-switch"
-                onClick={() => setTab('create')}
+                onClick={() => {
+                  setUseManual(true);
+                  setError(null);
+                }}
                 style={{
-                  flex: 1,
+                  display: 'block',
+                  margin: '18px auto 0',
                   fontFamily: 'inherit',
-                  padding: '9px 0',
-                  background: tab === 'create' ? theme.surface : 'transparent',
-                  color: tab === 'create' ? theme.pineDark : theme.inkSoft,
-                  border: 'none',
-                  borderRadius: 9,
-                  fontWeight: 600,
                   fontSize: 13,
-                  boxShadow: tab === 'create' ? '0 2px 6px rgba(38, 49, 43, 0.1)' : 'none',
+                  background: 'none',
+                  border: 'none',
+                  color: theme.inkSoft,
+                  cursor: 'pointer',
                 }}
               >
-                Create household
-              </button>
-              <button
-                type="button"
-                className="lh-onboard-switch"
-                onClick={() => setTab('join')}
-                style={{
-                  flex: 1,
-                  fontFamily: 'inherit',
-                  padding: '9px 0',
-                  background: tab === 'join' ? theme.surface : 'transparent',
-                  color: tab === 'join' ? theme.pineDark : theme.inkSoft,
-                  border: 'none',
-                  borderRadius: 9,
-                  fontWeight: 600,
-                  fontSize: 13,
-                  boxShadow: tab === 'join' ? '0 2px 6px rgba(38, 49, 43, 0.1)' : 'none',
-                }}
-              >
-                Join with invite code
+                Wrong invite? Use a different code, or start your own household
               </button>
             </div>
+          ) : (
+            <div
+              style={{
+                background: theme.surface,
+                borderRadius: 20,
+                boxShadow: '0 10px 30px rgba(38, 49, 43, 0.12)',
+                padding: '44px 40px',
+              }}
+            >
+              <div style={{ textAlign: 'center', marginBottom: 28 }}>
+                <div style={{ fontSize: 34, marginBottom: 8 }}>👋</div>
+                <h1 style={{ fontFamily: headingFont, fontWeight: 600, fontSize: 26, color: theme.pineDark, marginBottom: 6 }}>
+                  Welcome
+                </h1>
+                <p style={{ color: theme.inkSoft, fontSize: 15 }}>
+                  Start a new household, or join one you've been invited to.
+                </p>
+              </div>
 
-            {tab === 'create' ? (
-              <form onSubmit={handleCreate} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  <span style={{ fontSize: 12, fontWeight: 600, color: theme.inkSoft, letterSpacing: 0.4, textTransform: 'uppercase' }}>
-                    Your name
-                  </span>
-                  <input
-                    className="lh-onboard-input"
-                    style={inputStyle}
-                    placeholder="e.g. Greta"
-                    value={displayName}
-                    onChange={(e) => setDisplayName(e.target.value)}
-                    required
-                  />
-                </label>
-                <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  <span style={{ fontSize: 12, fontWeight: 600, color: theme.inkSoft, letterSpacing: 0.4, textTransform: 'uppercase' }}>
-                    Household name
-                  </span>
-                  <input
-                    className="lh-onboard-input"
-                    style={inputStyle}
-                    placeholder="e.g. Greta's House, or The Meiers"
-                    value={householdName}
-                    onChange={(e) => setHouseholdName(e.target.value)}
-                    required
-                  />
-                </label>
-                {error && (
-                  <p style={{ color: theme.danger, fontSize: 13, background: theme.dangerBg, borderRadius: 8, padding: '8px 12px', margin: 0 }}>
-                    {error}
-                  </p>
-                )}
-                <button className="lh-onboard-submit" type="submit" disabled={busy} style={{ ...primaryButtonStyle, padding: '15px 0', fontSize: 16, opacity: busy ? 0.7 : 1 }}>
-                  {busy ? 'Creating…' : 'Create household'}
+              <div
+                style={{
+                  display: 'flex',
+                  gap: 4,
+                  background: theme.bg,
+                  borderRadius: 12,
+                  padding: 4,
+                  marginBottom: 24,
+                }}
+              >
+                <button
+                  type="button"
+                  className="lh-onboard-switch"
+                  onClick={() => setTab('create')}
+                  style={{
+                    flex: 1,
+                    fontFamily: 'inherit',
+                    padding: '9px 0',
+                    background: tab === 'create' ? theme.surface : 'transparent',
+                    color: tab === 'create' ? theme.pineDark : theme.inkSoft,
+                    border: 'none',
+                    borderRadius: 9,
+                    fontWeight: 600,
+                    fontSize: 13,
+                    boxShadow: tab === 'create' ? '0 2px 6px rgba(38, 49, 43, 0.1)' : 'none',
+                  }}
+                >
+                  Create household
                 </button>
-              </form>
-            ) : (
-              <form onSubmit={handleJoin} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  <span style={{ fontSize: 12, fontWeight: 600, color: theme.inkSoft, letterSpacing: 0.4, textTransform: 'uppercase' }}>
-                    Your name
-                  </span>
-                  <input
-                    className="lh-onboard-input"
-                    style={inputStyle}
-                    placeholder="e.g. Greta"
-                    value={displayName}
-                    onChange={(e) => setDisplayName(e.target.value)}
-                    required
-                  />
-                </label>
-                <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  <span style={{ fontSize: 12, fontWeight: 600, color: theme.inkSoft, letterSpacing: 0.4, textTransform: 'uppercase' }}>
-                    Invite code
-                  </span>
-                  <input
-                    className="lh-onboard-input"
-                    style={{ ...inputStyle, textTransform: 'uppercase', letterSpacing: 1 }}
-                    placeholder="e.g. 923LGT"
-                    value={inviteCode}
-                    onChange={(e) => setInviteCode(e.target.value)}
-                    required
-                  />
-                </label>
-                {error && (
-                  <p style={{ color: theme.danger, fontSize: 13, background: theme.dangerBg, borderRadius: 8, padding: '8px 12px', margin: 0 }}>
-                    {error}
-                  </p>
-                )}
-                <button className="lh-onboard-submit" type="submit" disabled={busy} style={{ ...primaryButtonStyle, padding: '15px 0', fontSize: 16, opacity: busy ? 0.7 : 1 }}>
-                  {busy ? 'Joining…' : 'Join household'}
+                <button
+                  type="button"
+                  className="lh-onboard-switch"
+                  onClick={() => setTab('join')}
+                  style={{
+                    flex: 1,
+                    fontFamily: 'inherit',
+                    padding: '9px 0',
+                    background: tab === 'join' ? theme.surface : 'transparent',
+                    color: tab === 'join' ? theme.pineDark : theme.inkSoft,
+                    border: 'none',
+                    borderRadius: 9,
+                    fontWeight: 600,
+                    fontSize: 13,
+                    boxShadow: tab === 'join' ? '0 2px 6px rgba(38, 49, 43, 0.1)' : 'none',
+                  }}
+                >
+                  Join with invite code
                 </button>
-              </form>
-            )}
-          </div>
+              </div>
+
+              {tab === 'create' ? (
+                <form onSubmit={handleCreate} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                  <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    <span style={{ fontSize: 12, fontWeight: 600, color: theme.inkSoft, letterSpacing: 0.4, textTransform: 'uppercase' }}>
+                      Your name
+                    </span>
+                    <input
+                      className="lh-onboard-input"
+                      style={inputStyle}
+                      placeholder="e.g. Greta"
+                      value={displayName}
+                      onChange={(e) => setDisplayName(e.target.value)}
+                      required
+                    />
+                  </label>
+                  <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    <span style={{ fontSize: 12, fontWeight: 600, color: theme.inkSoft, letterSpacing: 0.4, textTransform: 'uppercase' }}>
+                      Household name
+                    </span>
+                    <input
+                      className="lh-onboard-input"
+                      style={inputStyle}
+                      placeholder="e.g. Greta's House, or The Meiers"
+                      value={householdName}
+                      onChange={(e) => setHouseholdName(e.target.value)}
+                      required
+                    />
+                  </label>
+                  {error && (
+                    <p style={{ color: theme.danger, fontSize: 13, background: theme.dangerBg, borderRadius: 8, padding: '8px 12px', margin: 0 }}>
+                      {error}
+                    </p>
+                  )}
+                  <button className="lh-onboard-submit" type="submit" disabled={busy} style={{ ...primaryButtonStyle, padding: '15px 0', fontSize: 16, opacity: busy ? 0.7 : 1 }}>
+                    {busy ? 'Creating…' : 'Create household'}
+                  </button>
+                </form>
+              ) : (
+                <form onSubmit={handleJoin} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                  <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    <span style={{ fontSize: 12, fontWeight: 600, color: theme.inkSoft, letterSpacing: 0.4, textTransform: 'uppercase' }}>
+                      Your name
+                    </span>
+                    <input
+                      className="lh-onboard-input"
+                      style={inputStyle}
+                      placeholder="e.g. Greta"
+                      value={displayName}
+                      onChange={(e) => setDisplayName(e.target.value)}
+                      required
+                    />
+                  </label>
+                  <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    <span style={{ fontSize: 12, fontWeight: 600, color: theme.inkSoft, letterSpacing: 0.4, textTransform: 'uppercase' }}>
+                      Invite code
+                    </span>
+                    <input
+                      className="lh-onboard-input"
+                      style={{ ...inputStyle, textTransform: 'uppercase', letterSpacing: 1 }}
+                      placeholder="e.g. 923LGT"
+                      value={inviteCode}
+                      onChange={(e) => setInviteCode(e.target.value)}
+                      required
+                    />
+                  </label>
+                  {error && (
+                    <p style={{ color: theme.danger, fontSize: 13, background: theme.dangerBg, borderRadius: 8, padding: '8px 12px', margin: 0 }}>
+                      {error}
+                    </p>
+                  )}
+                  <button className="lh-onboard-submit" type="submit" disabled={busy} style={{ ...primaryButtonStyle, padding: '15px 0', fontSize: 16, opacity: busy ? 0.7 : 1 }}>
+                    {busy ? 'Joining…' : 'Join household'}
+                  </button>
+                </form>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>
