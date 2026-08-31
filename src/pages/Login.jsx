@@ -11,8 +11,11 @@ function secondsFromRateLimitMessage(message) {
 }
 
 export default function Login() {
-  const { signIn, signUp, resendConfirmation, configured, enterDemoMode } = useAuth();
-  const [mode, setMode] = useState('sign-in'); // 'sign-in' | 'sign-up'
+  const { signIn, signUp, resendConfirmation, configured, enterDemoMode, pendingInviteCode } = useAuth();
+  // A family link (see HouseholdSettings.jsx) lands a brand-new person
+  // here with `?invite=CODE` in the URL — they don't have an account
+  // yet, so default straight to the sign-up form instead of sign-in.
+  const [mode, setMode] = useState(() => (pendingInviteCode ? 'sign-up' : 'sign-in')); // 'sign-in' | 'sign-up'
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
@@ -250,6 +253,24 @@ export default function Login() {
                   {mode === 'sign-in' ? 'Sign in to your household.' : 'Create your account to get started.'}
                 </p>
               </div>
+
+              {pendingInviteCode && (
+                <div
+                  style={{
+                    background: theme.surfaceMuted,
+                    border: `1px solid ${theme.line}`,
+                    borderRadius: 12,
+                    padding: '12px 16px',
+                    marginBottom: 22,
+                    fontSize: 13,
+                    color: theme.pineDark,
+                  }}
+                >
+                  🎉 <strong>You've been invited!</strong> {mode === 'sign-up'
+                    ? "Create your account below and you'll land straight in the family once you're set up."
+                    : 'Sign in and you\'ll be added to the family automatically.'}
+                </div>
+              )}
 
               {!configured && (
                 <div
