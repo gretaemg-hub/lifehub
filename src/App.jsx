@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { HouseholdProvider, useHousehold } from './context/HouseholdContext';
 import Login from './pages/Login';
@@ -94,7 +94,7 @@ function FamilyStrip({ members, currentUserId }) {
 }
 
 function AppShell() {
-  const { user, loading: authLoading, demoMode } = useAuth();
+  const { user, loading: authLoading, demoMode, pendingInviteCode, clearPendingInvite } = useAuth();
   const { hasHousehold, loading: householdLoading, memberships, activeHouseholdId } = useHousehold();
   const [tab, setTab] = useState('home');
   const [view, setView] = useState('tabs'); // 'tabs' | 'profile'
@@ -102,6 +102,20 @@ function AppShell() {
   const { profile } = profileData;
   const { members, currentUserId } = useHouseholdMembers();
   const mainRef = useRef(null);
+
+  // A `?invite=CODE` link is only meant for someone who doesn't have a
+  // household yet — HouseholdOnboarding.jsx is what actually redeems
+  // it. If it's still sitting in the URL once we get here (an existing
+  // member re-opened an old family-link message, say), there's nothing
+  // left to do with it — clear it so it doesn't linger in the address
+  // bar or get mistaken for something still pending.
+  useEffect(() => {
+    if (!hasHousehold || !pendingInviteCode) return;
+    clearPendingInvite();
+    const url = new URL(window.location.href);
+    url.searchParams.delete('invite');
+    window.history.replaceState(null, '', url);
+  }, [hasHousehold, pendingInviteCode, clearPendingInvite]);
 
   if (authLoading) return <PageLoading label="Loading…" />;
   if (!user) return <Login />;
