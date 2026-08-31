@@ -11,9 +11,22 @@ const AuthContext = createContext(null);
 // of stopping dead at the login screen. Never touches Supabase.
 const DEMO_USER = { id: 'demo-user', email: 'demo@lifehub.app' };
 
+// A family link (see HouseholdSettings.jsx's "Share a family link"
+// option) is just this app's normal URL with `?invite=CODE` tacked on.
+// Reading it here, once, at the very first render — same lazy-useState
+// trick as `justConfirmed` below — is what lets Login.jsx default to
+// sign-up mode and HouseholdOnboarding.jsx skip straight to "just tell
+// us your name" instead of the usual create/join choice.
+function readInviteCodeFromUrl() {
+  if (typeof window === 'undefined') return null;
+  const code = new URLSearchParams(window.location.search).get('invite');
+  return code ? code.trim().toUpperCase() : null;
+}
+
 export function AuthProvider({ children }) {
   const [session, setSession] = useState(undefined); // undefined = "still loading"
   const [demoMode, setDemoMode] = useState(false);
+  const [pendingInviteCode, setPendingInviteCode] = useState(readInviteCodeFromUrl);
 
   // The confirmation link Supabase emails redirects back here with
   // "#access_token=...&type=signup&..." in the URL. supabase-js reads
@@ -45,6 +58,19 @@ export function AuthProvider({ children }) {
     return () => subscription.subscription.unsubscribe();
   }, []);
 
+  // Builds the URL Supabase redirects back to after a confirmation
+  // link is clicked. Folding the pending invite code into it (as the
+  // same `?invite=` query param it arrived with) is what lets that
+  // code survive the round trip through the user's email client — the
+  // confirmation link is what actually gets opened, quite possibly in
+  // a different tab or even a different device than the one that
+  // submitted the sign-up form, so anything not baked into this URL
+  // itself would simply be lost.
+  function redirectUrl(inviteCode) {
+    const base = `${window.location.origin}${import.meta.env.BASE_URL}`;
+    return inviteCode ? `${base}?invite=${encodeURIComponent(inviteCode)}` : base;
+  }
+
   const value = {
     session,
     user: demoMode ? DEMO_USER : session?.user ?? null,
@@ -54,6 +80,8 @@ export function AuthProvider({ children }) {
     enterDemoMode: () => setDemoMode(true),
     justConfirmed,
     dismissJustConfirmed: () => setJustConfirmed(false),
+    pendingInviteCode,
+    clearPendingInvite: () => setPendingInviteCode(null),
     // emailRedirectTo is set explicitly here rather than left to
     // Supabase's dashboard-configured default "Site URL" — without it,
     // the confirmation link in the email sends people wherever that
@@ -61,7 +89,8 @@ export function AuthProvider({ children }) {
     // something else entirely), which is what was landing people on an
     // error page instead of back in this app. This always points at
     // wherever THIS build is actually served from (respecting Vite's
-    // `base` config, so it lands on /lifehub/app/ in production).
+    // `base` config, so it lands on /lifehub/app/ in production), plus
+    // the pending invite code if there is one — see redirectUrl() above.
     //
     // NOTE: Supabase also refuses to redirect anywhere that isn't on
     // its own "Redirect URLs" allow-list (Authentication -> URL
@@ -71,10 +100,10 @@ export function AuthProvider({ children }) {
     // it (and Site URL set to the same base). That's a dashboard
     // setting only the project owner can change.
     signUp: (email, password) =>
-      supabase.auth.signUp({ email, password, options: { emailRedirectTo: `${window.location.origin}${import.meta.env.BASE_URL}` } }),
+      supabase.auth.signUp({ email, password, options: { emailRedirectTo: redirectUrl(pendingInviteCode) } }),
     signIn: (email, password) => supabase.auth.signInWithPassword({ email, password }),
     resendConfirmation: (email) =>
-      supabase.auth.resend({ type: 'signup', email, options: { emailRedirectTo: `${window.location.origin}${import.meta.env.BASE_URL}` } }),
+      supabase.auth.resend({ type: 'signup', email, options: { emailRedirectTo: redirectUrl(pendingInviteCode) } }),
     signOut: async () => {
       if (demoMode) {
         setDemoMode(false);
