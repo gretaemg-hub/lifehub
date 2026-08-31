@@ -133,6 +133,19 @@ export default function Home({ onNavigate }) {
         <p style={{ color: theme.inkSoft, fontSize: 14, marginTop: 4 }}>Here's what's happening across the house today.</p>
       </div>
 
+      {/* Pinned above everything else, per request — inviting someone
+          is the one action a brand-new household needs before any of
+          the cards below it have anything to show. */}
+      <div className="lh-card-grid">
+        <DashCard
+          icon="👪"
+          title="Add Family Members"
+          tapeColor={theme.pine}
+          onClick={() => onNavigate('household')}
+          text="Generate an invite code, or share a family link"
+        />
+      </div>
+
       <h3 style={{ fontSize: 15, color: theme.inkSoft, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 16, marginTop: 4 }}>
         🙋 Personal
       </h3>
@@ -208,13 +221,6 @@ export default function Home({ onNavigate }) {
           onClick={() => onNavigate('meal-plan')}
           text={mealPlanPreview(mealPlan.plan)}
           placeholder="Nothing planned for today"
-        />
-        <DashCard
-          icon="🏡"
-          title="Household"
-          tapeColor={theme.pine}
-          onClick={() => onNavigate('household')}
-          text="Members & invite codes"
         />
       </div>
     </div>
