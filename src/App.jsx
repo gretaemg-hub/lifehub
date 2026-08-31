@@ -13,7 +13,6 @@ import MealPlan from './features/mealplan/MealPlan';
 import Notes from './features/notes/Notes';
 import FitnessTracker from './features/fitness/FitnessTracker';
 import Home from './features/home/Home';
-import Sidebar from './components/Sidebar';
 import ProfileSettings, { Avatar } from './features/profile/ProfileSettings';
 import { useProfile } from './features/profile/useProfile';
 import ConfirmedBanner from './components/ConfirmedBanner';
@@ -111,16 +110,15 @@ function AppShell() {
 
   const activeHousehold = memberships.find((m) => m.household_id === activeHouseholdId);
 
-  // Clicking any sidebar item always drops you back into the tab
+  // Clicking any home-screen tile always drops you back into the tab
   // content, even if Profile Settings was open — matches how the demo's
-  // nav always shows you the view you just picked. On narrow/phone
-  // widths the sidebar sits in normal document flow above <main>, so
-  // without this, picking a new tab silently swaps the content while
-  // you're still scrolled wherever you were — feels like nothing
-  // happened until you scroll down and find it. Instead we smoothly
-  // bring the content area to the top of the viewport, so switching
-  // tabs reads as "flicking" to a new screen, the way a native app
-  // would, rather than a scroll chore.
+  // nav always shows you the view you just picked. Without this,
+  // picking a new tab silently swaps the content while you're still
+  // scrolled wherever you were — feels like nothing happened until you
+  // scroll down and find it. Instead we smoothly bring the content area
+  // to the top of the viewport, so switching tabs reads as "flicking"
+  // to a new screen, the way a native app would, rather than a scroll
+  // chore.
   function selectTab(key) {
     setTab(key);
     setView('tabs');
@@ -133,35 +131,7 @@ function AppShell() {
     <div style={{ minHeight: '100vh', background: theme.bg, fontFamily: bodyFont, color: theme.ink }}>
       <style>{`
         .lh-profile-chip:hover { background: rgba(255,255,255,0.18) !important; }
-        .lh-invite-chip:hover { background: ${theme.surfaceMuted} !important; }
-        .lh-nav-btn:hover:not(:disabled) { background: ${theme.surfaceMuted}; color: ${theme.ink}; }
-
-        /* ============================================================
-           LAYOUT — topbar across the top, sidebar + main below it,
-           ported from the friends-demo's #app / .layout grid.
-           ============================================================ */
-        .lh-layout { display: grid; grid-template-columns: 210px 1fr; }
-        @media (max-width: 720px) {
-          .lh-layout { grid-template-columns: 1fr; }
-          .lh-sidebar {
-            flex-direction: row;
-            overflow-x: auto;
-            border-right: none;
-            border-bottom: 1px solid ${theme.line};
-            position: sticky;
-            top: 0;
-            z-index: 5;
-          }
-        }
-
-        .lh-sidebar {
-          background: ${theme.surface};
-          border-right: 1px solid ${theme.line};
-          display: flex;
-          flex-direction: column;
-          padding: 16px 8px;
-          gap: 4px;
-        }
+        .lh-home-btn:hover { background: ${theme.pineDark} !important; }
 
         /* ============================================================
            HOME DASHBOARD CARDS — the "index card pinned to a
@@ -229,33 +199,6 @@ function AppShell() {
 
         <FamilyStrip members={members} currentUserId={currentUserId} />
 
-        {/* Quick access to inviting someone, same idea as the demo's
-            topbar "+ Create a Family" button — the actual invite-code
-            UI still lives on the Household tab (one source of truth for
-            that logic), this just jumps straight there instead of
-            making people find it in the sidebar first. */}
-        <button
-          className="lh-invite-chip"
-          onClick={() => selectTab('household')}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 6,
-            fontFamily: 'inherit',
-            background: 'white',
-            color: theme.pineDark,
-            border: 'none',
-            borderRadius: 999,
-            padding: '9px 16px',
-            fontSize: 13,
-            fontWeight: 600,
-            cursor: 'pointer',
-            transition: 'background 0.15s',
-          }}
-        >
-          + Add family member
-        </button>
-
         {/* Click your own avatar/name to reach Profile Settings — same
             gesture as the friends-demo. Log out lives inside that page
             now, alongside change-password and delete-account, instead
@@ -284,62 +227,93 @@ function AppShell() {
         </button>
       </header>
 
-      <div className="lh-layout">
-        <Sidebar tab={tab} onSelect={selectTab} />
+      <main ref={mainRef} style={{ padding: '24px', minWidth: 0, scrollMarginTop: 12 }}>
+        <ConfirmedBanner />
 
-        <main ref={mainRef} style={{ padding: '24px', minWidth: 0, scrollMarginTop: 12 }}>
-          <ConfirmedBanner />
+        {demoMode && (
+          <div
+            style={{
+              background: '#FFF6E0',
+              border: '1px solid #E8D8A6',
+              borderRadius: 12,
+              padding: '10px 16px',
+              marginBottom: 20,
+              fontSize: 13,
+              color: '#6B5A1E',
+            }}
+          >
+            🔧 Demo mode — you're looking at sample data with no backend connected. Nothing here saves after you
+            leave the page.
+          </div>
+        )}
 
-          {demoMode && (
-            <div
-              style={{
-                background: '#FFF6E0',
-                border: '1px solid #E8D8A6',
-                borderRadius: 12,
-                padding: '10px 16px',
-                marginBottom: 20,
-                fontSize: 13,
-                color: '#6B5A1E',
-              }}
-            >
-              🔧 Demo mode — you're looking at sample data with no backend connected. Nothing here saves after you
-              leave the page.
-            </div>
-          )}
+        {/* There is no sidebar any more — every page besides Home is
+            reached by tapping its tile on the Home dashboard, and this
+            circular house button (top-left of every non-Home page) is
+            the one way back. Profile Settings gets its own "onBack"
+            inside the page itself instead, since it's reached from the
+            header avatar chip rather than a Home tile. */}
+        {tab !== 'home' && view === 'tabs' && (
+          <button
+            type="button"
+            className="lh-home-btn"
+            onClick={() => selectTab('home')}
+            aria-label="Back to Home"
+            title="Back to Home"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 44,
+              height: 44,
+              marginBottom: 16,
+              borderRadius: '50%',
+              background: theme.pine,
+              color: 'white',
+              border: 'none',
+              fontSize: 20,
+              lineHeight: 1,
+              cursor: 'pointer',
+              boxShadow: '0 2px 8px rgba(38, 49, 43, 0.25)',
+              transition: 'background 0.15s',
+            }}
+          >
+            🏠
+          </button>
+        )}
 
-          {view === 'profile' ? (
-            <div style={cardStyle}>
-              <ProfileSettings onBack={() => setView('tabs')} {...profileData} />
-            </div>
-          ) : tab === 'home' ? (
-            <Home onNavigate={selectTab} />
-          ) : (
-            <div style={CARD_TABS.has(tab) ? cardStyle : undefined}>
-              {tab === 'shopping' && <ShoppingList />}
-              {tab === 'family-calendar' && (
-                <CalendarView
-                  scope="family"
-                  heading="👪 Family Calendar"
-                  blurb="Shared with everyone in the household."
-                />
-              )}
-              {tab === 'my-calendar' && (
-                <CalendarView
-                  scope="personal"
-                  heading="📅 My Calendar"
-                  blurb="Only visible to you — enforced by the database itself, not just the UI."
-                />
-              )}
-              {tab === 'birthdays' && <BirthdaysWishlists />}
-              {tab === 'homework' && <Homework />}
-              {tab === 'meal-plan' && <MealPlan />}
-              {tab === 'notes' && <Notes />}
-              {tab === 'fitness' && <FitnessTracker />}
-              {tab === 'household' && <HouseholdSettings />}
-            </div>
-          )}
-        </main>
-      </div>
+        {view === 'profile' ? (
+          <div style={cardStyle}>
+            <ProfileSettings onBack={() => setView('tabs')} {...profileData} />
+          </div>
+        ) : tab === 'home' ? (
+          <Home onNavigate={selectTab} />
+        ) : (
+          <div style={CARD_TABS.has(tab) ? cardStyle : undefined}>
+            {tab === 'shopping' && <ShoppingList />}
+            {tab === 'family-calendar' && (
+              <CalendarView
+                scope="family"
+                heading="👪 Family Calendar"
+                blurb="Shared with everyone in the household."
+              />
+            )}
+            {tab === 'my-calendar' && (
+              <CalendarView
+                scope="personal"
+                heading="📅 My Calendar"
+                blurb="Only visible to you — enforced by the database itself, not just the UI."
+              />
+            )}
+            {tab === 'birthdays' && <BirthdaysWishlists />}
+            {tab === 'homework' && <Homework />}
+            {tab === 'meal-plan' && <MealPlan />}
+            {tab === 'notes' && <Notes />}
+            {tab === 'fitness' && <FitnessTracker />}
+            {tab === 'household' && <HouseholdSettings />}
+          </div>
+        )}
+      </main>
     </div>
   );
 }
