@@ -3,7 +3,7 @@ import { useHouseholdMembers } from './useHouseholdMembers';
 import { useHousehold } from '../../context/HouseholdContext';
 import { useAuth } from '../../context/AuthContext';
 import { Avatar } from '../profile/ProfileSettings';
-import { theme, headingFont, primaryButtonStyle, AVATAR_COLORS } from '../../theme';
+import { theme, headingFont, inputStyle, primaryButtonStyle, secondaryButtonStyle, AVATAR_COLORS } from '../../theme';
 
 // Renamed from a plain "Household" page: the dashboard tile that gets
 // you here is "Add Family Members" now, pinned at the top of Home,
@@ -23,14 +23,54 @@ import { theme, headingFont, primaryButtonStyle, AVATAR_COLORS } from '../../the
 // "Household") still lives here, just below the invite section now.
 export default function HouseholdSettings() {
   const { members, invites, loading, busy, error, currentUserId, generateInvite } = useHouseholdMembers();
-  const { memberships, activeHouseholdId } = useHousehold();
+  const { memberships, activeHouseholdId, isCreator, renameHousehold, deleteHousehold } = useHousehold();
   const { demoMode } = useAuth();
   const [inviteMethod, setInviteMethod] = useState('code'); // 'code' | 'link'
   const [copiedCode, setCopiedCode] = useState(null);
   const [copiedLink, setCopiedLink] = useState(false);
 
+  const [editingName, setEditingName] = useState(false);
+  const [nameDraft, setNameDraft] = useState('');
+  const [nameError, setNameError] = useState('');
+  const [renameBusy, setRenameBusy] = useState(false);
+
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [deleteBusy, setDeleteBusy] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
+
   const activeHousehold = memberships.find((m) => m.household_id === activeHouseholdId);
   const householdLabel = activeHousehold?.households?.name || 'your household';
+
+  function startEditName() {
+    setNameDraft(activeHousehold?.households?.name || '');
+    setNameError('');
+    setEditingName(true);
+  }
+
+  async function saveName() {
+    setRenameBusy(true);
+    const result = await renameHousehold(nameDraft);
+    setRenameBusy(false);
+    if (result) {
+      setNameError(result);
+      return;
+    }
+    setEditingName(false);
+    setNameError('');
+  }
+
+  async function handleConfirmDelete() {
+    setDeleteBusy(true);
+    const result = await deleteHousehold();
+    setDeleteBusy(false);
+    if (result) {
+      setDeleteError(result);
+      return;
+    }
+    // On success there's nothing left to do here — App.jsx notices
+    // hasHousehold is now false and renders HouseholdOnboarding on its
+    // own, same as right after signing up.
+  }
 
   const activeInvites = invites.filter(
     (i) => i.use_count < i.max_uses && (!i.expires_at || new Date(i.expires_at) > new Date())
@@ -92,6 +132,8 @@ export default function HouseholdSettings() {
         }
         .lh-hh-whatsapp:hover { background: #1DA851 !important; }
         .lh-hh-manual-link:hover { text-decoration: underline; }
+        .lh-hh-rename-btn:hover { color: ${theme.pineDark} !important; }
+        .lh-hh-delete-btn:hover { text-decoration: underline; }
       `}</style>
 
       <h2 style={{ fontFamily: headingFont, fontWeight: 600, fontSize: 22, color: theme.pineDark, margin: '0 0 4px' }}>
@@ -299,6 +341,96 @@ export default function HouseholdSettings() {
         </p>
       )}
 
+      <h3 style={{ fontFamily: headingFont, marginTop: 34, fontSize: 15, fontWeight: 600, color: theme.ink }}>
+        Household Settings
+      </h3>
+
+      {/* Anyone in the household can rename it — no need to gate
+          something this low-stakes to whoever created it. */}
+      {editingName ? (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
+          <input
+            type="text"
+            value={nameDraft}
+            maxLength={60}
+            autoFocus
+            onChange={(e) => setNameDraft(e.target.value)}
+            style={{ ...inputStyle, padding: '8px 10px', fontSize: 15, width: 220 }}
+          />
+          <button type="button" onClick={saveName} disabled={renameBusy} style={{ ...primaryButtonStyle, padding: '8px 14px', fontSize: 13 }}>
+            {renameBusy ? 'Saving…' : 'Save'}
+          </button>
+          <button
+            type="button"
+            onClick={() => setEditingName(false)}
+            style={{ ...secondaryButtonStyle, padding: '8px 14px', fontSize: 13 }}
+          >
+            Cancel
+          </button>
+        </div>
+      ) : (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10 }}>
+          <span style={{ fontSize: 15, color: theme.ink, fontWeight: 600 }}>{householdLabel}</span>
+          <button
+            type="button"
+            className="lh-hh-rename-btn"
+            onClick={startEditName}
+            title="Rename household"
+            style={{ background: 'none', border: 'none', color: theme.inkSoft, cursor: 'pointer', fontFamily: 'inherit', fontSize: 13 }}
+          >
+            ✎
+          </button>
+        </div>
+      )}
+      {nameError && <p style={{ color: theme.danger, fontSize: 12, marginTop: 6 }}>{nameError}</p>}
+
+      {/* Deleting the household is the one action gated to whoever
+          created it — see delete_household() in
+          0004_household_rename_delete.sql, which enforces this
+          server-side too, not just by hiding the button here. */}
+      {isCreator && (
+        <div style={{ marginTop: 20 }}>
+          <button
+            type="button"
+            className="lh-hh-delete-btn"
+            onClick={() => {
+              setConfirmingDelete((v) => !v);
+              setDeleteError('');
+            }}
+            style={{ background: 'none', border: 'none', color: theme.danger, fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: 'pointer', padding: 0 }}
+          >
+            🗑️ Delete family
+          </button>
+          {confirmingDelete && (
+            <div style={{ marginTop: 10, padding: '14px 16px', background: theme.surfaceMuted, borderRadius: 10, display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <p style={{ color: theme.danger, fontSize: 13, background: theme.dangerBg, borderRadius: 8, padding: '10px 12px', margin: 0 }}>
+                {demoMode
+                  ? "This exits demo mode — there's no real household here to delete."
+                  : `This permanently deletes ${householdLabel} and everything shared in it — the shopping list, family calendar, birthdays, wishlist, homework, and meal plan — for every member. Personal data (notes, fitness log, your own calendar) isn't affected. Everyone, including you, will need to create or join a new household afterward. This can't be undone.`}
+              </p>
+              {deleteError && <p style={{ color: theme.danger, fontSize: 12, margin: 0 }}>{deleteError}</p>}
+              <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                <button
+                  type="button"
+                  onClick={() => setConfirmingDelete(false)}
+                  style={{ ...secondaryButtonStyle, padding: '9px 16px', fontSize: 13 }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleConfirmDelete}
+                  disabled={deleteBusy}
+                  style={{ ...primaryButtonStyle, padding: '9px 16px', fontSize: 13, background: theme.danger }}
+                >
+                  {deleteBusy ? 'Deleting…' : demoMode ? 'Yes, exit demo' : 'Yes, delete family'}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       <h3 style={{ fontFamily: headingFont, marginTop: 34, fontSize: 15, fontWeight: 600, color: theme.ink }}>Members</h3>
       {loading ? (
         <p style={{ color: theme.inkSoft }}>Loading…</p>
@@ -319,19 +451,6 @@ export default function HouseholdSettings() {
               <span style={{ flex: 1 }}>
                 {m.display_name}
                 {m.user_id === currentUserId && <span style={{ color: theme.inkSoft, fontSize: 12 }}> (you)</span>}
-              </span>
-              <span
-                style={{
-                  fontSize: 11,
-                  fontWeight: 600,
-                  color: theme.inkSoft,
-                  textTransform: 'capitalize',
-                  background: theme.surfaceMuted,
-                  borderRadius: 6,
-                  padding: '3px 9px',
-                }}
-              >
-                {m.role}
               </span>
             </li>
           ))}
