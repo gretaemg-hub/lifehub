@@ -72,8 +72,13 @@ export default function HouseholdSettings() {
     // own, same as right after signing up.
   }
 
+  // max_uses is nullable — null means unlimited (same "no limit"
+  // convention expires_at already used), so an invite is only "used
+  // up" when it has a real cap and has hit it.
   const activeInvites = invites.filter(
-    (i) => i.use_count < i.max_uses && (!i.expires_at || new Date(i.expires_at) > new Date())
+    (i) =>
+      (i.max_uses == null || i.use_count < i.max_uses) &&
+      (!i.expires_at || new Date(i.expires_at) > new Date())
   );
   // The family link always points at whichever active code was
   // generated most recently (invites are loaded newest-first).
@@ -212,7 +217,9 @@ export default function HouseholdSettings() {
                     {copiedCode === invite.code ? 'Copied ✓' : 'Copy'}
                   </button>
                   <span style={{ fontSize: 12, color: theme.inkSoft, marginLeft: 'auto' }}>
-                    {invite.use_count}/{invite.max_uses} used
+                    {invite.max_uses == null
+                      ? `used ${invite.use_count}× · reusable`
+                      : `${invite.use_count}/${invite.max_uses} used`}
                   </span>
                 </li>
               ))}
