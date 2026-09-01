@@ -64,7 +64,9 @@ export function useHouseholdMembers() {
     if (isDemo) {
       const fakeCode = Math.random().toString(36).slice(2, 10).toUpperCase();
       setInvites((current) => [
-        { id: `demo-invite-${current.length}`, code: fakeCode, created_at: null, expires_at: null, max_uses: 1, use_count: 0 },
+        // max_uses: null matches the real (post-0007) default —
+        // reusable by anyone who has the code, no cap.
+        { id: `demo-invite-${current.length}`, code: fakeCode, created_at: null, expires_at: null, max_uses: null, use_count: 0 },
         ...current,
       ]);
       return;
