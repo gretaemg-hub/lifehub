@@ -23,10 +23,45 @@ function readInviteCodeFromUrl() {
   return code ? code.trim().toUpperCase() : null;
 }
 
+// The invite code has to survive a full sign-up -> email-confirmation
+// round trip before HouseholdOnboarding.jsx ever gets to redeem it —
+// and that round trip is not fully within this app's control: the
+// confirmation link gets opened from whatever mail app/browser the
+// person's device defaults to, and there's no guarantee the `?invite=`
+// query param makes it back onto the URL exactly as sent (a mail
+// client's link-preview fetcher, an auth provider's own redirect
+// sanitizing, or simply the person bookmarking the bare site instead
+// of tapping the actual link can all lose it). Stashing the code in
+// localStorage the moment it's first seen, and falling back to that
+// if the URL doesn't have one, means the invite still gets picked up
+// on return as long as it's the same browser — which covers the
+// ordinary case (tap link on phone, sign up, tap confirmation link
+// that opens back in the same browser) even when the URL param itself
+// doesn't survive the trip.
+const PENDING_INVITE_KEY = 'lh-pending-invite';
+
+function readPendingInviteCode() {
+  const fromUrl = readInviteCodeFromUrl();
+  if (fromUrl) {
+    try {
+      window.localStorage.setItem(PENDING_INVITE_KEY, fromUrl);
+    } catch {
+      // Private/locked-down browsing contexts can throw here — the
+      // URL-sourced value below still works for this page load.
+    }
+    return fromUrl;
+  }
+  try {
+    return window.localStorage.getItem(PENDING_INVITE_KEY);
+  } catch {
+    return null;
+  }
+}
+
 export function AuthProvider({ children }) {
   const [session, setSession] = useState(undefined); // undefined = "still loading"
   const [demoMode, setDemoMode] = useState(false);
-  const [pendingInviteCode, setPendingInviteCode] = useState(readInviteCodeFromUrl);
+  const [pendingInviteCode, setPendingInviteCode] = useState(readPendingInviteCode);
 
   // The confirmation link Supabase emails redirects back here with
   // "#access_token=...&type=signup&..." in the URL. supabase-js reads
@@ -81,7 +116,14 @@ export function AuthProvider({ children }) {
     justConfirmed,
     dismissJustConfirmed: () => setJustConfirmed(false),
     pendingInviteCode,
-    clearPendingInvite: () => setPendingInviteCode(null),
+    clearPendingInvite: () => {
+      setPendingInviteCode(null);
+      try {
+        window.localStorage.removeItem(PENDING_INVITE_KEY);
+      } catch {
+        // Same private-browsing caveat as readPendingInviteCode() above.
+      }
+    },
     // emailRedirectTo is set explicitly here rather than left to
     // Supabase's dashboard-configured default "Site URL" — without it,
     // the confirmation link in the email sends people wherever that
