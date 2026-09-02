@@ -18,6 +18,12 @@ export default function Login() {
   const [mode, setMode] = useState(() => (pendingInviteCode ? 'sign-up' : 'sign-in')); // 'sign-in' | 'sign-up'
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  // Only used in sign-up mode — a typo in a password field is otherwise
+  // invisible (it's masked) and only surfaces later as a confusing
+  // "wrong password" on the very next sign-in. Applies whether someone
+  // arrived here normally or via a family invite link, since both paths
+  // share this same form.
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState(null);
   const [busy, setBusy] = useState(false);
 
@@ -39,6 +45,10 @@ export default function Login() {
     setError(null);
     if (!configured) {
       setError("This is a preview build — sign-in isn't connected to a real backend yet. Try the demo below instead.");
+      return;
+    }
+    if (mode === 'sign-up' && password !== confirmPassword) {
+      setError("Those passwords don't match — check both fields and try again.");
       return;
     }
     setBusy(true);
@@ -339,6 +349,33 @@ export default function Login() {
                   />
                 </label>
 
+                {mode === 'sign-up' && (
+                  <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    <span style={{ fontSize: 12, fontWeight: 600, color: theme.inkSoft, letterSpacing: 0.4, textTransform: 'uppercase' }}>
+                      Confirm password
+                    </span>
+                    <input
+                      className="lh-login-input"
+                      type="password"
+                      placeholder="••••••••"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      required
+                      minLength={6}
+                      style={{
+                        fontFamily: 'inherit',
+                        fontSize: 16,
+                        padding: '14px 16px',
+                        borderRadius: 12,
+                        border: `1.5px solid ${theme.line}`,
+                        background: theme.bg,
+                        color: theme.ink,
+                        transition: 'border-color 0.15s, box-shadow 0.15s',
+                      }}
+                    />
+                  </label>
+                )}
+
                 {error && (
                   <p style={{ color: '#C0392B', fontSize: 13, background: '#FBEAEA', borderRadius: 8, padding: '8px 12px' }}>
                     {error}
@@ -374,6 +411,7 @@ export default function Login() {
                 onClick={() => {
                   setMode(mode === 'sign-in' ? 'sign-up' : 'sign-in');
                   setError(null);
+                  setConfirmPassword('');
                 }}
                 style={{
                   display: 'block',
