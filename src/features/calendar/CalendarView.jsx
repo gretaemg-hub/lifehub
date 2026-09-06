@@ -107,6 +107,25 @@ export default function CalendarView({ scope, heading, blurb }) {
         .lh-cal-save:not(:disabled):hover { background: ${theme.pineDark} !important; }
         .lh-cal-cancel:hover { border-color: ${theme.pine} !important; color: ${theme.pineDark} !important; }
         .lh-cal-delete:hover { background: ${theme.dangerBg} !important; }
+
+        /* Sizing for the month grid lives here (not inline) so it can
+           shrink on a narrow phone without every one of the 42 day
+           cells needing its own conditional style. A 7-column month
+           grid can't become a stacked list the way Meal Plan can — a
+           calendar is still recognisably a calendar with tighter cells
+           — so this just claws back padding/font-size/row-height as
+           the viewport narrows, instead of letting 7 columns squeeze
+           each cell down to illegible slivers. */
+        .lh-cal-weekdays, .lh-cal-days { gap: 4px; }
+        .lh-cal-day-cell { min-height: 64px; padding: 4px; border-radius: 8px; font-size: 12px; }
+        .lh-cal-event-chip { border-radius: 5px; padding: 1px 5px; margin-bottom: 2px; font-size: 12px; }
+        .lh-cal-more { font-size: 10px; }
+        @media (max-width: 480px) {
+          .lh-cal-weekdays, .lh-cal-days { gap: 2px; }
+          .lh-cal-day-cell { min-height: 44px; padding: 2px; border-radius: 6px; font-size: 10px; }
+          .lh-cal-event-chip { padding: 0 3px; margin-bottom: 1px; font-size: 9px; border-radius: 4px; }
+          .lh-cal-more { font-size: 8.5px; }
+        }
       `}</style>
 
       <h2 style={{ fontFamily: headingFont, fontWeight: 600, fontSize: 22, color: theme.pineDark, margin: '0 0 4px' }}>
@@ -150,30 +169,26 @@ export default function CalendarView({ scope, heading, blurb }) {
         <p style={{ color: theme.inkSoft }}>Loading…</p>
       ) : (
         <>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 4, fontSize: 11, color: theme.inkSoft, marginBottom: 4, fontWeight: 600 }}>
+          <div className="lh-cal-weekdays" style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', fontSize: 11, color: theme.inkSoft, marginBottom: 4, fontWeight: 600 }}>
             {weekdayLabels().map((d) => (
               <div key={d} style={{ textAlign: 'center' }}>{d}</div>
             ))}
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 4 }}>
+          <div className="lh-cal-days" style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)' }}>
             {cells.map((cell) => {
               const dayEvents = eventsOnDay(events, cell.dateKey);
               const isToday = cell.dateKey === today;
               return (
                 <div
                   key={cell.dateKey}
-                  className="lh-cal-day"
+                  className="lh-cal-day lh-cal-day-cell"
                   onClick={() => openAddForm(cell.dateKey)}
                   style={{
-                    minHeight: 64,
-                    padding: 4,
-                    borderRadius: 8,
                     border: isToday ? `2px solid ${theme.pine}` : `1px solid ${theme.line}`,
                     background: cell.inCurrentMonth ? theme.surface : theme.surfaceMuted,
                     color: cell.inCurrentMonth ? 'inherit' : theme.inkFaint,
                     cursor: 'pointer',
-                    fontSize: 12,
                     transition: 'border-color 0.15s',
                   }}
                 >
@@ -183,6 +198,7 @@ export default function CalendarView({ scope, heading, blurb }) {
                   {dayEvents.slice(0, 3).map((ev) => (
                     <div
                       key={ev.id}
+                      className="lh-cal-event-chip"
                       onClick={(e) => {
                         e.stopPropagation();
                         openEditForm(ev);
@@ -191,9 +207,6 @@ export default function CalendarView({ scope, heading, blurb }) {
                       style={{
                         background: ev.color || DEFAULT_EVENT_COLOR,
                         color: 'white',
-                        borderRadius: 5,
-                        padding: '1px 5px',
-                        marginBottom: 2,
                         whiteSpace: 'nowrap',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
@@ -203,7 +216,7 @@ export default function CalendarView({ scope, heading, blurb }) {
                     </div>
                   ))}
                   {dayEvents.length > 3 && (
-                    <div style={{ color: theme.inkSoft, fontSize: 10 }}>+{dayEvents.length - 3} more</div>
+                    <div className="lh-cal-more" style={{ color: theme.inkSoft }}>+{dayEvents.length - 3} more</div>
                   )}
                 </div>
               );
