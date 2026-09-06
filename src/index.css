@@ -1,1 +1,25 @@
- 
+/* Global reset — small, but load-bearing for phones. Without
+   box-sizing: border-box, every element that combines width: 100% with
+   its own padding (there are many across this app — inputs, the note
+   title field, modal panels) renders wider than its container once
+   padding is added on top of the width, which is exactly what causes a
+   page to gain unwanted horizontal scroll or look "squished" as
+   content gets clipped/overlapped on a narrow phone screen. */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  /* Belt-and-braces against horizontal scroll on mobile — nothing in
+     this app is meant to scroll sideways except a couple of
+     deliberately-scrollable containers, which set their own
+     overflow-x. */
+  overflow-x: hidden;
+  width: 100%;
+}
+
+#root {
+  overflow-x: hidden;
+}
