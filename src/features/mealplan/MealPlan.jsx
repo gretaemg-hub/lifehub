@@ -2,6 +2,7 @@ import { Fragment, useState } from 'react';
 import { useMealPlan } from './useMealPlan';
 import { MEAL_PLAN_DAYS, MEAL_PLAN_DAY_LABELS, MEAL_PLAN_MEALS, MEAL_PLAN_MEAL_LABELS, MEAL_UNITS } from './mealPlanUtils';
 import { useAuth } from '../../context/AuthContext';
+import { useIsNarrow } from '../../hooks/useIsNarrow';
 import { theme, headingFont, inputStyle, primaryButtonStyle, secondaryButtonStyle } from '../../theme';
 
 let ingredientIdCounter = 0;
@@ -14,6 +15,13 @@ const newIngredientId = () => `ing-${Date.now()}-${ingredientIdCounter++}`;
 export default function MealPlan() {
   const { plan, loading, saveCell, clearCell, syncAllToShoppingList } = useMealPlan();
   const { demoMode } = useAuth();
+  // Below ~640px, a 5-column grid (day label + 4 meals) squeezes each
+  // cell down to a sliver too narrow to show a dish name — the table
+  // itself is the wrong shape for a phone, not just too big. So on a
+  // narrow screen this switches to a per-day stack instead: same data,
+  // same tap-to-edit cells, just laid out as full-width rows grouped
+  // under each day heading rather than columns squeezed into a row.
+  const isNarrow = useIsNarrow(640);
   const [editing, setEditing] = useState(null); // { day, meal } | null
   const [dish, setDish] = useState('');
   const [ingredients, setIngredients] = useState([]);
@@ -83,6 +91,57 @@ export default function MealPlan() {
 
       {loading ? (
         <p style={{ color: theme.inkSoft, marginTop: 18 }}>Loading…</p>
+      ) : isNarrow ? (
+        <div style={{ marginTop: 18, display: 'flex', flexDirection: 'column', gap: 20 }}>
+          {MEAL_PLAN_DAYS.map((day, i) => (
+            <div key={day}>
+              <div style={{ fontFamily: headingFont, fontWeight: 700, fontSize: 14, color: theme.pineDark, marginBottom: 8 }}>
+                {MEAL_PLAN_DAY_LABELS[i]}
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                {MEAL_PLAN_MEALS.map((meal, mi) => {
+                  const cell = plan[day]?.[meal] || { dish: '', ingredients: [] };
+                  return (
+                    <div
+                      key={`${day}-${meal}`}
+                      className="lh-meal-cell"
+                      onClick={() => openCell(day, meal)}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 10,
+                        padding: '10px 12px',
+                        borderRadius: 10,
+                        border: `1px solid ${theme.line}`,
+                        background: theme.surface,
+                        cursor: 'pointer',
+                        transition: 'border-color 0.15s',
+                      }}
+                    >
+                      <span style={{ fontSize: 12, fontWeight: 700, color: theme.inkSoft, width: 84, flexShrink: 0 }}>
+                        {MEAL_PLAN_MEAL_LABELS[mi]}
+                      </span>
+                      <span style={{ flex: 1, minWidth: 0 }}>
+                        {cell.dish ? (
+                          <span style={{ display: 'block', color: theme.ink, fontWeight: 600, fontSize: 13.5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {cell.dish}
+                          </span>
+                        ) : (
+                          <span style={{ color: theme.inkFaint, fontSize: 13.5 }}>➕ Add</span>
+                        )}
+                        {cell.ingredients?.length > 0 && (
+                          <span style={{ display: 'block', color: theme.inkSoft, fontSize: 11, marginTop: 1 }}>
+                            {cell.ingredients.length} ingredient{cell.ingredients.length === 1 ? '' : 's'}
+                          </span>
+                        )}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
       ) : (
         <div
           style={{
