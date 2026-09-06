@@ -22,11 +22,14 @@ const EMPTY_FORM = { title: '', start_date: '', end_date: '', all_day: true, sta
 // the prototype's calendar: same colors, same date/time formatting,
 // same "click a day to add, click an event to edit" flow, but events
 // render as chips inside each day cell rather than the prototype's
-// lane-packed multi-day bars, and there's no modal overlay — the
-// add/edit form is an inline panel instead, consistent with how
-// ShoppingList.jsx keeps things simple. Multi-day events still show
-// up correctly, just as the same chip repeated on every day they span.
-// Renders inside the themed card App.jsx already wraps every tab in.
+// lane-packed multi-day bars. The add/edit form itself renders as a
+// centered popup/modal over the calendar (rather than an inline panel
+// pushed below the grid) — tapping a day (or an event chip) pops the
+// form up right there instead of making you scroll down to find it,
+// which matters most on a phone where the grid can already fill the
+// screen. Multi-day events still show up correctly, just as the same
+// chip repeated on every day they span. Renders inside the themed
+// card App.jsx already wraps every tab in.
 export default function CalendarView({ scope, heading, blurb }) {
   const { events, loading, addEvent, updateEvent, deleteEvent } = useCalendarEvents(scope);
   // Birthdays only ever exist on the family calendar — the checkbox
@@ -107,6 +110,31 @@ export default function CalendarView({ scope, heading, blurb }) {
         .lh-cal-save:not(:disabled):hover { background: ${theme.pineDark} !important; }
         .lh-cal-cancel:hover { border-color: ${theme.pine} !important; color: ${theme.pineDark} !important; }
         .lh-cal-delete:hover { background: ${theme.dangerBg} !important; }
+
+        /* Add/edit-event popup — a centered modal over the calendar
+           instead of an inline panel pushed below the grid, so tapping
+           a day pops the form up right where you tapped instead of
+           requiring a scroll down to find it. */
+        .lh-cal-modal-overlay {
+          position: fixed;
+          inset: 0;
+          background: rgba(38, 49, 43, 0.45);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 20px;
+          z-index: 1000;
+        }
+        .lh-cal-modal {
+          width: 100%;
+          max-width: 420px;
+          max-height: calc(100vh - 40px);
+          overflow-y: auto;
+        }
+        @media (max-width: 480px) {
+          .lh-cal-modal-overlay { padding: 12px; align-items: flex-end; }
+          .lh-cal-modal { max-height: calc(100vh - 24px); }
+        }
 
         /* Sizing for the month grid lives here (not inline) so it can
            shrink on a narrow phone without every one of the 42 day
@@ -250,14 +278,21 @@ export default function CalendarView({ scope, heading, blurb }) {
       )}
 
       {editingId && (
+        <div
+          className="lh-cal-modal-overlay"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) closeForm();
+          }}
+        >
         <form
+          className="lh-cal-modal"
           onSubmit={handleSubmit}
           style={{
-            marginTop: 22,
             padding: 18,
-            background: theme.surfaceMuted,
+            background: theme.surface,
             border: `1px solid ${theme.line}`,
-            borderRadius: 14,
+            borderRadius: 16,
+            boxShadow: '0 12px 32px rgba(38, 49, 43, 0.25)',
             display: 'flex',
             flexDirection: 'column',
             gap: 12,
@@ -389,6 +424,7 @@ export default function CalendarView({ scope, heading, blurb }) {
             )}
           </div>
         </form>
+        </div>
       )}
     </section>
   );
