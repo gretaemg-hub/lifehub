@@ -183,11 +183,37 @@ function AppShell() {
           transform: rotate(-3deg);
           border-radius: 2px;
         }
+
+        /* ============================================================
+           PHONE LAYOUT — every page besides Home renders inside
+           .lh-page-card, and the whole app sits inside .lh-main. Both
+           carry generous desktop padding (see cardStyle/inline styles
+           above) that eats a big chunk of a phone's width once you're
+           down to a 320-400px viewport — this is most of what made
+           screens like the Calendar and Meal Plan grids feel squished,
+           since every column had less room than it looked like it
+           should. Shrinking the chrome here, not the content, is what
+           gives those grids the space back. !important is needed
+           because cardStyle/the main padding are inline styles, which
+           otherwise always win over a plain class rule.
+           ============================================================ */
+        @media (max-width: 640px) {
+          .lh-main { padding: 14px !important; }
+          .lh-page-card { padding: 16px 14px !important; border-radius: 14px !important; }
+          .lh-header { padding: 14px 16px !important; }
+          .lh-header-title { font-size: 19px !important; }
+          .lh-card-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)) !important; gap: 14px !important; }
+        }
+        @media (max-width: 380px) {
+          .lh-main { padding: 10px !important; }
+          .lh-page-card { padding: 14px 10px !important; }
+        }
       `}</style>
 
       {/* Green top bar, matching Login's header so the app never feels
           like a different, more clinical product once you're inside it. */}
       <header
+        className="lh-header"
         style={{
           background: theme.pine,
           color: 'white',
@@ -202,7 +228,7 @@ function AppShell() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <span style={{ fontSize: 26 }}>🏡</span>
           <div>
-            <div style={{ fontFamily: headingFont, fontWeight: 600, fontSize: 22, letterSpacing: 0.3 }}>
+            <div className="lh-header-title" style={{ fontFamily: headingFont, fontWeight: 600, fontSize: 22, letterSpacing: 0.3 }}>
               LifeHub
             </div>
             <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.75)' }}>
@@ -241,7 +267,7 @@ function AppShell() {
         </button>
       </header>
 
-      <main ref={mainRef} style={{ padding: '24px', minWidth: 0, scrollMarginTop: 12 }}>
+      <main ref={mainRef} className="lh-main" style={{ padding: '24px', minWidth: 0, scrollMarginTop: 12 }}>
         <ConfirmedBanner />
 
         {demoMode && (
@@ -297,13 +323,13 @@ function AppShell() {
         )}
 
         {view === 'profile' ? (
-          <div style={cardStyle}>
+          <div className="lh-page-card" style={cardStyle}>
             <ProfileSettings onBack={() => setView('tabs')} {...profileData} />
           </div>
         ) : tab === 'home' ? (
           <Home onNavigate={selectTab} />
         ) : (
-          <div style={CARD_TABS.has(tab) ? cardStyle : undefined}>
+          <div className={CARD_TABS.has(tab) ? 'lh-page-card' : undefined} style={CARD_TABS.has(tab) ? cardStyle : undefined}>
             {tab === 'shopping' && <ShoppingList />}
             {tab === 'family-calendar' && (
               <CalendarView
